@@ -1,0 +1,108 @@
+/* ProjectW1SC universal accessible themes; applies after all legacy styles. */
+html[data-crm-theme="vinho"]{--ui-page:#fdf9f8;--ui-surface:#ffffff;--ui-ink:#381b29;--ui-muted:#624956;--ui-accent:#6b2442;--ui-accent-ink:#ffffff;--ui-nav:#421326;--ui-nav-ink:#ffffff;--ui-border:#dcc4cf;--ui-tint:#f8edf2;--ui-tint-ink:#5e2840;--ui-warning-bg:#fff4ec;--ui-warning-ink:#7a3f19;--ui-success-bg:#e9f4eb;--ui-success-ink:#235b34;--ui-danger-bg:#ffebed;--ui-danger-ink:#9f2436;color-scheme:light;}
+html[data-crm-theme="azul"]{--ui-page:#f5f8ff;--ui-surface:#ffffff;--ui-ink:#172d4b;--ui-muted:#465b74;--ui-accent:#234e83;--ui-accent-ink:#ffffff;--ui-nav:#112e50;--ui-nav-ink:#ffffff;--ui-border:#d4dfec;--ui-tint:#e8f1fb;--ui-tint-ink:#1c4774;--ui-warning-bg:#fff4e8;--ui-warning-ink:#704010;--ui-success-bg:#e7f5ef;--ui-success-ink:#1b5e43;--ui-danger-bg:#fff0ee;--ui-danger-ink:#992f36;color-scheme:light;}
+html[data-crm-theme="verde"]{--ui-page:#f3f8f5;--ui-surface:#ffffff;--ui-ink:#193d31;--ui-muted:#486456;--ui-accent:#17553f;--ui-accent-ink:#ffffff;--ui-nav:#123d31;--ui-nav-ink:#ffffff;--ui-border:#ceded3;--ui-tint:#e4f3e9;--ui-tint-ink:#1b5541;--ui-warning-bg:#fff3df;--ui-warning-ink:#76470e;--ui-success-bg:#e6f5e8;--ui-success-ink:#285c36;--ui-danger-bg:#ffedeb;--ui-danger-ink:#992a35;color-scheme:light;}
+html[data-crm-theme="grafite"]{--ui-page:#111827;--ui-surface:#202b3d;--ui-ink:#f5f7fc;--ui-muted:#d1d9e6;--ui-accent:#b7d4ff;--ui-accent-ink:#152033;--ui-nav:#0b1422;--ui-nav-ink:#f5f7fc;--ui-border:#526078;--ui-tint:#2a3e55;--ui-tint-ink:#ecf4ff;--ui-warning-bg:#443623;--ui-warning-ink:#ffe0ac;--ui-success-bg:#234638;--ui-success-ink:#d0f7db;--ui-danger-bg:#4c2631;--ui-danger-ink:#ffd3df;color-scheme:dark;}
+html[data-crm-theme="marfim"]{--ui-page:#fbf8ef;--ui-surface:#ffffff;--ui-ink:#332b1e;--ui-muted:#605748;--ui-accent:#685022;--ui-accent-ink:#ffffff;--ui-nav:#3e321e;--ui-nav-ink:#fff9e9;--ui-border:#dfd6c2;--ui-tint:#f4eddb;--ui-tint-ink:#59441f;--ui-warning-bg:#fff2df;--ui-warning-ink:#785011;--ui-success-bg:#e8f3e7;--ui-success-ink:#255b33;--ui-danger-bg:#ffeeeb;--ui-danger-ink:#9f3037;color-scheme:light;}
+
+html[data-crm-theme]{background:var(--ui-page);color:var(--ui-ink)}
+html[data-crm-theme] body,
+html[data-crm-theme] .app-shell,
+html[data-crm-theme] .app-content,
+html[data-crm-theme] .reference-dashboard,
+html[data-crm-theme] .task-shell,
+html[data-crm-theme] .task-main{background:var(--ui-page)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .app-sidebar{background:var(--ui-nav)!important;color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .app-sidebar .app-nav-link{color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .app-sidebar .app-nav-link svg,
+html[data-crm-theme] .app-sidebar .app-identity strong,
+html[data-crm-theme] .app-sidebar .app-identity strong span,
+html[data-crm-theme] .app-sidebar .app-identity small,
+html[data-crm-theme] .app-sidebar .app-private,
+html[data-crm-theme] .app-sidebar .app-account-email,
+html[data-crm-theme] .app-sidebar .app-account-actions a,
+html[data-crm-theme] .app-sidebar .app-account-actions button{color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .app-sidebar .app-nav-link:hover{background:color-mix(in srgb,var(--ui-nav-ink) 12%,transparent)!important}
+html[data-crm-theme] .app-sidebar .app-nav-link.active,
+html[data-crm-theme] .app-sidebar .app-nav-link[aria-current="page"]{
+ background:color-mix(in srgb,var(--ui-nav-ink) 23%,var(--ui-nav))!important;color:var(--ui-nav-ink)!important
+}
+html[data-crm-theme] .app-sidebar .app-sidebar-toggle,
+html[data-crm-theme] .app-sidebar .app-account-actions button,
+html[data-crm-theme] .app-sidebar .app-account-actions a{background:color-mix(in srgb,var(--ui-nav-ink) 10%,transparent)!important;border-color:color-mix(in srgb,var(--ui-nav-ink) 18%,transparent)!important;color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .reference-top-tools .reference-top-alert{color:var(--ui-accent)!important}
+html[data-crm-theme] .reference-top-avatar{background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important}
+html[data-crm-theme] .reference-top-divider{background:var(--ui-border)!important}
+html[data-crm-theme] :is(.reference-panel,.reference-kpi,.reference-client-detail,.reference-activity-card,.reference-related,.reference-activity-grid .reference-panel,.task-board,.task-metric,.metric,.panel,.dialog-inner,.reference-auth-card,.login,.task-modal,.crm-reopen-modal,.reference-creation-modal,.report-filters,.report-mini-stats>div,.report-donut>div){
+ background:var(--ui-surface)!important;border-color:var(--ui-border)!important;color:var(--ui-ink)!important
+}
+html[data-crm-theme] :is(.reference-header h1,.reference-header h2,.reference-panel h2,.reference-panel h3,.reference-panel-title h2,.reference-client-name b,.reference-kpi strong,.reference-detail-head h2,.reference-detail-grid b,.reference-activity-card h3,.reference-auth-card h1,.task-header h1,.task-board h2,.task-metric strong,.task-name-row>strong,.task-item strong,.report-dashboard h2,.report-dashboard h3,.report-category-list b,.report-mini-stats strong,.report-donut strong,.report-portfolio-labels b,.details span,.name,.app-content h1,.app-content h2){color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.reference-dashboard,.reference-dashboard p,.reference-dashboard label,.reference-header p,.reference-panel p,.reference-kpi small,.reference-kpi span:not(.reference-kpi-icon),.reference-overline,.reference-activity-card>p,.reference-activity-card span,.reference-entry-footer,.reference-detail-head>div>span,.reference-detail-grid span,.reference-detail-note p,.reference-pager,.reference-table,.reference-table td,.reference-table th,.reference-related-grid span,.reference-related-grid b,.reference-activity-form label,.reference-creation-modal label,.report-dashboard small,.report-dashboard .report-section-head p,.report-category-list span,.task-header p,.task-board p,.task-board span,.task-metric small,.task-metric em,.task-item-description,.task-item-meta,.task-item-meta span,.task-queue-tabs button,.task-list-footer,.task-day-marker,.task-kicker,.muted,.app-content .metric span,.app-content .panel th){color:var(--ui-muted)!important}
+html[data-crm-theme] :is(.reference-table thead th,.reference-clients-table thead th,.app-content .panel th){background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] :is(.reference-table tbody td,.task-item,.task-board-head,.task-list-footer,.reference-related,.reference-detail-grid,.reference-detail-note,.reference-detail-note p,.reference-timesheet,.reference-timesheet-body,.reference-timesheet-head,.reference-check,.reference-client-grid,.reference-activity-card,.reference-mini-notes,.report-related-grid){border-color:var(--ui-border)!important}
+html[data-crm-theme] :is(.reference-table tbody tr:hover td,.reference-clients-table tr.selected td,.app-content .task-item:hover,.task-item:hover,.app-content .panel tbody tr:hover td){background:var(--ui-tint)!important}
+html[data-crm-theme] :is(.reference-detail-grid,.reference-detail-note p,.reference-related,.reference-timesheet-head,.reference-check,.reference-timer,.reference-activity-card,.reference-search,.reference-filter-label select,.reference-filter-button,.reference-filter-button select,.task-search,.task-select-wrap,.task-select-institution,.task-day-marker,.task-select-wrap select,.app-content .task-queue-tabs button::before,.reference-activity-form input,.reference-activity-form textarea,.reference-activity-form select,.reference-creation-modal input,.reference-creation-modal textarea,.reference-creation-modal select,.reference-auth input,.app-content .input,.app-content .task-modal input,.app-content .task-modal textarea,.app-content .task-modal select,.app-content .dialog-inner input,.app-content .dialog-inner textarea,.app-content .dialog-inner select){
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important
+}
+html[data-crm-theme] :is(.reference-activity-form input,.reference-activity-form textarea,.reference-activity-form select,.reference-search input,.reference-filter-label select,.reference-filter-button select,.reference-activity-grid select,.task-search input,.task-select-wrap select,.task-select-institution,.reference-dashboard input,.reference-dashboard select,.reference-dashboard textarea,.reference-dashboard button){color:var(--ui-ink)!important}
+html[data-crm-theme] :is(input,textarea)::placeholder{color:var(--ui-muted)!important;opacity:1}
+html[data-crm-theme] :is(.reference-primary,.task-button-primary,.app-content .btn:not(.ghost),.crm-reopen-button,.reference-activity-form>button[type="submit"]){
+ background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important;border-color:var(--ui-accent)!important
+}
+html[data-crm-theme] :is(.reference-primary,.task-button-primary) svg{color:var(--ui-accent-ink)!important}
+html[data-crm-theme] :is(.reference-outline,.task-button-outline,.task-button-subtle,.app-content .btn.ghost,.reference-more,.reference-pager button,.task-queue-tabs button,.reference-text-button,.reference-timesheet-head,.reference-filter-button){
+ background:var(--ui-surface)!important;color:var(--ui-accent)!important;border-color:var(--ui-border)!important
+}
+html[data-crm-theme] .reference-dashboard button.reference-primary{color:var(--ui-accent-ink)!important}
+html[data-crm-theme] :is(.reference-kpi-icon,.reference-panel-title-icon,.reference-detail-grid svg,.reference-search svg,.reference-cell-icon svg,.task-metric-icon,.task-item-rank,.reference-avatar){
+ background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;border-color:var(--ui-border)!important
+}
+html[data-crm-theme] .reference-kpi-icon svg{color:var(--ui-tint-ink)!important}
+html[data-crm-theme] :is(.reference-status.good,.task-badge-em_dia,.task-badge-finalizado,.pill.ok){
+ background:var(--ui-success-bg)!important;color:var(--ui-success-ink)!important
+}
+html[data-crm-theme] :is(.reference-status.danger,.task-badge-vencido,.task-priority-urgente,.error){
+ background:var(--ui-danger-bg)!important;color:var(--ui-danger-ink)!important
+}
+html[data-crm-theme] :is(.reference-status.pending,.reference-status.neutral,.task-badge-hoje,.task-badge-sem_data,.task-source-warning,.task-priority-alta,.pill.warn,.reference-notice,.notice,.task-notice){
+ background:var(--ui-warning-bg)!important;color:var(--ui-warning-ink)!important;border-color:var(--ui-border)!important
+}
+html[data-crm-theme] :is(.reference-notice b,.notice b,.task-notice strong){color:var(--ui-warning-ink)!important}
+html[data-crm-theme] :is(.task-queue-tabs button.active,.reference-text-button,.reference-activity-card .reference-tag,.reference-overline,.reference-panel-title svg,.report-dashboard .report-section-head svg){color:var(--ui-accent)!important}
+html[data-crm-theme] :is(.task-queue-tabs button.active::after,.reference-tab-indicator,.report-bar>span){background:var(--ui-accent)!important}
+html[data-crm-theme] :is(.app-content .task-board-head,.app-content .task-list-footer){background:var(--ui-surface)!important}
+html[data-crm-theme] :is(.report-donut,.reference-detail-head .reference-avatar){outline-color:var(--ui-border)!important}
+html[data-crm-theme] :is(.report-segments,.report-bar){background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] :is(.report-segments button:not(.active),.report-category-list span,.report-legend,.report-timeline-labels,.report-footer){color:var(--ui-muted)!important}
+html[data-crm-theme] .report-segments button.active{background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important}
+html[data-crm-theme] :is(.reference-dashboard select option,.task-select-wrap select option,.reference-activity-form select option){background:var(--ui-surface)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.task-modal-overlay,.dialog){background:color-mix(in srgb,var(--ui-nav) 60%,transparent)}
+html[data-crm-theme] :is(.reference-dashboard,.app-content) :focus-visible,
+html[data-crm-theme] .app-sidebar :focus-visible{outline:3px solid var(--ui-accent)!important;outline-offset:2px!important}
+.crm-theme-picker{display:flex;align-items:center;gap:7px;border:1px solid var(--ui-border);border-radius:10px;min-height:36px;padding:5px 9px;background:var(--ui-surface);color:var(--ui-ink)}
+.crm-theme-picker svg{flex:none;color:var(--ui-accent)}
+.crm-theme-picker span{color:var(--ui-muted);font-size:11px;font-weight:650}
+.crm-theme-picker select{border:0;background:var(--ui-surface);color:var(--ui-ink);font-size:11px;max-width:138px;cursor:pointer;outline-offset:3px}
+.crm-theme-picker option{background:var(--ui-surface);color:var(--ui-ink)}
+.crm-theme-picker:focus-within{outline:2px solid var(--ui-accent);outline-offset:2px}
+.reference-activity-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reference-activity-actions button{min-height:31px;padding:6px 10px;border:1px solid var(--ui-border);border-radius:9px;background:var(--ui-surface);color:var(--ui-accent);font-size:11px;font-weight:750;display:inline-flex;align-items:center;gap:6px}
+.reference-activity-actions button:hover{background:var(--ui-tint)}
+.reference-activity-actions button.danger{color:var(--ui-danger-ink);background:var(--ui-danger-bg)}
+.reference-activity-form .reference-activity-actions{justify-content:flex-end}
+.reference-process-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ui-muted);margin:8px 0 5px}
+.reference-process-row strong{color:var(--ui-ink)}
+.reference-activity-form .reference-process-pair{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:11px}
+@media(max-width:780px){
+ .crm-theme-picker{min-height:34px;padding:5px 7px}
+ .crm-theme-picker span{display:none}
+ .crm-theme-picker select{width:95px;font-size:10px}
+ .reference-top-tools{display:flex!important;top:9px;right:87px;gap:0}
+ .reference-top-tools .reference-top-alert,.reference-top-tools .reference-top-divider,.reference-top-tools .reference-top-avatar{display:none}
+ .reference-activity-form .reference-process-pair{grid-template-columns:1fr}
+}
+@media(max-width:430px){.reference-top-tools{right:83px}.crm-theme-picker select{width:82px}}
+@media(prefers-reduced-motion:reduce){
+ .crm-theme-picker*,.reference-activity-actions*,html[data-crm-theme] .app-shell{animation:none!important;transition-duration:.01ms!important}
+}
+@media print{.crm-theme-picker{display:none!important}}
