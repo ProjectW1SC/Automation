@@ -43,8 +43,8 @@ test('visual references remain a functioning UI not a static screenshot',()=>{
  assert.match(ui,/CrmShell/);
  assert.match(ui,/Registrar atividade/);
  const main=file('app/page.jsx');
- assert.match(main,/reference-dashboard/);
- assert.match(main,/reference-client-grid/);
+ assert.match(main,/<ReferencePages/);
+ assert.match(file('components/reference-pages.jsx'),/reference-client-grid/);
 });
 test('Supabase completed activity storage enforces RLS and binds actor identity',()=>{
  const migration=file('supabase/migrations/20261109_006_minhas_atividades.sql');
