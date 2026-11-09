@@ -50,3 +50,10 @@
  .app-content .main{padding:19px 14px}
  .app-content .task-main{padding:20px 13px 32px}
 }
+
+.app-mobile-account{display:none}
+@media(max-width:700px){
+ .app-mobile-account{display:flex;position:absolute;top:11px;right:12px;align-items:center;gap:6px}
+ .app-mobile-account a,.app-mobile-account button{display:grid;place-items:center;color:#f3dfe6;background:#51303e;border:1px solid #754c5b;border-radius:8px;width:31px;height:31px;padding:0}
+ .app-identity{padding-right:90px}
+}
