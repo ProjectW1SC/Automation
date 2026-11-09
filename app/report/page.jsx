@@ -7,6 +7,8 @@ import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 import {buildReport,periodBounds,exportReportCsv} from '../../lib/report.mjs';
 import {categoryLabel} from '../../lib/minhas-atividades.mjs';
+import {sortTaskQueue} from '../../lib/tarefas.mjs';
+import {priorityDigest,limitSnippet} from '../../lib/report-priority.mjs';
 import ReportPrintDocument from '../../components/report-print-document';
 import EfferdKpi from '../../components/efferd-kpi';
 
@@ -46,7 +48,7 @@ function PortfolioDistribution({portfolio}){
  const active=portfolio.active||0,finished=portfolio.finalized||0;
  const stop=(active/total*100).toFixed(2);
  return <div className="report-portfolio-distribution">
-  <div className="report-donut" style={{background:`conic-gradient(#79314d 0% ${stop}%,#d8b6c4 ${stop}% 100%)`}} role="img" aria-label={`Carteira: ${active} ativos e ${finished} finalizados`}><div><strong>{fmt(portfolio.total)}</strong><small>clientes</small></div></div>
+  <div className="report-donut" style={{background:`conic-gradient(#79314d 0% ${stop}%,#9599a4 ${stop}% 100%)`}} role="img" aria-label={`Carteira: ${active} ativos e ${finished} finalizados`}><div><strong>{fmt(portfolio.total)}</strong><small>clientes</small></div></div>
   <div className="report-portfolio-labels"><div><span><i className="report-swatch attendance"/>Ativos</span><b>{fmt(active)}</b></div><div><span><i className="report-swatch final"/>Finalizados</span><b>{fmt(finished)}</b></div><div><span><i className="report-swatch warn"/>Vencidos ativos</span><b>{fmt(portfolio.overdue)}</b></div></div>
  </div>;
 }
@@ -71,7 +73,7 @@ export default function ReportPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[loading,setLoading]=useState(false);
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[notice,setNotice]=useState(''),[pdfPreview,setPdfPreview]=useState(false);
- const [clients,setClients]=useState([]),[audit,setAudit]=useState([]),[manual,setManual]=useState([]),[updated,setUpdated]=useState(null);
+ const [clients,setClients]=useState([]),[audit,setAudit]=useState([]),[manual,setManual]=useState([]),[priorityAudit,setPriorityAudit]=useState([]),[priorityManual,setPriorityManual]=useState([]),[updated,setUpdated]=useState(null);
  const today=todayBrazil();
  useEffect(()=>{
   if(!db){setAuthLoading(false);return}
@@ -87,19 +89,31 @@ export default function ReportPage(){
   // Previous UTC day avoids omitting events around the Sao Paulo midnight boundary.
   const prev=new Date(Date.parse(bounds.start+'T12:00:00Z')-86400000).toISOString().slice(0,10);
   const [c,a,m]=await Promise.all([
-   db.from('crm_clients').select('id,name,assigned_to,consultant,workflow_status,next_return,due_override,finished_at,source_conflict,source_status,evidence_status,priority_level').order('created_at').limit(1000),
+   db.from('crm_clients').select('id,name,assigned_to,consultant,workflow_status,next_return,due_override,finished_at,source_conflict,source_status,evidence_status,priority_level,notes,institution').order('created_at').limit(1000),
    db.from('crm_activities').select('id,client_id,actor_id,kind,created_at').gte('created_at',prev+'T00:00:00Z').order('created_at',{ascending:false}).limit(1000),
    db.from('crm_completed_activities').select('id,actor_id,client_id,category,performed_on,contact_confirmed,duration_seconds,origin').is('deleted_at',null).gte('performed_on',bounds.start).lt('performed_on',bounds.endExclusive).order('performed_on',{ascending:false}).limit(1000)
   ]);
   const errors=[c,a,m].map((x,i)=>x.error?[['Clientes','Atendimentos','Atividades'][i],x.error.message]:null).filter(Boolean);
-  setClients(c.error?[]:c.data||[]);setAudit(a.error?[]:a.data||[]);setManual(m.error?[]:m.data||[]);
-  setUpdated(new Date());
-  const truncated=[c,a,m].some(x=>(x.data?.length||0)>=1000);
-  setNotice(errors.length?'Alguns dados não puderam ser carregados: '+errors.map(x=>x[0]).join(', ')+'.':truncated?'Consulta limitada a mil registros por fonte; os indicadores deste período podem estar incompletos.':'');
-  setLoading(false);
+  const rows=c.error?[]:c.data||[];
+  setClients(rows);setAudit(a.error?[]:a.data||[]);setManual(m.error?[]:m.data||[]);
+  const priorityIds=sortTaskQueue(rows.filter(x=>x.workflow_status!=='finalizado'),today).slice(0,10).map(x=>x.id);
+  let noteResult=null,workResult=null;
+  if(priorityIds.length){
+   [noteResult,workResult]=await Promise.all([
+    db.from('crm_activities').select('id,client_id,actor_id,kind,body,created_at').in('client_id',priorityIds).order('created_at',{ascending:false}).limit(1000),
+    db.from('crm_completed_activities').select('id,client_id,actor_id,title,description,performed_on,created_at,deleted_at').in('client_id',priorityIds).is('deleted_at',null).order('created_at',{ascending:false}).limit(1000)
+   ]);
+  }
+  setPriorityAudit(noteResult?.error?[]:noteResult?.data||[]);
+  setPriorityManual(workResult?.error?[]:workResult?.data||[]);
+  const moreErrors=[['Anotações e histórico',noteResult?.error],['Atividades recentes',workResult?.error]].filter(x=>x[1]);
+  const truncated=[c,a,m,noteResult,workResult].some(x=>(x?.data?.length||0)>=1000);
+  setNotice([...errors.map(x=>'Falha: '+x[0]),...moreErrors.map(x=>'Falha: '+x[0]),...(truncated?['Consulta limitada a mil registros em pelo menos uma fonte; verifique registros adicionais no CRM.']:[])].join(' · '));
+  setUpdated(new Date());setLoading(false);
  },[db,period,session?.user?.id,today]);
  useEffect(()=>{if(session?.user?.email?.toLowerCase()===ADMIN_EMAIL)load();else{setClients([]);setAudit([]);setManual([])}},[session?.user?.id,load]);
  const report=useMemo(()=>buildReport({clients,audit,manual,period,scope,actorId:session?.user?.id,today}),[clients,audit,manual,period,scope,session?.user?.id,today]);
+ const priorityDigestRows=useMemo(()=>priorityDigest({clients,audit:priorityAudit,manual:priorityManual,today,scope,actorId:session?.user?.id}),[clients,priorityAudit,priorityManual,today,scope,session?.user?.id]);
  function printReport(){
   if(loading)return;
   const original=document.title;
@@ -179,11 +193,23 @@ export default function ReportPage(){
      <div className="report-mini-notes"><span><AlertTriangle size={15}/> Conflitos entre origens: <b>{fmt(report.period.sourceConflicts)}</b></span><span><CheckCircle2 size={15}/> Encerrados no período: <b>{fmt(report.period.finalized)}</b></span></div>
     </section>
    </div>
+   <section className="reference-panel report-priority-panel" aria-label="10 maiores prioridades">
+    <div className="report-section-head"><div><h2><AlertTriangle size={19}/> As 10 maiores prioridades</h2><p>Mesma ordem da fila Tarefas. Somente clientes ativos; com última anotação e atividade registradas.</p></div><span className="report-subtitle">Último histórico disponível, independente do período</span></div>
+    <div className="report-priority-list">{priorityDigestRows.map((item,i)=><article className="report-priority-item" key={item.id}>
+     <span className="report-priority-rank">{i+1}</span>
+     <div className="report-priority-main"><div className="report-priority-heading"><strong>{item.name}</strong><span className={'report-priority-level '+item.priority}>{item.priorityText}</span><span className={'report-priority-status '+item.status}>{item.statusLabel}</span></div>
+     <div className="report-priority-meta">{item.institution||'Sem instituição'} · Retorno: {item.due?item.due.split('-').reverse().join('/'):'Sem data'}</div>
+     <p><b>Anotação:</b> {item.note?limitSnippet(item.note,220):'Sem anotação registrada.'}</p>
+     <p><b>Atividade:</b> {item.lastActivity?limitSnippet(item.lastActivity,220):'Sem atividade registrada.'}{item.activitySource?' · '+item.activitySource:''}</p>
+     </div></article>)}
+     {priorityDigestRows.length===0&&<div className="report-empty">Não existem clientes ativos para priorizar.</div>}
+    </div>
+   </section>
    <footer className="report-footer"><ShieldCheck size={15}/> Indicadores somente de eventos registrados. Quitação em planilha não equivale a comprovante. {updated&&<span>Consultado em {updated.toLocaleString('pt-BR')}</span>}</footer>
    <div className={'report-pdf-print-host '+(pdfPreview?'is-preview':'')}>
-    {pdfPreview&&<div className="report-pdf-preview-bar"><strong>Prévia do relatório — quatro páginas A4</strong><button className="reference-outline" onClick={()=>setPdfPreview(false)}>Fechar prévia</button><button className="reference-primary" onClick={printReport}><Printer size={15}/> Salvar PDF</button></div>}
+    {pdfPreview&&<div className="report-pdf-preview-bar"><strong>Prévia do relatório — seis páginas A4</strong><button className="reference-outline" onClick={()=>setPdfPreview(false)}>Fechar prévia</button><button className="reference-primary" onClick={printReport}><Printer size={15}/> Salvar PDF</button></div>}
     <ReportPrintDocument report={report} periodName={periodLabel[period]} scopeName={scope==='meus'?'Minhas atividades':'Empresa'}
-      generated={updated||new Date()} incomplete={Boolean(notice)} members={members}/>
+      generated={updated||new Date()} incomplete={Boolean(notice)} members={members} priorityDigestRows={priorityDigestRows}/>
    </div>
   </main>
  </CrmShell>;

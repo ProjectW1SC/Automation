@@ -57,7 +57,7 @@
 .pdf-section-label{color:#8c3b59;font-size:9px;letter-spacing:1.6px;font-weight:800;margin:9mm 0 4mm}
 .pdf-composition-track{display:flex;height:9mm;background:#f3e7ec;border-radius:6px;overflow:hidden}
 .pdf-composition-track span{height:100%;background:#732d4a}
-.pdf-composition-track i{height:100%;background:#c99aaf}
+.pdf-composition-track i{height:100%;background:#969ca8}
 .pdf-composition-labels{display:flex;justify-content:space-between;font-size:10px;color:#654251;margin-top:3mm}
 .pdf-priority-note{display:grid;gap:5px;background:#f9f0f3;border-left:3px solid #87405c;padding:5mm;border-radius:4px;margin-top:9mm}
 .pdf-priority-note strong{color:#5c233c;font-size:11px}
@@ -130,4 +130,52 @@
  .report-print-document .pdf-page:last-child{page-break-after:auto;break-after:auto}
  .app-shell .app-sidebar,.app-shell .reference-top-tools{display:none!important}
  .report-print-document *{animation:none!important;transition:none!important}
+}
+
+
+/* Live report: priority ranking from the operational task queue, never sample data. */
+.report-priority-panel{margin-top:20px}
+.report-priority-panel .report-section-head{align-items:flex-start}
+.report-priority-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:14px}
+.report-priority-item{min-width:0;display:flex;align-items:flex-start;gap:12px;background:var(--ui-surface,#fff);border:1px solid var(--ui-border,#ead5df);border-radius:13px;padding:14px}
+.report-priority-rank{display:grid;place-items:center;flex:none;background:var(--ui-tint,#f7ebf0);color:var(--ui-tint-ink,#74334e);border-radius:10px;width:30px;height:30px;font-weight:850;font-size:13px}
+.report-priority-main{flex:1;min-width:0}
+.report-priority-heading{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.report-priority-heading strong{color:var(--ui-ink,#422335);font-size:12px;overflow-wrap:anywhere}
+.report-priority-level,.report-priority-status{border-radius:99px;padding:3px 7px;border:1px solid var(--ui-border);font-size:10px;font-weight:750;white-space:nowrap;color:var(--ui-ink)}
+.report-priority-level.urgente{background:var(--ui-danger-bg);color:var(--ui-danger-ink);border-color:var(--ui-border)}
+.report-priority-level.alta{background:var(--ui-warning-bg);color:var(--ui-warning-ink)}
+.report-priority-level.normal{background:var(--ui-neutral-bg);color:var(--ui-neutral-ink)}
+.report-priority-status.vencido{background:var(--ui-danger-bg);color:var(--ui-danger-ink)}
+.report-priority-status.hoje{background:var(--ui-warning-bg);color:var(--ui-warning-ink)}
+.report-priority-status.em_dia{background:var(--ui-success-bg);color:var(--ui-success-ink)}
+.report-priority-status.sem_data{background:var(--ui-neutral-bg);color:var(--ui-neutral-ink)}
+.report-priority-meta{color:var(--ui-muted);font-size:10px;line-height:1.5;margin:5px 0}
+.report-priority-main p{font-size:11px;color:var(--ui-muted)!important;line-height:1.5;margin:6px 0 0;overflow-wrap:anywhere}
+.report-priority-main p b{color:var(--ui-ink);font-weight:800}
+@media(max-width:940px){.report-priority-list{grid-template-columns:1fr}}
+/* Additional A4 pages: priority table and chronology excerpts */
+.pdf-priority-list{display:grid;gap:2.2mm;margin:3mm 0 5mm}
+.pdf-priority-row{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:2mm;min-width:0;break-inside:avoid;border:1px solid #eadce3;border-radius:7px;padding:2.7mm 3mm;background:#fffcfd}
+.pdf-priority-number{display:grid;place-items:center;background:#efe5ea;color:#5d3347;border-radius:6px;height:7mm;width:7mm;font-size:11px;font-weight:850}
+.pdf-priority-name{display:flex;flex-wrap:wrap;align-items:center;gap:3mm;color:#452739;font-size:10px}
+.pdf-priority-name b{font-size:10px}
+.pdf-priority-name>span:not(.pdf-priority-level){color:#77636d;font-size:8.5px}
+.pdf-priority-level{display:inline-flex;font-size:7.8px;border-radius:40px;border:1px solid #dcc9d3;color:#673146;background:#f6e8ee;padding:1mm 2mm;font-weight:700}
+.pdf-priority-level.urgente{background:#feecef;color:#942637}
+.pdf-priority-level.alta{background:#fff1df;color:#75480e}
+.pdf-priority-level.normal{background:#e8e9ed;color:#444c55}
+.pdf-priority-row p{font-size:8.1px;line-height:1.4;margin:1.3mm 0 0;overflow-wrap:anywhere;color:#68545e}
+.pdf-priority-row p strong{color:#402232}
+.pdf-priority-disclaimer{border-top:1px solid #e4d7de;margin-top:4mm;padding-top:3mm;font-size:8px;line-height:1.5;color:#816974}
+.pdf-priority-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm;align-content:start}
+.pdf-priority-detail{min-width:0;min-height:32mm;max-height:37mm;padding:3mm;border:1px solid #e7d9df;background:#fffcfd;border-radius:7px;overflow:hidden;break-inside:avoid}
+.pdf-priority-detail-head{display:flex;flex-wrap:wrap;gap:2mm;align-items:center;justify-content:space-between;margin-bottom:1.4mm}
+.pdf-priority-detail-head b{font-size:9px;color:#472b39;overflow-wrap:anywhere;line-height:1.3}
+.pdf-priority-detail>small{display:block;font-size:7.8px;color:#77626d;line-height:1.4}
+.pdf-priority-detail>p{font-size:8px;line-height:1.45;color:#624b59;margin:2mm 0;overflow-wrap:anywhere}
+.pdf-priority-detail>p b{color:#4b293b}
+@media print{
+ .pdf-priority-row,.pdf-priority-detail{box-shadow:none!important;break-inside:avoid;page-break-inside:avoid}
+ .pdf-priority-list,.pdf-priority-details{break-inside:avoid}
 }

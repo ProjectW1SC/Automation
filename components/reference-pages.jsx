@@ -17,7 +17,7 @@ function Action({children,icon:Icon,onClick,primary=false,disabled=false}){retur
 function Kpi({icon,title,value,sub,kind=''}){return <EfferdKpi icon={icon} title={title} value={value} sub={sub} tone={kind==='danger'?'danger':kind==='good'?'ok':kind==='pending'?'warn':'default'}/>}
 function Status({client,today}){
  const s=getStatus(client,today);
- const map={vencido:['danger','Vencido'],hoje:['pending','Hoje'],em_dia:['good','Em dia'],finalizado:['good','Finalizado'],sem_data:['neutral','Sem data']};
+ const map={vencido:['danger','Vencido'],hoje:['pending','Hoje'],em_dia:['good','Em dia'],finalizado:['finished','Finalizado'],sem_data:['neutral','Sem data']};
  const [css,label]=map[s.code]||['neutral',s.label];
  return <span className={'reference-status '+css}>{s.code==='vencido'?<AlertTriangle size={14}/>:s.code==='em_dia'||s.code==='finalizado'?<CheckCircle2 size={14}/>:<Clock3 size={14}/>} {label}</span>;
 }
