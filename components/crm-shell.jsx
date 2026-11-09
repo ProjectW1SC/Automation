@@ -5,6 +5,7 @@ import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
 import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
+import {APPEARANCE_BUCKET,applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
 const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3,'Configurações':Settings2,'Processos':Gavel};
 export default function CrmShell({active='Visão geral',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
@@ -12,6 +13,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
  const [theme,setTheme]=useState('vinho');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
  const [avatarUrl,setAvatarUrl]=useState('');
+ const appearanceRef=useRef({colors:{},backgroundUrl:''});
  useEffect(()=>{
   const db=getClient();if(!db)return;
   let alive=true;
@@ -22,15 +24,26 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
    if(!alive||current!==request||error||!data?.user)return;
    const user=data.user,metadata=user.user_metadata||{};
    setProfile({display_name:String(metadata.display_name||metadata.full_name||''),avatar_path:String(metadata.avatar_path||'')});
-   if(!ownerAvatarPath(user.id,metadata.avatar_path)){setAvatarUrl('');return}
-   const photo=await db.storage.from(PROFILE_BUCKET).createSignedUrl(metadata.avatar_path,3600);
-   if(alive&&current===request)setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
+   const backgroundPath=String(metadata.crm_background_path||'');
+   const safePath=backgroundPath.startsWith(user.id+'/background-')&&/\.(png|jpg|webp)$/.test(backgroundPath)?backgroundPath:'';
+   const [photo,background]=await Promise.all([
+    ownerAvatarPath(user.id,metadata.avatar_path)?db.storage.from(PROFILE_BUCKET).createSignedUrl(metadata.avatar_path,3600):Promise.resolve({data:null}),
+    safePath?db.storage.from(APPEARANCE_BUCKET).createSignedUrl(safePath,3600):Promise.resolve({data:null})
+   ]);
+   if(!alive||current!==request)return;
+   setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
+   const colors=metadata.crm_colors&&typeof metadata.crm_colors==='object'?metadata.crm_colors:{};
+   appearanceRef.current={colors,backgroundUrl:background?.data?.signedUrl||''};
+   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'vinho');
+   try{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),colors,appearanceRef.current.backgroundUrl)}
+   catch{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),{},appearanceRef.current.backgroundUrl)}
   }
   function scheduleRefresh(){window.setTimeout(refreshProfile,0)}
   const {data:{subscription}}=db.auth.onAuthStateChange(()=>{scheduleRefresh()});
   window.addEventListener('projectw1sc:profile-change',scheduleRefresh);
+  window.addEventListener('projectw1sc:appearance-change',scheduleRefresh);
   refreshProfile();
-  return()=>{alive=false;subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh)};
+  return()=>{alive=false;subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh);window.removeEventListener('projectw1sc:appearance-change',scheduleRefresh)};
  },[]);
   const sidebarRef=useRef(null);
  useEffect(()=>{
@@ -39,6 +52,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
    try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'vinho'}catch{}
    const id=resolveTheme(stored);
    setTheme(id);document.documentElement.dataset.crmTheme=id;
+   const t=CRM_THEMES.find(x=>x.id===id);try{applyAppearanceToDocument(document.documentElement,t,appearanceRef.current.colors,appearanceRef.current.backgroundUrl)}catch{applyAppearanceToDocument(document.documentElement,t,{},appearanceRef.current.backgroundUrl)}
   }
   applyStoredTheme();
   const onStorage=e=>{if(e.key==='projectw1sc.crm-theme')applyStoredTheme()};
@@ -49,6 +63,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
  function selectTheme(next){
   const id=resolveTheme(next);
   setTheme(id);document.documentElement.dataset.crmTheme=id;
+   const t=CRM_THEMES.find(x=>x.id===id);try{applyAppearanceToDocument(document.documentElement,t,appearanceRef.current.colors,appearanceRef.current.backgroundUrl)}catch{applyAppearanceToDocument(document.documentElement,t,{},appearanceRef.current.backgroundUrl)}
   try{window.localStorage.setItem('projectw1sc.crm-theme',id)}catch{}
  }
  useEffect(()=>{
