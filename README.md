@@ -1,81 +1,158 @@
-# ProjectW1SC CRM — Negociações e Quitações
+<div align="center">
 
-CRM operacional privado para intermediação de quitações. React/Next.js + Supabase + Google Sheets + Vercel. Projeto próprio inspirado em conceitos de OpenCRM (MIT), SuiteCRM e Twenty; **nenhum código de terceiros foi copiado**.
+<img src="./public/themes/projectw1sc-mark.svg" alt="Logotipo ProjectW1SC" width="96" />
 
-## Fontes e interpretação confirmada (09/11/2026)
-- Planilha 1: QUITAÇÃO - KAWAN 2025, 5 abas: ANDAMENTO, VENCIDOS, QUITADOS, FINALIZADOS, FINANCEIRAS.
-- Planilha 2: ID cadastrado, porém Google Drive retornou 403 em duas conexões; permanece **pendente de autorização**, sem criar dados fictícios.
-- Coluna **T** em ANDAMENTO/VENCIDOS indica **financeira ou escritório contatado**, não andamento processual; em FINALIZADOS corresponde à assessoria.
-- QUITADOS possui cabeçalhos repetidos e ordenação própria. Uma linha na aba não constitui comprovante de quitação.
-- Existem duplicações entre abas, células inválidas com 1899 e linhas sem documento; a importação conservadora evita criar status jurídicos/financeiros falsos.
-- O Drive GET possui arquivos com título de quitação, mas a verificação de pagamento depende de documento/evidência individual.
+# ProjectW1SC
 
-## Configuração
-1. Criar um projeto Supabase **na organização ProjectW1SC**; aplicar `supabase/migrations/20261109_001_crm.sql` pelo SQL Editor/MCP; habilitar Email OTP e confirmar o usuário administrador `intermedioesenegociacoes@gmail.com`.
-2. Configurar na Vercel as variáveis de `.env.example`. **Nunca** colocar `SUPABASE_SERVICE_ROLE_KEY`, credenciais Google ou tokens em `NEXT_PUBLIC_`.
-3. Autorizar as planilhas à conta de serviço Google com acesso somente leitura, ou utilizar OAuth de usuário autorizado. O login Google conectado ao ChatGPT **não concede automaticamente tokens ao site implantado**.
-4. Implantar pelo GitHub e executar **Sincronizar** no CRM com o usuário administrador. Cron diário 11:00 UTC (08:00 de São Paulo, sem horário de verão), sujeito aos limites do plano Hobby da Vercel.
-5. Se qualquer planilha estiver indisponível, o painel indica **sincronização parcial**, sem afirmar atualização completa.
+**CRM de negociações, relacionamento e acompanhamento operacional**
 
-## Privacidade
-Repositório público contém **somente código e mapeamento de estrutura**; não armazena nomes, CPFs, contratos, comprovantes, listas de clientes nem chaves. Banco com RLS e autenticação. Nenhuma mensagem é enviada automaticamente. Dados provenientes de terceiros só devem ser importados se houver autorização para o tratamento e compartilhamento na operação ProjectW1SC.
+Uma plataforma para organizar a carteira de clientes, acompanhar pendências, registrar atendimentos e transformar informações dispersas em uma rotina de trabalho clara e rastreável.
 
-## Comandos
-`npm install` · `npm run dev` · `npm test` · `npm run build`.
+[**Acessar o CRM**](https://projectw1sc-crm.vercel.app)
 
-## Uso simples
+</div>
 
-- Entre com `intermedioesenegociacoes@gmail.com` (link de acesso por e-mail Supabase Auth). Configure o Site URL e o redirecionamento dessa aplicação nas configurações Auth do Supabase.
-- As planilhas já consultadas foram conciliadas inicialmente no Supabase. Para uma nova versão do Excel, use **Importar Excel** na tela: leitura local no navegador, gravação autenticada com RLS e conciliação pelo documento; nenhuma prova de quitação é presumida.
-- O botão de sincronização automática foi removido porque ainda não existe credencial Google de servidor autorizada no projeto. Não há sincronização Google Sheets em segundo plano até configurar um acesso de serviço seguro.
-- O Excel original foi importado como cópia privada para o Drive GET, preservando o arquivo anexado.
+---
 
-## Fila de tarefas e prioridades
+## Sobre o projeto
 
-Acesse `/tarefas` após entrar com a conta autorizada. A central operacional é baseada nos padrões de fila da W1/W2 LexisPredict, adaptados à negociação de quitações (sem informações jurídicas fictícias).
+O ProjectW1SC nasceu da necessidade de reunir, em um só ambiente, as informações que fazem parte do dia a dia de uma operação de negociações: contatos, instituições, retornos, tarefas, registros de atendimento e relatórios.
 
-- **Prioridades**: vencidos primeiro, depois os retornos de hoje, em dia e casos sem data. A prioridade manual Alta/Urgente reorganiza cada faixa.
-- **Só vencidos**: reúne **apenas** os retornos com data anterior à data atual de São Paulo. O marcador VENCIDOS de uma planilha não basta sem data confirmada; casos sem data ficam na fila própria.
-- **Em dia / Hoje / Sem data / Finalizados**: situação operacional derivada do retorno, independentemente do rótulo financeiro e da quitação.
-- **Editar**: dados de contato, financeira, escritório, consultor, prioridade, responsável, observações e data do próximo retorno. A data operacional prevalece sem apagar a origem importada.
-- **Registrar atendimento**: descreve contato ou tentativa, canal, resultado, responsável e próximo retorno (sugestão editável de 30 dias). Uma transação salva a atividade e a nova data; se falhar, nada é considerado concluído.
-- **Finalizar/Reabrir**: exige um motivo e gera registro. Finalizar acompanhamento **não comprova pagamento** nem muda `evidence_status`.
-- **Histórico**: mostra atendimentos, alterações e finalizações; não envia WhatsApp, ligações ou e-mails automaticamente.
+A proposta é simples: permitir que cada pessoa saiba **o que precisa fazer, por que aquilo é prioridade e o que já aconteceu em cada acompanhamento**. Para isso, o sistema combina uma carteira centralizada, histórico de atividades, filtros operacionais e indicadores calculados a partir dos registros disponíveis.
 
-Persistência: `supabase/migrations/20261109_003_fila_atendimentos.sql` no Project One. Funções RPC `crm_update_client` e `crm_register_attendance` usam permissões do usuário autenticado (RLS; sem `SECURITY DEFINER`). `npm test` cobre a ordenação, classificação e validação de registro. Fuso: `America/Sao_Paulo`.
+O CRM também permite importar planilhas e consultar informações processuais públicas, respeitando os limites de cada fonte. Não substitui a conferência dos documentos originais nem presume a existência de pagamentos, movimentações ou contatos que não foram confirmados.
 
-## Visual Motion — referências e limites (09/11/2026)
+## Funcionalidades
 
-Visual modernizado com CSS próprio, **sem copiar ou redistribuir** templates/componentes pagos:
+| Área | O que você encontra |
+| --- | --- |
+| **Visão geral** | Indicadores da carteira, gráficos, retornos e acesso rápido aos acompanhamentos. |
+| **Tarefas** | Fila de prioridades, vencimentos, registro de atendimento, edição e histórico de ações. |
+| **Clientes** | Cadastro, busca, filtros, detalhes das negociações e acompanhamento individual. |
+| **Processos** | Cadastro de números CNJ e consultas às fontes públicas DataJud e DJEN, quando disponíveis. |
+| **Finalizados** | Registros encerrados, consulta ao histórico e reabertura justificada. |
+| **Instituições** | Cadastro de financeiras, bancos, assessorias, contatos e imagens institucionais. |
+| **Minhas atividades** | Registro, consulta e edição de atividades, com vínculo opcional a clientes e processos. |
+| **Relatórios** | Resumos operacionais, indicadores por período, exportação e versão preparada para PDF. |
+| **Configurações** | Preferências da conta, senha, foto, temas, cores e imagem de fundo. |
 
-- [Code and Chill](https://codeandchill.store/): linguagem de realce de abas, botões com feedback e microinterações.
-- [CodeXR / Topmate](https://topmate.io/code_xr): transições de navegação e componentes interativos.
-- [Build Index](https://buildindex.dev/): profundidade de cartões e informações operacionais claras em dashboards.
+Além das áreas principais, a aplicação oferece importação de Excel, acompanhamento da origem dos registros e personalização visual. A aparência pode ser alterada sem modificar os dados da carteira.
 
-O design original `app/motion-system.css` mantém vinho/marfim e a navegação única da ProjectW1SC. A animação aparece somente quando há interação ou carregamento: realce da aba ativa, entrada breve da página e das primeiras linhas, hover/foco, formulário/modal, estado de loading. Não usa imagens pesadas, vídeos, dependências extras de animação nem rede externa. Inclui `prefers-reduced-motion: reduce`, foco visível e atalhos de teclado (setas/Home/End) nas abas de fila. Contadores continuam exibindo valores reais, não simulações.
+## Tecnologias utilizadas
 
-Validação: `npm test`, `npm run build` e verificação da implantação da Vercel. O visual no navegador autenticado deve ser conferido com dados reais antes de considerar encerrada a revisão de UX.
+- **Next.js e React:** páginas, componentes e interações do sistema.
+- **Supabase:** banco de dados PostgreSQL, autenticação, políticas de acesso (RLS) e armazenamento privado de arquivos.
+- **JavaScript e CSS:** regras operacionais, gráficos e identidade visual.
+- **Vercel:** hospedagem e publicação da aplicação.
+- **Excel e Google Sheets:** fontes de importação e integração, conforme as permissões e credenciais configuradas.
+- **DataJud e DJEN:** consultas a informações processuais públicas, sujeitas à disponibilidade e às regras das fontes oficiais.
 
-## Conciliação de finalizados e reabertura — 09/11/2026
+## Executar localmente
 
-O CRM agora apresenta **Finalizados** no lugar de **Revisar**. A página só contém acompanhamentos com `workflow_status='finalizado'`, permite buscar, consultar histórico e **Reabrir** após informar um motivo. Os links antigos `/?aba=revisar` e `/revisar` apontam para Finalizados.
+Para trabalhar no projeto, é necessário ter o **Node.js 20 ou superior**, o Git e acesso a um projeto Supabase devidamente configurado.
 
-**Cruzamento privado por CPF/CNPJ:** Google Sheets `QUITAÇÃO - KAWAN 2025` versus cópia Google Sheets autorizada do Excel `Estatistica Quitacao 2025`. Na leitura: 43 documentos distintos em VENCIDOS, 80 em FINALIZADOS, 28 em QUITADOS; 5 aparecem simultaneamente em VENCIDOS e QUITADOS. A aba Excel Quitados tem 29 documentos com status explicitamente `Quitado`, nenhum deles coincidindo com VENCIDOS da planilha principal. Outros estados (`Aproximado`, abas de risco, `QUITAÇÃO IRREVERSIVEL`) **não** confirmam pagamento.
+```bash
+git clone https://github.com/ProjectW1SC/Automation.git
+cd Automation
+npm install
+```
 
-**Banco Project One:** 90 acompanhamentos existentes foram classificados como finalizados com registros de auditoria. O número de datas atrasadas na fila ativa caiu de 113 para 52; 61 datas antigas pertenciam a registros encerrados. Não houve alteração automática de `evidence_status` ou comprovação financeira.
+Crie o arquivo `.env.local` a partir do modelo `.env.example` e preencha **somente as credenciais do seu próprio ambiente**. No Windows, você pode fazer a cópia com:
 
-Migrações `004` e `005` preservam a decisão manual de **Reabrir** (`workflow_override='ativo'`) e classificam futuras importações apenas quando a origem explicitamente sinaliza finalização/quitação. **Reabrir** é uma decisão operacional, não uma reversão da quitação. A importação massiva de novas pessoas fora do banco depende de um canal autorizado para dados pessoais; não inserir CPFs em repositórios públicos.
+```powershell
+Copy-Item .env.example .env.local
+```
 
-A antiga tabela de documentos sem CPF/CNPJ não aparece mais em Finalizados; esses registros permanecem na base privada para eventual reconciliação separada.
+Em seguida, inicie a aplicação:
 
-## Indicadores Efferd e acompanhamento de processos — 09/11/2026
+```bash
+npm run dev
+```
 
-- Os KPIs das abas operacionais seguem a hierarquia visual adaptada de `W1CAPITAL/LexisPredict` / EfferdDashboard. Sem gráficos inventados; a fonte dos valores continua o Supabase. Tons de alerta respeitam os cinco temas.
-- `/processos` reúne os números CNJ cadastrados manualmente e os vinculados a `/minhas-atividades`, sem criar processos fictícios. É possível classificar como processo comum ou busca e apreensão, vincular a um cliente e remover apenas o cadastro manual.
-- A consulta usa **API pública DataJud CNJ** (`https://datajud-wiki.cnj.jus.br/api-publica/`) e **DJEN / Comunica PJe** (`https://comunicaapi.pje.jus.br/api/v1/comunicacao`). O DataJud escolhe o tribunal pelo CNJ; o DJEN pesquisa publicações em um período ajustável. A linha do tempo mostra *DataJud* e *DJEN* separados ou unificados, com datas e títulos originais.
-- O endpoint server-side `/api/processos/consulta` exige JWT válido de usuário administrativo e valida que o CNJ já existe nos registros privados daquele usuário. Não usa `service_role`. DJEN também permite consulta direta ao CNJ pelo navegador quando há bloqueio 403 específico ao datacenter. Erro, ausência de registros e respostas parciais permanecem diferenciados.
-- Não se consulta em lote nem se presume que DataJud/DJEN representem todos os atos do tribunal; dados sigilosos não são acessíveis pela API pública. Somente utilizar e exibir informações públicas de maneira autorizada, conforme as regras do CNJ.
-- A tabela `crm_processes` tem RLS por `actor_id`; vínculos com clientes e atividades são privados. A migração `20261109_012_processos.sql` foi aplicada no projeto Supabase existente.
-- Em Clientes e Instituições, o componente `InstitutionLogo` exibe ícones dos **domínios corporativos verificados**, incluindo bancos, financeiras e assessorias. Cadastros não verificados mantêm identificação neutra, nunca logos de terceiros atribuídos por aproximação.
-- Chave de API: a integração usa `DATAJUD_API_KEY` do servidor, quando configurada, ou a chave **pública** divulgada pelo CNJ. Se a chave pública for alterada, atualize a variável do servidor. Nenhuma credencial de serviço é exposta ao navegador.
+Abra `http://localhost:3000` no navegador. Sem um Supabase configurado e uma conta autorizada, as áreas protegidas não terão acesso aos registros.
 
+### Variáveis de ambiente
+
+O arquivo [`.env.example`](./.env.example) reúne os nomes das configurações utilizadas pelo projeto. Entre as principais estão:
+
+| Variável | Finalidade |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Endereço do projeto Supabase. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública do Supabase, utilizada no navegador em conjunto com RLS. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave privilegiada, restrita ao servidor e a operações autorizadas. |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Credencial de serviço, quando houver integração autorizada com planilhas. |
+| `GOOGLE_SHEETS_IDS` | Identificadores das planilhas permitidas para sincronização. |
+| `CRON_SECRET` | Proteção de chamadas automatizadas, quando configuradas. |
+
+**Importante:** nunca publique arquivos `.env.local`, senhas, tokens ou chaves privilegiadas. Variáveis com o prefixo `NEXT_PUBLIC_` podem ser expostas ao navegador e não devem conter segredos.
+
+## Banco de dados e autenticação
+
+As estruturas e regras do banco estão versionadas em [`supabase/migrations/`](./supabase/migrations). Em uma instalação nova, as migrações precisam ser aplicadas **na ordem correta**, em um projeto Supabase sob seu controle.
+
+O sistema utiliza o Supabase Auth para identificação dos usuários e políticas **Row Level Security (RLS)** para limitar o acesso aos dados. O armazenamento de imagens de perfil, fundos personalizados e imagens de instituições também utiliza áreas privadas do Supabase Storage.
+
+Antes de usar a aplicação com dados reais:
+
+1. Configure a autenticação e as contas que terão permissão de acesso.
+2. Aplique e revise as migrações do banco em um ambiente de teste.
+3. Confirme as políticas RLS e as permissões dos buckets de arquivos.
+4. Verifique os endereços de redirecionamento da autenticação.
+5. Realize um backup antes de migrar ou alterar uma base de produção.
+
+A existência de uma sessão autenticada não deve ser tratada, por si só, como autorização para acessar todos os registros. As permissões precisam ser conferidas também no banco e nas rotas do servidor.
+
+## Estrutura do repositório
+
+```text
+app/
+  page.jsx                 Tela inicial e navegação por abas
+  tarefas/                 Fila de atendimento
+  processos/               Acompanhamento processual
+  minhas-atividades/       Registro de atividades
+  report/                  Relatórios
+  configuracoes/           Preferências e conta
+  api/                     Rotas executadas no servidor
+components/                Elementos compartilhados das telas
+lib/                       Regras, cálculos, integrações e validações
+public/themes/             Identidade visual e imagens dos temas
+supabase/migrations/       Estrutura e regras do banco de dados
+tests/                     Testes automatizados
+```
+
+Algumas áreas, como **Clientes**, **Finalizados** e **Instituições**, compartilham componentes da página inicial. Por isso, nem todas as abas correspondem a uma pasta independente.
+
+Para localizar um ponto específico, comece por [`lib/crm-navigation.mjs`](./lib/crm-navigation.mjs) e [`components/reference-pages.jsx`](./components/reference-pages.jsx).
+
+## Testes e publicação
+
+Antes de publicar uma alteração, execute:
+
+```bash
+npm test
+npm run build
+```
+
+Os testes verificam regras como classificação de prazos, autenticação, tratamento de dados, relatórios e partes da interface. Eles ajudam a identificar problemas, mas não substituem a revisão visual e funcional no navegador.
+
+A publicação é realizada pela **Vercel**, a partir do repositório GitHub conectado ao projeto. Configure as variáveis de ambiente necessárias na plataforma e confira o resultado da implantação antes de considerar uma mudança concluída.
+
+A sincronização com planilhas depende de credenciais válidas e de autorização explícita às fontes. Uma rota de integração presente no código **não significa** que a sincronização automática esteja habilitada ou funcionando continuamente.
+
+## Critérios de operação
+
+O ProjectW1SC foi desenvolvido para manter uma distinção importante entre **informação registrada** e **informação comprovada**.
+
+- Um acompanhamento marcado como finalizado representa o encerramento da rotina operacional; não comprova quitação financeira.
+- Um status importado de planilha não substitui a análise de um comprovante.
+- A ausência de resultados em DataJud ou DJEN não significa necessariamente ausência de movimentações no processo.
+- Ações de atendimento precisam ser registradas com dados reais. O sistema não envia mensagens, e-mails ou ligações automaticamente.
+- Informações parciais ou indisponíveis devem ser apresentadas como tais, sem preenchimento fictício.
+
+Os dados dos clientes pertencem ao ambiente privado de operação. Não inclua informações pessoais, planilhas reais, documentos ou credenciais em commits, exemplos públicos ou solicitações de suporte.
+
+## Evolução do projeto
+
+As melhorias são desenvolvidas de maneira incremental, procurando preservar os dados existentes e manter a operação estável. Correções, novas funcionalidades e ajustes visuais devem passar por revisão, testes e verificação da implantação.
+
+O objetivo do ProjectW1SC é continuar evoluindo como uma ferramenta de trabalho **prática, organizada e confiável**, com atenção à segurança, à rastreabilidade e à experiência de quem utiliza o CRM todos os dias.
