@@ -31,7 +31,7 @@ test('bank brands are known, normalized and do not guess unrelated institutions'
  assert.match(logo,/alt=/);
  const ui=file('components/reference-pages.jsx');
  assert.match(ui,/InstitutionLogo/);
- assert.match(ui,/reference-institution-logo/);
+ assert.match(logo,/reference-institution-logo/);
 });
 
 test('name, photo and password validations reject unsafe input',()=>{
@@ -62,7 +62,8 @@ test('report PDF has dedicated A4 multi-page layout with no fictional numbers',(
  assert.match(css,/@page\s*\{[^}]*A4/s);
  assert.match(css,/page-break-after|break-after/);
  assert.match(css,/print-color-adjust/);
- assert.match(view,/report\.portfolio\.total/);
+ assert.match(view,/const p=report\.portfolio/);
+ assert.match(view,/number\(p\.total\)/);
  assert.match(view,/report\.daily/);
  assert.match(view,/reportHealthNotes/);
  assert.match(view,/Dados restritos/);
