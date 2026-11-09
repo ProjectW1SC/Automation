@@ -261,3 +261,140 @@ html[data-crm-theme="sasuke"][data-crm-background="image"] .app-content{
   background-image:none!important
  }
 }
+
+
+/* PANORAMIC HERO SYSTEM — full-width 1600×320 vector artwork with
+   separate, undistorted character photography from the five supplied screens.
+   No CRM screenshots, dummy rows or raster images are stretched into banners. */
+html[data-crm-theme="naruto"]{
+ --anime-panorama:url('/themes/panorama-naruto.svg');
+ --anime-portrait-size:auto 118%;
+ --anime-portrait-position:74% 50%;
+ --anime-header-scrim:linear-gradient(90deg,#fff5e8 0%,rgba(255,245,232,.96) 24%,rgba(255,245,232,.42) 44%,transparent 66%);
+}
+html[data-crm-theme="sasuke"]{
+ --anime-panorama:url('/themes/panorama-sasuke.svg');
+ --anime-portrait-size:auto 120%;
+ --anime-portrait-position:75% 50%;
+ --anime-header-scrim:linear-gradient(90deg,#090b1b 0%,rgba(9,11,27,.94) 25%,rgba(9,11,27,.60) 42%,transparent 69%);
+}
+/* The full-bleed panorama fills *all* of the area, even on ultrawide displays.
+   Only the original character crops use a height-based size: no deformation. */
+html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero),
+html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero){
+ position:relative!important;
+ isolation:isolate;
+ overflow:hidden!important;
+ min-height:210px!important;
+ background-color:var(--ui-page)!important;
+ background-image:var(--anime-header-scrim),var(--anime-panorama)!important;
+ background-size:100% 100%,cover!important;
+ background-position:center,center!important;
+ background-repeat:no-repeat!important;
+ border:1px solid var(--ui-border)!important;
+ border-radius:17px!important;
+ box-shadow:0 9px 26px color-mix(in srgb,var(--ui-nav) 15%,transparent)!important;
+}
+/* The source portraits are NOT upscaled to the full screen and have soft
+   feathered edges; UI controls remain real HTML in the foreground. */
+html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before,
+html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ z-index:0;
+ pointer-events:none;
+ background-image:var(--anime-hero);
+ background-size:var(--anime-portrait-size);
+ background-position:var(--anime-portrait-position);
+ background-repeat:no-repeat;
+ opacity:.87;
+ -webkit-mask-image:linear-gradient(90deg,transparent 35%,#000 54%,#000 83%,transparent 99%);
+ mask-image:linear-gradient(90deg,transparent 35%,#000 54%,#000 83%,transparent 99%);
+}
+html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)>*,
+html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)>*{
+ position:relative;
+ z-index:1;
+}
+/* The sidebar gets the same continuous panorama, with its original landscape
+   maintained as a separate proportional vignette rather than stretched. */
+html[data-crm-theme="naruto"] .app-sidebar,
+html[data-crm-theme="sasuke"] .app-sidebar{
+ background-color:var(--ui-nav)!important;
+ background-image:linear-gradient(180deg,rgba(5,5,12,.66),rgba(5,5,12,.20) 43%,rgba(5,5,12,.8)),var(--anime-side),var(--anime-panorama)!important;
+ background-size:100% 100%,100% auto,cover!important;
+ background-position:center,center 69%,center!important;
+ background-repeat:no-repeat!important;
+}
+html[data-crm-theme="naruto"] .sidebar-collapsed .app-sidebar,
+html[data-crm-theme="sasuke"] .sidebar-collapsed .app-sidebar{
+ background-size:100% 100%,auto 39%,cover!important;
+ background-position:center,center 69%,center!important;
+}
+/* Preserve the per-screen source crops, with the main panoramic background
+   shared by overview, tasks, clients, processes, reports, activities and setup. */
+html[data-crm-theme="naruto"] .reference-dashboard[data-crm-area="overview"],
+html[data-crm-theme="sasuke"] .reference-dashboard[data-crm-area="overview"]{--anime-portrait-position:75% center}
+html[data-crm-theme="naruto"] .reference-dashboard[data-crm-area="clients"],
+html[data-crm-theme="sasuke"] .reference-dashboard[data-crm-area="clients"]{--anime-portrait-position:77% center}
+html[data-crm-theme="naruto"] .reference-dashboard[data-crm-area="finalized"],
+html[data-crm-theme="sasuke"] .reference-dashboard[data-crm-area="finalized"]{--anime-portrait-position:77% center}
+html[data-crm-theme="naruto"] .reference-dashboard[data-crm-area="institutions"],
+html[data-crm-theme="sasuke"] .reference-dashboard[data-crm-area="institutions"]{--anime-portrait-position:77% center}
+html[data-crm-theme="naruto"] .reference-activities,
+html[data-crm-theme="sasuke"] .reference-activities{--anime-portrait-position:77% center}
+html[data-crm-theme="naruto"] .processes-dashboard,
+html[data-crm-theme="sasuke"] .processes-dashboard{--anime-portrait-position:77% center}
+html[data-crm-theme="naruto"] .settings-dashboard,
+html[data-crm-theme="sasuke"] .settings-dashboard{--anime-portrait-position:77% center}
+/* Reports includes a second executive hero; it remains navigable and readable. */
+html[data-crm-theme="naruto"] .report-dashboard .report-executive-hero,
+html[data-crm-theme="sasuke"] .report-dashboard .report-executive-hero{min-height:240px!important}
+html[data-crm-theme="naruto"] .report-dashboard .report-executive-hero{
+ --anime-header-scrim:linear-gradient(90deg,#2c1b19 0%,rgba(44,27,25,.94) 32%,rgba(44,27,25,.20) 70%,transparent 99%);
+ color:#fff4dd!important;
+}
+html[data-crm-theme="sasuke"] .report-dashboard .report-executive-hero{
+ --anime-header-scrim:linear-gradient(90deg,#090b1b 0%,rgba(9,11,27,.90) 43%,rgba(9,11,27,.20) 82%,transparent 99%);
+ color:#f2f0ff!important;
+}
+@media(max-width:1100px){
+ html[data-crm-theme="naruto"],html[data-crm-theme="sasuke"]{
+  --anime-portrait-size:auto 108%;
+  --anime-portrait-position:79% center;
+ }
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header),
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header){
+  min-height:195px!important;
+ }
+}
+@media(max-width:750px){
+ html[data-crm-theme="naruto"],html[data-crm-theme="sasuke"]{
+  --anime-portrait-size:auto 93%;
+  --anime-portrait-position:right -55px center;
+ }
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero),
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero){
+  padding:20px 16px!important;
+  min-height:185px!important;
+  background-size:100% 100%,cover!important;
+  background-position:center,72% center!important;
+ }
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before,
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before{
+  opacity:.38;
+  -webkit-mask-image:linear-gradient(90deg,transparent 13%,#000 67%);
+  mask-image:linear-gradient(90deg,transparent 13%,#000 67%);
+ }
+ html[data-crm-theme="naruto"] .reference-header p,
+ html[data-crm-theme="sasuke"] .reference-header p{max-width:100%}
+}
+@media print{
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero),
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero){
+  background-image:none!important;box-shadow:none!important
+ }
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before,
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before{display:none!important}
+}

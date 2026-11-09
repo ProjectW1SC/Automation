@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="320" viewBox="0 0 1600 320" role="img" aria-label="Paisagem panorâmica noturna com relâmpagos e montanhas">
+<defs>
+ <linearGradient id="sky" x1="0" y1=".4" x2="1" y2=".65"><stop offset="0" stop-color="#090b1c"/><stop offset=".30" stop-color="#11112b"/><stop offset=".62" stop-color="#211744"/><stop offset="1" stop-color="#0b0e25"/></linearGradient>
+ <radialGradient id="aurora"><stop stop-color="#7049c9" stop-opacity=".64"/><stop offset=".44" stop-color="#44368c" stop-opacity=".24"/><stop offset="1" stop-color="#231348" stop-opacity="0"/></radialGradient>
+ <radialGradient id="energy"><stop stop-color="#82cfff" stop-opacity=".66"/><stop offset=".28" stop-color="#4c67ff" stop-opacity=".28"/><stop offset="1" stop-color="#6942d0" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="46" height="46" patternUnits="userSpaceOnUse"><path d="M46 0H0V46" fill="none" stroke="#ac91fd" opacity=".055"/></pattern>
+ <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6852a1" stop-opacity=".26"/><stop offset="1" stop-color="#07091a" stop-opacity=".7"/></linearGradient>
+</defs>
+<rect width="1600" height="320" fill="url(#sky)"/>
+<rect width="1600" height="320" fill="url(#grid)"/>
+<ellipse cx="1115" cy="120" rx="510" ry="350" fill="url(#aurora)"/>
+<ellipse cx="1170" cy="84" rx="340" ry="290" fill="url(#energy)"/>
+<path d="M0 315 600 310 738 244 825 284 934 204 1040 277 1169 178 1260 257 1344 183 1468 255 1600 160V320H0Z" fill="url(#haze)"/>
+<path d="M650 320 818 273 900 302 1018 254 1123 301 1260 251 1417 298 1600 240V320Z" fill="#060a1b" opacity=".54"/>
+<g fill="none" stroke="#ab91ff" opacity=".16"><circle cx="1418" cy="153" r="195" stroke-width="5"/><circle cx="1418" cy="153" r="147" stroke-width="4"/><circle cx="1418" cy="153" r="100" stroke-width="4"/><circle cx="1418" cy="153" r="50" stroke-width="4"/><circle cx="1418" cy="153" r="16" fill="#a48bff" fill-opacity=".24"/></g>
+<g fill="#a88dff" opacity=".22"><circle cx="1418" cy="67" r="9"/><circle cx="1342" cy="202" r="9"/><circle cx="1503" cy="214" r="9"/></g>
+<path d="m904 0 68 56-34 17 83 47-21 29 102-5-44 33 119-4-52 20 154-6-83 30" stroke="#0a1638" stroke-width="18" fill="none" stroke-linecap="round" opacity=".68"/>
+<path d="m974 4 89 74-37 9 109 42-38 30 126-16-70 37 138 9-57 17 154-34-40 28" stroke="#92baff" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round" opacity=".95"/>
+<path d="m974 4 89 74-37 9 109 42-38 30 126-16-70 37 138 9" stroke="#e1f6ff" stroke-width="1.4" fill="none" stroke-linejoin="round" opacity=".96"/>
+<path d="M1121 130 1086 182l52-13-40 43" stroke="#80a8ff" stroke-width="2.5" fill="none" opacity=".56"/>
+<path d="M1310 18 1267 64l24 17-47 41" stroke="#7d7bff" stroke-width="2" fill="none" opacity=".38"/>
+<path d="M10 19h550M0 296h650M1074 25h500" stroke="#9e88fc" stroke-opacity=".17" stroke-width="2"/>
+<g fill="none" stroke="#9d88e1" opacity=".22" stroke-width="3"><path d="M50 76c91-46 187-7 276-26"/><path d="M200 115c79-29 130-3 202-37"/></g>
+</svg>
