@@ -1,8 +1,8 @@
 'use client';
-import {ClipboardList,LayoutDashboard,Users,AlertCircle,Landmark,LogOut,KeyRound} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 
-const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Revisar':AlertCircle,'Instituições':Landmark};
+const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark};
 export default function CrmShell({active='Visão geral',email='',onNavigate,onSignOut,onPassword,children}){
  return <div className="app-shell">
   <aside className="app-sidebar">
