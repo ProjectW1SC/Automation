@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Activity,AlertTriangle,BarChart3,BriefcaseBusiness,CalendarDays,CheckCircle2,ChevronRight,Clock3,Download,FileCheck2,FileText,Filter,Loader2,LockKeyhole,Printer,Eye,RefreshCw,ShieldCheck,Users,Wallet} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
@@ -60,14 +61,20 @@ function exportAggregate(report){
 }
 function ReportLogin({db,onLogged}){
  const [password,setPassword]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
- return <main className="reference-auth"><div className="reference-auth-card">
-  <div className="reference-overline">PROJECTW1SC / ÁREA RESTRITA</div><h1>Relatórios</h1><p>Entre para acessar os números da carteira e o histórico operacional.</p>
-  <form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{const {session}=await signInWithPassword(db.auth,password);setPassword('');onLogged(session)}catch(e){setError(e.message||'Não foi possível entrar.')}finally{setBusy(false)}}}>
-   <input readOnly type="email" aria-label="E-mail autorizado" value={ADMIN_EMAIL}/>
-   <input type="password" required minLength={8} autoComplete="current-password" aria-label="Senha do CRM" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha"/>
-   <button disabled={busy} type="submit" className="reference-primary"><LockKeyhole size={16}/> Entrar no CRM</button>
-  </form>{error&&<p role="alert" className="error">{error}</p>}<a href="/">Voltar ao CRM</a>
- </div></main>;
+ async function login(e){
+  e.preventDefault();setBusy(true);setError('');
+  try{const {session}=await signInWithPassword(db.auth,password);setPassword('');onLogged(session)}
+  catch(e){setError(e.message||'Não foi possível entrar.')}
+  finally{setBusy(false)}
+ }
+ return <ProfessionalAuth eyebrow="INTELIGÊNCIA OPERACIONAL" title="Acesse relatórios" description="Indicadores, resultados e atividades organizados em um ambiente protegido.">
+  <form className="w1-auth-form" onSubmit={login}>
+   <label className="w1-auth-label" htmlFor="report-user">Conta autorizada</label><input id="report-user" readOnly type="email" autoComplete="username" value={ADMIN_EMAIL}/>
+   <label className="w1-auth-label" htmlFor="report-pass">Senha de acesso</label><input id="report-pass" type="password" required minLength={8} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/>
+   <button disabled={busy} className="w1-auth-submit">{busy?'Verificando acesso...':'Entrar nos relatórios'}</button>
+  </form>{error&&<p role="alert" className="w1-auth-feedback error">{error}</p>}
+  <a href="/" className="w1-auth-back">Voltar ao CRM ou recuperar senha</a>
+ </ProfessionalAuth>;
 }
 export default function ReportPage(){
  const db=useMemo(()=>getClient(),[]);

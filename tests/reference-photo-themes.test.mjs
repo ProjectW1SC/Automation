@@ -35,7 +35,7 @@ test('all anime areas render actual source image crops with page-specific banner
 test('theme logos are cropped from the user references, not generated monograms',()=>{
  const shell=text('components/crm-shell.jsx');
  const css=text('app/anime-themes.css');
- assert.match(shell,/app-brand-monogram/);
+ assert.match(shell,/app-brand-compact/);assert.match(shell,/app-brand-full/);
  assert.match(css,/reference-naruto-mark\.webp/);
  assert.match(css,/reference-sasuke-mark\.webp/);
 });

@@ -93,8 +93,10 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     }}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
-    <img className="app-brand-monogram" src="/themes/projectw1sc-mark.svg" alt="Logo ProjectW1SC" width="70" height="70"/>
-    <strong>PROJECT<span>W1SC</span></strong><small>NEGOCIAÇÕES · CRM</small>
+    <a className="app-brand-link" href="/" aria-label="ProjectW1SC — Ir à visão geral" title="Ir à visão geral">
+     <img className="app-brand-compact" src="/branding/projectw1sc-symbol.svg" alt="" width="54" height="58"/>
+     <img className="app-brand-full" src="/branding/projectw1sc-wordmark.svg" alt="" width="202" height="65"/>
+    </a>
    </div>
    <div className="app-mobile-account">
     {onPassword?<button type="button" onClick={onPassword} aria-label="Alterar senha"><KeyRound size={16}/></button>:<a href="/?senha=1" aria-label="Alterar senha"><KeyRound size={16}/></a>}

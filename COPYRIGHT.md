@@ -1,9 +1,7 @@
-# Direitos autorais — ProjectW1SC
+# Direitos autorais e licença
 
-© 2026 W1 Capital. Todos os direitos reservados.
+© 2026 W1 Capital.
 
-A W1 Capital detém os direitos sobre o código e a documentação de autoria própria do ProjectW1SC. A publicação deste repositório não representa uma licença de uso, reprodução, redistribuição ou exploração comercial.
+O **código-fonte** original do ProjectW1SC é disponibilizado sob a [Licença MIT](./LICENSE). Essa licença permite uso, modificação, redistribuição e utilização comercial do software, desde que seu aviso de copyright e termos sejam preservados.
 
-Dependências de software, marcas comerciais, imagens e outros materiais de terceiros continuam regidos pelos respectivos direitos e termos de uso. Este aviso não reivindica titularidade sobre esses materiais.
-
-Para solicitar autorização de uso, entre em contato com a W1 Capital por seus canais oficiais.
+A identidade visual, os logotipos ProjectW1SC/W1 Capital, as marcas de terceiros e quaisquer imagens de personagens protegidos por direitos autorais não são automaticamente licenciados pelo MIT apenas por estarem no repositório. Consulte os respectivos direitos e autorizações antes de reutilizar essas peças.

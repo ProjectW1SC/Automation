@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Activity,ArrowLeft,CalendarDays,CheckCircle2,Clock3,Download,FileClock,History,Loader2,Play,Plus,RefreshCw,Search,Square,UserRound,Users,ShieldCheck,FileText,Pencil,Trash2} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
@@ -131,9 +132,19 @@ export default function MinhasAtividades(){
  }
  if(!db)return <main className="reference-auth"><h1>CRM em configuração</h1><p>Configuração de acesso não encontrada.</p></main>;
  if(checking)return <main className="reference-auth"><Loader2 size={24} className="task-spin"/> Verificando acesso...</main>;
- if(!session)return <main className="reference-auth"><div className="reference-auth-card"><h1>Minhas atividades</h1><p>Entre com seu acesso ProjectW1SC.</p><form onSubmit={async e=>{
-  e.preventDefault();setBusy(true);try{const {session:s}=await signInWithPassword(db.auth,password);setSession(s);setNotice('')}catch(err){setNotice(err.message)}finally{setBusy(false)}
- }}><input type="email" readOnly value={ADMIN_EMAIL} aria-label="E-mail"/><input type="password" minLength={8} required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha"/><button type="submit" disabled={busy} className="reference-primary">Entrar</button></form>{notice&&<p role="alert">{notice}</p>}<a href="/"><ArrowLeft size={15}/> Voltar ao CRM</a></div></main>;
+ if(!session)return <ProfessionalAuth eyebrow="REGISTRO DE ATIVIDADES" title="Minhas atividades" description="Acesse seus registros, acompanhe o trabalho realizado e organize seu histórico.">
+  <form className="w1-auth-form" onSubmit={async e=>{
+   e.preventDefault();setBusy(true);setNotice('');
+   try{const {session:s}=await signInWithPassword(db.auth,password);setSession(s)}
+   catch(err){setNotice(err.message)}
+   finally{setBusy(false)}
+  }}>
+   <label className="w1-auth-label" htmlFor="activities-user">Conta autorizada</label><input id="activities-user" type="email" readOnly autoComplete="username" value={ADMIN_EMAIL}/>
+   <label className="w1-auth-label" htmlFor="activities-pass">Senha de acesso</label><input id="activities-pass" type="password" minLength={8} required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/>
+   <button type="submit" disabled={busy} className="w1-auth-submit">{busy?'Verificando acesso...':'Entrar nas atividades'}</button>
+  </form>{notice&&<p className="w1-auth-feedback error" role="alert">{notice}</p>}
+  <a className="w1-auth-back" href="/">Voltar ao CRM ou recuperar senha</a>
+ </ProfessionalAuth>;
  if(session.user.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth"><p>Conta não autorizada neste CRM.</p><button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  return <CrmShell active="Minhas atividades" email={session.user.email||''} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard reference-activities">
