@@ -6,7 +6,7 @@ import {CRM_AREAS,crmAreaHref} from '../lib/crm-navigation.mjs';
 const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('minhas atividades has dedicated navigation within one CRM',()=>{
- assert.deepEqual(CRM_AREAS.map(a=>a.label),['Visão geral','Tarefas','Clientes','Finalizados','Instituições','Minhas atividades']);
+ assert.deepEqual(CRM_AREAS.map(a=>a.label),['Visão geral','Tarefas','Clientes','Finalizados','Instituições','Minhas atividades','Relatórios']);
  assert.equal(crmAreaHref('Minhas atividades'),'/minhas-atividades');
  const shell=file('components/crm-shell.jsx');
  assert.match(shell,/PROJECT<span>W1SC/);

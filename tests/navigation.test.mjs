@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {CRM_AREAS,crmAreaHref,areaFromQuery} from '../lib/crm-navigation.mjs';
 
 test('uma única navegação, com Tarefas como aba de primeiro nível',()=>{
- assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Finalizados','Instituições','Minhas atividades']);
+ assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Finalizados','Instituições','Minhas atividades','Relatórios']);
  assert.equal(CRM_AREAS.filter(x=>x.label==='Tarefas').length,1);
  assert.equal(crmAreaHref('Tarefas'),'/tarefas');
  assert.equal(crmAreaHref('Clientes'),'/?aba=clientes');
