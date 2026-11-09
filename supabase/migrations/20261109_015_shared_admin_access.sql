@@ -14,9 +14,11 @@ revoke all on crm_internal.pending_users from public, anon, authenticated;
 create or replace function crm_internal.sync_invited_user()
 returns trigger language plpgsql security definer set search_path='' as $$
 begin
- if tg_op='UPDATE' and lower(coalesce(old.email,'')) is distinct from lower(coalesce(new.email,''))
+ if tg_op='UPDATE' then
+  if lower(coalesce(old.email,'')) is distinct from lower(coalesce(new.email,''))
     and exists(select 1 from crm_internal.pending_users p where p.email=lower(old.email)) then
-  update public.crm_memberships set enabled=false where user_id=new.id;
+   update public.crm_memberships set enabled=false where user_id=new.id;
+  end if;
  end if;
  if new.email_confirmed_at is not null then
   insert into public.crm_memberships (user_id,role,enabled)
