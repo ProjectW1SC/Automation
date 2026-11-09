@@ -43,3 +43,15 @@ Acesse `/tarefas` após entrar com a conta autorizada. A central operacional é 
 - **Histórico**: mostra atendimentos, alterações e finalizações; não envia WhatsApp, ligações ou e-mails automaticamente.
 
 Persistência: `supabase/migrations/20261109_003_fila_atendimentos.sql` no Project One. Funções RPC `crm_update_client` e `crm_register_attendance` usam permissões do usuário autenticado (RLS; sem `SECURITY DEFINER`). `npm test` cobre a ordenação, classificação e validação de registro. Fuso: `America/Sao_Paulo`.
+
+## Visual Motion — referências e limites (09/11/2026)
+
+Visual modernizado com CSS próprio, **sem copiar ou redistribuir** templates/componentes pagos:
+
+- [Code and Chill](https://codeandchill.store/): linguagem de realce de abas, botões com feedback e microinterações.
+- [CodeXR / Topmate](https://topmate.io/code_xr): transições de navegação e componentes interativos.
+- [Build Index](https://buildindex.dev/): profundidade de cartões e informações operacionais claras em dashboards.
+
+O design original `app/motion-system.css` mantém vinho/marfim e a navegação única da ProjectW1SC. A animação aparece somente quando há interação ou carregamento: realce da aba ativa, entrada breve da página e das primeiras linhas, hover/foco, formulário/modal, estado de loading. Não usa imagens pesadas, vídeos, dependências extras de animação nem rede externa. Inclui `prefers-reduced-motion: reduce`, foco visível e atalhos de teclado (setas/Home/End) nas abas de fila. Contadores continuam exibindo valores reais, não simulações.
+
+Validação: `npm test`, `npm run build` e verificação da implantação da Vercel. O visual no navegador autenticado deve ser conferido com dados reais antes de considerar encerrada a revisão de UX.
