@@ -87,7 +87,7 @@ export default function ReportPage(){
   const [c,a,m]=await Promise.all([
    db.from('crm_clients').select('id,name,assigned_to,consultant,workflow_status,next_return,due_override,finished_at,source_conflict,source_status,evidence_status,priority_level').order('created_at').limit(1000),
    db.from('crm_activities').select('id,client_id,actor_id,kind,created_at').gte('created_at',prev+'T00:00:00Z').order('created_at',{ascending:false}).limit(1000),
-   db.from('crm_completed_activities').select('id,actor_id,client_id,category,performed_on,contact_confirmed,duration_seconds,origin').gte('performed_on',bounds.start).lt('performed_on',bounds.endExclusive).order('performed_on',{ascending:false}).limit(1000)
+   db.from('crm_completed_activities').select('id,actor_id,client_id,category,performed_on,contact_confirmed,duration_seconds,origin').is('deleted_at',null).gte('performed_on',bounds.start).lt('performed_on',bounds.endExclusive).order('performed_on',{ascending:false}).limit(1000)
   ]);
   const errors=[c,a,m].map((x,i)=>x.error?[['Clientes','Atendimentos','Atividades'][i],x.error.message]:null).filter(Boolean);
   setClients(c.error?[]:c.data||[]);setAudit(a.error?[]:a.data||[]);setManual(m.error?[]:m.data||[]);
