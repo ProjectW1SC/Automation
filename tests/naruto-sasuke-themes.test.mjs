@@ -24,8 +24,8 @@ test('Naruto and Sasuke apply globally without replacing live CRM pages',()=>{
  const layout=file('app/layout.jsx');
  for(const id of ['naruto','sasuke']){
   assert.match(css,new RegExp('data-crm-theme="'+id+'"'));
-  assert.ok(existsSync(new URL('public/themes/'+id+'-hero.svg',root)));
-  assert.ok(existsSync(new URL('public/themes/'+id+'-sidebar.svg',root)));
+  assert.ok(existsSync(new URL('public/themes/reference-'+id+'-overview.webp',root)));
+  assert.ok(existsSync(new URL('public/themes/reference-'+id+'-sidebar.webp',root)));
  }
  assert.match(css,/\.reference-header/);
  assert.match(css,/\.task-header/);
@@ -37,12 +37,15 @@ test('Naruto and Sasuke apply globally without replacing live CRM pages',()=>{
  assert.match(layout,/anime-themes\.css/);
 });
 
-test('ProjectW1SC has a distinct scalable brand mark with a theme-aware logo',()=>{
+test('ProjectW1SC preserves a default brand and shows genuine themed marks from the references',()=>{
  assert.ok(existsSync(new URL('public/themes/projectw1sc-mark.svg',root)));
  const logo=file('public/themes/projectw1sc-mark.svg');
  const shell=file('components/crm-shell.jsx');
  assert.match(logo,/<svg/);assert.match(logo,/W1SC/);
  assert.match(shell,/projectw1sc-mark\.svg/);
+ for(const theme of ['naruto','sasuke'])assert.ok(existsSync(new URL('public/themes/reference-'+theme+'-mark.webp',root)));
+ const animeCss=file('app/anime-themes.css');
+ assert.match(animeCss,/reference-naruto-mark\.webp/);assert.match(animeCss,/reference-sasuke-mark\.webp/);
 });
 
 test('Bank and finance company fallback marks use approved distinctive styling, not broken remote images',()=>{

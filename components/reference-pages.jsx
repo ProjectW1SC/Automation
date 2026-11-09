@@ -34,7 +34,7 @@ function Pager({page,pages,count,size,onPage}){
 function ClientName({client}){return <div className="reference-client-name"><span className="reference-avatar">{initial(client.name)}</span><b>{client.name}</b></div>}
 function Overview({clients,kpis,last,updated,onGo,onSelectClient,onRefresh,onImport,busy,partyLogos={}}){
  const today=todayBrazil();const preview=clients.filter(c=>c.workflow_status!=='finalizado').slice(0,3);
- return <main className="reference-dashboard">
+ return <main className="reference-dashboard" data-crm-area="overview">
   <Header page="Visão geral" subtitle="Negociações, contatos e comprovação de quitações em um só lugar." actions={<><Action primary icon={Activity} onClick={()=>onGo('Tarefas')}>Abrir fila de tarefas</Action><Action icon={RefreshCw} onClick={onRefresh} disabled={busy}>Atualizar</Action><Action icon={Download} onClick={onImport} disabled={busy}>Importar Excel</Action></>}/>
   <div className="reference-notice"><AlertTriangle size={19}/><span><b>Sincronização: {last?.status==='concluido'?'concluída':'parcial ou pendente'}.</b> {last?.status==='concluido'?'Consulte a data da última importação.':'Confira as fontes e credenciais antes de utilizar registros não verificados.'}</span></div>
   <div className="reference-metrics">
@@ -67,7 +67,7 @@ function Clients({clients,kpis,onGo,onSelectClient,onRefresh,onCreate,busy,party
  const pages=Math.max(1,Math.ceil(list.length/8)),page=Math.min(p,pages),rows=list.slice((page-1)*8,page*8);
  const focus=list.find(c=>c.id===focused)||rows[0]||null;
  const filterSet=(fn,value)=>{fn(value);setP(1)};
- return <main className="reference-dashboard">
+ return <main className="reference-dashboard" data-crm-area="clients">
   <Header page="Clientes" subtitle="Gerencie a carteira de clientes e acompanhe os detalhes das negociações." actions={<><Action primary icon={Plus} onClick={onCreate}>Novo registro</Action><Action icon={RefreshCw} onClick={onRefresh} disabled={busy}>Atualizar</Action><Action icon={Download} disabled={list.length===0} onClick={()=>downloadCsv('projectw1sc-clientes.csv',['Cliente','Financeira','Situação','Próximo retorno','Consultor','Contato'],list.map(c=>[c.name,c.institution,getStatus(c,today).label,dueDate(c)||'',c.consultant,c.phone]))}>Exportar</Action></>}/>
   <div className="reference-notice"><ShieldCheck size={18}/><span>Mantenha a carteira atualizada e registre os retornos das negociações para uma gestão mais eficiente.</span></div>
   <div className="reference-metrics reference-metrics-4">
@@ -112,7 +112,7 @@ function Finished({clients,onSelectClient,onReopen,onRefresh,busy}){
  const list=useMemo(()=>close.filter(c=>(origin==='todas'||(c.closure_source||c.source_tab)===origin)&&(!q.trim()||[c.name,c.institution,c.source_tab,c.closure_source].some(x=>txt(x).toLocaleLowerCase('pt-BR').includes(q.toLocaleLowerCase('pt-BR').trim())))).sort((a,b)=>order==='recentes'?String(b.finished_at||'').localeCompare(String(a.finished_at||'')):String(a.finished_at||'').localeCompare(String(b.finished_at||''))),[close,q,origin,order]);
  const pages=Math.max(1,Math.ceil(list.length/8)),page=Math.min(p,pages),rows=list.slice((page-1)*8,page*8);
  const month=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}).slice(0,7);
- return <main className="reference-dashboard">
+ return <main className="reference-dashboard" data-crm-area="finalized">
   <Header page="Finalizados" subtitle="Área que contém apenas acompanhamentos encerrados ou concluídos." actions={<><Action icon={RefreshCw} onClick={onRefresh} disabled={busy}>Atualizar</Action><Action primary icon={Download} disabled={list.length===0} onClick={()=>downloadCsv('projectw1sc-finalizados.csv',['Cliente','Instituição','Data de encerramento','Origem','Situação'],list.map(x=>[x.name,x.institution,x.finished_at?.slice(0,10)||'',x.closure_source||x.source_tab,'Finalizado']))}>Exportar lista</Action></>}/>
   <div className="reference-metrics reference-metrics-4">
    <Kpi icon={CheckCircle2} title="Total finalizados" value={close.length} sub="Acompanhamentos encerrados"/>
@@ -135,7 +135,7 @@ function Institutions({parties,onRefresh,onCreate,onEditInstitution,partyLogos={
  const items=useMemo(()=>parties.filter(x=>(kind==='todas'||x.kind===kind)&&(!q.trim()||[x.name,x.kind,x.contact].some(v=>txt(v).toLocaleLowerCase('pt-BR').includes(q.toLocaleLowerCase('pt-BR').trim())))),[parties,kind,q]);
  const pages=Math.max(1,Math.ceil(items.length/12)),page=Math.min(p,pages),rows=items.slice((page-1)*12,page*12);
  const kinds=[...new Set(parties.map(x=>x.kind).filter(Boolean))].sort();
- return <main className="reference-dashboard">
+ return <main className="reference-dashboard" data-crm-area="institutions">
   <Header page="Instituições" subtitle="Instituições financeiras, assessorias e contatos vinculados ao CRM." actions={<><Action icon={Plus} primary onClick={onCreate}>Nova instituição</Action><Action icon={RefreshCw} disabled={busy} onClick={onRefresh}>Atualizar</Action></>}/>
   <div className="reference-notice"><AlertTriangle size={19}/><span>Confira os contatos de cada instituição antes de utilizá-los em uma negociação.</span></div>
   <div className="reference-metrics reference-metrics-4">
