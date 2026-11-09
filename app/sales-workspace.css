@@ -1,0 +1,64 @@
+
+/* ProjectW1SC operational contact queue — two-pane Salesforce-inspired workspace. */
+.sales-workspace{display:grid;grid-template-columns:minmax(270px,1.08fr) minmax(355px,1.12fr);align-items:start;gap:13px;padding:16px;background:var(--ui-page)}
+.sales-queue{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:14px;min-width:0;max-height:calc(100vh - 174px);overflow-y:auto;scrollbar-width:thin}
+.sales-queue-heading{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--ui-surface);padding:15px 16px;border-bottom:1px solid var(--ui-border)}
+.sales-queue-heading span{font-size:10px!important;font-weight:850;letter-spacing:1.5px;color:var(--ui-tertiary,var(--ui-muted))!important}
+.sales-queue-heading strong{font-size:11px;color:var(--ui-ink)!important}
+.sales-contact-card{width:100%;display:flex;align-items:flex-start;gap:11px;text-align:left;min-width:0;background:var(--ui-surface)!important;color:var(--ui-ink)!important;border:0;border-bottom:1px solid var(--ui-border);border-left:3px solid transparent;padding:14px 12px;cursor:pointer;transition:background .16s,border-color .16s}
+.sales-contact-card:last-child{border-bottom:0}
+.sales-contact-card:hover{background:var(--ui-tint)!important}
+.sales-contact-card.selected{background:var(--ui-tint)!important;border-left-color:var(--ui-accent)!important}
+.sales-contact-card.overdue:not(.selected){border-left-color:var(--ui-danger-ink)}
+.sales-contact-index{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:9px;background:var(--ui-tint);color:var(--ui-tint-ink)!important;font-size:11px!important;font-weight:800}
+.sales-contact-body{flex:1;min-width:0}
+.sales-contact-name{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.sales-contact-name>strong{font-size:13px;color:var(--ui-ink)!important;overflow-wrap:anywhere}
+.sales-contact-body>p{font-size:11px;color:var(--ui-muted)!important;margin:6px 0 8px!important;line-height:1.4}
+.sales-contact-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.sales-contact-meta>span{display:inline-flex;align-items:center;gap:5px;font-size:10px!important;color:var(--ui-muted)!important}
+.sales-contact-chevron{color:var(--ui-accent);flex:none;margin:auto 0}
+.sales-contact-focus{position:sticky;top:17px;min-width:0;background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:15px;padding:22px;box-shadow:0 11px 27px #27102110}
+.sales-focus-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 18px}
+.sales-focus-top span:first-child{font-size:10px!important;font-weight:850;color:var(--ui-accent)!important;letter-spacing:1.4px}
+.sales-focus-top span:last-child{font-size:11px!important;color:var(--ui-muted)!important}
+.sales-focus-person{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--ui-border);padding-bottom:17px}
+.sales-focus-avatar{width:47px;height:47px;flex:none;border-radius:14px;display:grid;place-items:center;background:var(--ui-tint);color:var(--ui-tint-ink);font:800 24px Georgia,serif}
+.sales-focus-person>div:last-child{min-width:0}
+.sales-focus-person h3{margin:0 0 8px!important;font:700 23px Georgia,serif;color:var(--ui-ink)!important;overflow-wrap:anywhere}
+.sales-focus-tags{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sales-criticality{border-radius:100px;border:1px solid var(--ui-border);padding:5px 8px;font-size:10px!important;font-weight:750;color:var(--ui-neutral-ink)!important;background:var(--ui-neutral-bg)}
+.sales-criticality.alta{background:var(--ui-warning-bg);color:var(--ui-warning-ink)!important}
+.sales-criticality.urgente{background:var(--ui-danger-bg);color:var(--ui-danger-ink)!important}
+.sales-focus-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;padding:19px 0;border-bottom:1px solid var(--ui-border)}
+.sales-focus-info>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sales-focus-info span{font-size:10px!important;color:var(--ui-tertiary,var(--ui-muted))!important;font-weight:650}
+.sales-focus-info strong,.sales-focus-info a{font-size:12px!important;color:var(--ui-ink)!important;font-weight:750;overflow-wrap:anywhere}
+.sales-focus-info a{text-decoration:underline;text-decoration-color:var(--ui-border)}
+.sales-focus-note{background:var(--ui-tint);color:var(--ui-tint-ink);padding:14px 15px;border-radius:11px;margin-top:14px}
+.sales-focus-note>div{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:var(--ui-tint-ink)}
+.sales-focus-note p{font-size:11px!important;line-height:1.6;margin:6px 0 0!important;color:var(--ui-tint-ink)!important;white-space:pre-line;overflow-wrap:anywhere}
+.sales-contact-checklist{margin:18px 0;padding:0 3px}
+.sales-contact-checklist h4{font-size:12px;color:var(--ui-ink);margin:0 0 10px}
+.sales-contact-checklist p{display:flex;align-items:baseline;gap:11px;font-size:11px!important;color:var(--ui-muted)!important;margin:7px 0!important;line-height:1.4}
+.sales-contact-checklist p span{font-size:11px!important;color:var(--ui-accent)!important;font-weight:900}
+.sales-focus-actions{display:grid;gap:9px;margin-top:20px}
+.sales-focus-actions>.task-button-primary{width:100%;min-height:43px;font-size:12px}
+.sales-focus-secondary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sales-focus-secondary .task-button{padding:9px 6px;min-width:0;font-size:11px}
+.sales-finish-link{background:transparent!important;border:0;color:var(--ui-muted)!important;font-size:11px;text-decoration:underline;cursor:pointer;padding:5px}
+.sales-focus-pager{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--ui-border);padding-top:15px;margin-top:14px}
+.sales-focus-pager .task-button{min-width:0}
+html[data-crm-theme] .task-board .sales-contact-card{background:var(--ui-surface)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .task-board .sales-contact-card.selected{background:var(--ui-tint)!important}
+html[data-crm-theme] .task-board .sales-contact-card .sales-contact-name strong{color:var(--ui-ink)!important}
+html[data-crm-theme] .sales-contact-focus{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .sales-contact-focus :is(h3,h4,strong){color:var(--ui-ink)!important}
+html[data-crm-theme] .sales-focus-note p{color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .sales-contact-focus .sales-criticality{color:var(--ui-neutral-ink)!important}
+html[data-crm-theme] .sales-contact-focus .sales-criticality.alta{color:var(--ui-warning-ink)!important}
+html[data-crm-theme] .sales-contact-focus .sales-criticality.urgente{color:var(--ui-danger-ink)!important}
+@media(max-width:1140px){.sales-workspace{grid-template-columns:minmax(230px,.9fr) minmax(310px,1.1fr)}.sales-contact-focus{padding:16px}}
+@media(max-width:850px){.sales-workspace{grid-template-columns:1fr}.sales-queue{max-height:330px}.sales-contact-focus{position:relative;top:auto}}
+@media(max-width:540px){.sales-workspace{padding:9px;gap:9px}.sales-contact-focus{padding:13px}.sales-focus-info{gap:12px}.sales-focus-person h3{font-size:19px}.sales-focus-secondary .task-button{font-size:10px;gap:4px}}
+@media(prefers-reduced-motion:reduce){.sales-contact-card{transition:none!important}}
