@@ -67,3 +67,15 @@ O CRM agora apresenta **Finalizados** no lugar de **Revisar**. A página só con
 Migrações `004` e `005` preservam a decisão manual de **Reabrir** (`workflow_override='ativo'`) e classificam futuras importações apenas quando a origem explicitamente sinaliza finalização/quitação. **Reabrir** é uma decisão operacional, não uma reversão da quitação. A importação massiva de novas pessoas fora do banco depende de um canal autorizado para dados pessoais; não inserir CPFs em repositórios públicos.
 
 A antiga tabela de documentos sem CPF/CNPJ não aparece mais em Finalizados; esses registros permanecem na base privada para eventual reconciliação separada.
+
+## Indicadores Efferd e acompanhamento de processos — 09/11/2026
+
+- Os KPIs das abas operacionais seguem a hierarquia visual adaptada de `W1CAPITAL/LexisPredict` / EfferdDashboard. Sem gráficos inventados; a fonte dos valores continua o Supabase. Tons de alerta respeitam os cinco temas.
+- `/processos` reúne os números CNJ cadastrados manualmente e os vinculados a `/minhas-atividades`, sem criar processos fictícios. É possível classificar como processo comum ou busca e apreensão, vincular a um cliente e remover apenas o cadastro manual.
+- A consulta usa **API pública DataJud CNJ** (`https://datajud-wiki.cnj.jus.br/api-publica/`) e **DJEN / Comunica PJe** (`https://comunicaapi.pje.jus.br/api/v1/comunicacao`). O DataJud escolhe o tribunal pelo CNJ; o DJEN pesquisa publicações em um período ajustável. A linha do tempo mostra *DataJud* e *DJEN* separados ou unificados, com datas e títulos originais.
+- O endpoint server-side `/api/processos/consulta` exige JWT válido de usuário administrativo e valida que o CNJ já existe nos registros privados daquele usuário. Não usa `service_role`. DJEN também permite consulta direta ao CNJ pelo navegador quando há bloqueio 403 específico ao datacenter. Erro, ausência de registros e respostas parciais permanecem diferenciados.
+- Não se consulta em lote nem se presume que DataJud/DJEN representem todos os atos do tribunal; dados sigilosos não são acessíveis pela API pública. Somente utilizar e exibir informações públicas de maneira autorizada, conforme as regras do CNJ.
+- A tabela `crm_processes` tem RLS por `actor_id`; vínculos com clientes e atividades são privados. A migração `20261109_012_processos.sql` foi aplicada no projeto Supabase existente.
+- Em Clientes e Instituições, o componente `InstitutionLogo` exibe ícones dos **domínios corporativos verificados**, incluindo bancos, financeiras e assessorias. Cadastros não verificados mantêm identificação neutra, nunca logos de terceiros atribuídos por aproximação.
+- Chave de API: a integração usa `DATAJUD_API_KEY` do servidor, quando configurada, ou a chave **pública** divulgada pelo CNJ. Se a chave pública for alterada, atualize a variável do servidor. Nenhuma credencial de serviço é exposta ao navegador.
+
