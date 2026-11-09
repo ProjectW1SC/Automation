@@ -8,6 +8,7 @@ import {todayBrazil} from '../../lib/tarefas.mjs';
 import {buildReport,periodBounds,exportReportCsv} from '../../lib/report.mjs';
 import {categoryLabel} from '../../lib/minhas-atividades.mjs';
 import ReportPrintDocument from '../../components/report-print-document';
+import EfferdKpi from '../../components/efferd-kpi';
 
 const periods=[{id:'esta_semana',label:'Esta semana'},{id:'semana_passada',label:'Semana passada'},{id:'mes',label:'Mês atual'}];
 const periodLabel=Object.fromEntries(periods.map(p=>[p.id,p.label]));
@@ -16,7 +17,7 @@ const fmt=v=>Number(v||0).toLocaleString('pt-BR');
 const brTime=secs=>{
  const n=Math.max(0,Number(secs||0));return Math.floor(n/3600)+'h '+String(Math.floor(n%3600/60)).padStart(2,'0')+'min';
 };
-const Kpi=({icon:Icon,label,value,help,color=''})=><div className={'reference-kpi report-kpi '+color}><span className="reference-kpi-icon"><Icon size={20}/></span><div className="reference-kpi-text"><span>{label}</span><strong>{fmt(value)}</strong><small>{help}</small></div></div>;
+const Kpi=({icon,label,value,help,color=''})=><EfferdKpi icon={icon} title={label} value={fmt(value)} sub={help} tone={color||'default'}/>;
 const Empty=({children})=><div className="report-empty"> <FileText size={20}/>{children}</div>;
 function Trend({data}){
  const max=Math.max(1,...data.map(x=>Math.max(x.attendances,x.activities,x.finished)));
