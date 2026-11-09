@@ -1,0 +1,186 @@
+/*
+ * ProjectW1SC · Motion Design System
+ * Original implementation inspired by general micro-interaction patterns.
+ * No third-party template source, paid animation code, remote font or asset.
+ * All motion is purposeful, short, GPU-friendly and disabled on reduced motion.
+ */
+:root{
+ --crm-accent:#743b50;
+ --crm-accent-deep:#411e2d;
+ --crm-accent-quiet:#a77d8b;
+ --crm-canvas:#f7f5f3;
+ --crm-surface:#fffdfc;
+ --crm-border:#e9e1e3;
+ --crm-shadow:0 3px 12px rgba(70,35,48,.035),0 17px 42px rgba(70,35,48,.045);
+ --crm-shadow-hover:0 10px 25px rgba(70,35,48,.095),0 22px 55px rgba(70,35,48,.07);
+ --motion-fast:155ms;
+ --motion-standard:280ms;
+ --motion-enter:420ms;
+ --motion-ease:cubic-bezier(.2,.75,.25,1);
+ --motion-spring:cubic-bezier(.17,.9,.28,1.15);
+}
+html{scroll-behavior:smooth}
+body{background:var(--crm-canvas);font-synthesis:none}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+.app-content{background:radial-gradient(ellipse 65% 36% at 85% -8%,rgba(166,114,136,.088),transparent 100%),linear-gradient(180deg,#fbfaf8 0,#f7f5f3 470px);position:relative}
+.app-content .main,.app-content .task-main{animation:crm-page-enter var(--motion-enter) var(--motion-ease) both}
+@keyframes crm-page-enter{
+ from{opacity:0;transform:translate3d(0,9px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+.app-sidebar{
+ background:radial-gradient(140% 70% at 3% -8%,#674052 0,#3d1b2a 49%,#30141f 98%);
+ border-right:1px solid rgba(240,207,216,.09);
+ box-shadow:6px 0 30px rgba(42,14,26,.035)
+}
+.app-identity strong{letter-spacing:-.85px;text-shadow:0 1px 12px rgba(255,255,255,.075)}
+.app-identity strong span{color:#e1b7c8}
+.app-nav-link{position:relative;isolation:isolate;transition:background var(--motion-standard) var(--motion-ease),color var(--motion-fast),transform var(--motion-fast) var(--motion-ease),box-shadow var(--motion-standard)}
+.app-nav-link:hover{transform:translate3d(3px,0,0);background:rgba(255,231,242,.11)!important}
+.app-nav-link[aria-current="page"]{
+ background:linear-gradient(110deg,rgba(151,99,121,.82),rgba(112,65,86,.94))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 20px rgba(10,6,12,.09);
+ transform:none
+}
+.app-nav-link[aria-current="page"]::before{
+ content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 5px 5px 0;
+ background:#f6e6ed;box-shadow:0 0 12px rgba(255,230,240,.3);
+ transform-origin:center;animation:crm-rail var(--motion-standard) var(--motion-spring) both
+}
+@keyframes crm-rail{from{opacity:0;transform:scaleY(.28)}to{opacity:1;transform:scaleY(1)}}
+.app-nav-link:hover svg{color:#f4dbe6;transform:translate3d(1px,0,0)}
+.app-nav-link svg{transition:transform var(--motion-fast),color var(--motion-fast)}
+.app-account-actions button,.app-account-actions a{border-radius:6px;transition:color var(--motion-fast),transform var(--motion-fast)}
+.app-account-actions button:hover,.app-account-actions a:hover{transform:translateY(-1px)}
+.app-content h1,.app-content h2{color:#35232c}
+.app-content .eyebrow,.app-content .task-kicker{color:#9f596d;letter-spacing:1.4px}
+.app-content .top>div>h1,.task-header h1{letter-spacing:-1.15px}
+.app-content .metric,.app-content .panel{
+ background:var(--crm-surface);border-color:var(--crm-border);
+ box-shadow:var(--crm-shadow);
+ transition:border-color var(--motion-standard),box-shadow var(--motion-standard) var(--motion-ease),transform var(--motion-standard) var(--motion-ease)
+}
+.app-content .metric{position:relative;overflow:hidden;isolation:isolate}
+.app-content .metric::before{
+ content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(129,76,100,.043),transparent 55%);
+ pointer-events:none
+}
+.app-content .metric:hover{transform:translate3d(0,-3px,0);box-shadow:var(--crm-shadow-hover);border-color:#d6c1c9}
+.app-content .metric strong{font-variant-numeric:tabular-nums;letter-spacing:-1px;color:#321e29}
+.app-content .metric span{color:#71616b}
+.app-content .panel{border-radius:17px}
+.app-content .panel:hover{border-color:#e2d6db}
+.app-content .panel table{border-collapse:separate;border-spacing:0}
+.app-content .panel th{
+ color:#79636f;letter-spacing:.085em;background:#fbf9fa;
+ border-bottom:1px solid #eee6e9
+}
+.app-content .panel td{transition:background var(--motion-fast),box-shadow var(--motion-fast)}
+.app-content .panel tbody tr:hover td{background:#fcf7f9}
+.app-content .panel tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 #af8194}
+.app-content .pill{transition:background var(--motion-fast),transform var(--motion-fast)}
+.app-content .panel tbody tr:hover .pill{transform:translate3d(0,-1px,0)}
+.app-content .btn,.app-content .task-button,.login .btn{position:relative;isolation:isolate;overflow:hidden;transition:transform var(--motion-fast) var(--motion-ease),box-shadow var(--motion-standard) var(--motion-ease),background var(--motion-fast),border-color var(--motion-fast)}
+.app-content .btn:hover:not(:disabled),.app-content .task-button:hover:not(:disabled),.login .btn:hover:not(:disabled){transform:translate3d(0,-2px,0);box-shadow:0 7px 17px rgba(86,37,57,.12)}
+.app-content .btn:active:not(:disabled),.app-content .task-button:active:not(:disabled),.login .btn:active:not(:disabled){transform:translate3d(0,0,0);box-shadow:none}
+.app-content .btn:not(.ghost)::after,.app-content .task-button-primary::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(108deg,transparent 10%,rgba(255,255,255,.15) 50%,transparent 75%);
+ transform:translate3d(-135%,0,0);
+ transition:transform 500ms var(--motion-ease)
+}
+.app-content .btn:not(.ghost):hover::after,.app-content .task-button-primary:hover::after{transform:translate3d(135%,0,0)}
+.app-content .btn:disabled,.app-content .task-button:disabled{opacity:.6;box-shadow:none}
+.login{border:1px solid #eadfe4;box-shadow:var(--crm-shadow-hover);animation:crm-modal-enter var(--motion-enter) var(--motion-ease) both}
+.login input,.app-content .input,.app-content .task-search,.app-content .task-select-wrap{
+ transition:border-color var(--motion-fast),background var(--motion-fast),box-shadow var(--motion-fast)
+}
+.login input:focus,.app-content .input:focus,.app-content .task-search:focus-within,.app-content .task-select-wrap:focus-within{border-color:#b88d9d;outline:none;box-shadow:0 0 0 3px rgba(135,76,99,.11)}
+.app-content .task-metric{
+ position:relative;overflow:hidden;border:1px solid #e8dfe3;border-radius:15px;
+ box-shadow:var(--crm-shadow);background:linear-gradient(158deg,#fff 0%,#fffdfc 100%);
+ transition:transform var(--motion-standard) var(--motion-ease),box-shadow var(--motion-standard),border-color var(--motion-standard)
+}
+.app-content .task-metric::after{
+ content:"";position:absolute;width:90px;height:90px;right:-32px;top:-45px;border-radius:100%;
+ background:radial-gradient(circle,rgba(131,75,104,.07),transparent 72%);pointer-events:none;
+ opacity:0;transform:scale(.8);transition:opacity var(--motion-standard),transform var(--motion-standard)
+}
+.app-content .task-metric:hover{transform:translate3d(0,-4px,0);border-color:#d2b6c2;box-shadow:var(--crm-shadow-hover)}
+.app-content .task-metric:hover::after{opacity:1;transform:scale(1.6)}
+.app-content .task-metric.selected{border-color:#c49aa9;box-shadow:inset 0 -3px 0 #8b5268,var(--crm-shadow)}
+.app-content .task-metric-icon{transition:transform var(--motion-standard) var(--motion-spring),box-shadow var(--motion-standard)}
+.app-content .task-metric:hover .task-metric-icon{transform:scale(1.075) rotate(-5deg)}
+.app-content .task-metric strong{font-variant-numeric:tabular-nums}
+.app-content .task-board{box-shadow:var(--crm-shadow);border-color:#e9e0e2}
+.app-content .task-board-head{background:linear-gradient(110deg,rgba(247,238,241,.54),rgba(255,255,255,.12) 65%)}
+.app-content .task-queue-tabs button{position:relative;isolation:isolate;border-bottom:2px solid transparent;transition:color var(--motion-fast),background var(--motion-standard)}
+.app-content .task-queue-tabs button::before{
+ content:"";position:absolute;inset:5px 3px;border-radius:8px;background:#efe4e9;z-index:-1;
+ opacity:0;transform:scale(.9);transition:opacity var(--motion-standard),transform var(--motion-standard) var(--motion-ease)
+}
+.app-content .task-queue-tabs button:hover::before,.app-content .task-queue-tabs button.active::before{opacity:.75;transform:scale(1)}
+.app-content .task-queue-tabs button.active{color:#603047;border-bottom-color:transparent}
+.app-content .task-queue-tabs button.active::after{
+ content:"";position:absolute;bottom:0;height:2px;background:#87485e;border-radius:3px;left:13px;right:13px;
+ animation:crm-tab-indicator var(--motion-standard) var(--motion-spring) both
+}
+@keyframes crm-tab-indicator{from{opacity:0;transform:scaleX(.26)}to{opacity:1;transform:scaleX(1)}}
+.app-content .task-item{
+ transition:background var(--motion-standard),box-shadow var(--motion-standard),transform var(--motion-standard) var(--motion-ease);
+ will-change:auto
+}
+.app-content .task-item:hover{background:#fffafb;box-shadow:inset 0 0 0 1px rgba(180,136,155,.18)}
+.app-content .task-item:hover .task-item-rank{background:#eee3e8;color:#693c4d}
+.app-content .task-item-rank{transition:color var(--motion-fast),background var(--motion-fast)}
+.app-content .task-list>.task-item:nth-child(-n+8){
+ animation:crm-row-enter var(--motion-enter) var(--motion-ease) both;
+ animation-delay:calc(min(var(--motion-row, 0), 7) * 36ms)
+}
+@keyframes crm-row-enter{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.app-content .task-badge{transition:transform var(--motion-fast),box-shadow var(--motion-fast)}
+.app-content .task-item:hover .task-badge{transform:translateY(-1px)}
+.app-content .task-search input:focus{box-shadow:none}
+.app-content .task-search:focus-within{border-color:#aa7b8c;box-shadow:0 0 0 3px rgba(141,82,107,.09)}
+.app-content .task-empty{animation:crm-page-enter var(--motion-enter) var(--motion-ease) both}
+.app-content .task-notice{animation:crm-notice var(--motion-standard) var(--motion-ease) both}
+@keyframes crm-notice{from{opacity:0;transform:translate3d(0,-6px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.app-content .task-modal-overlay,.dialog{animation:crm-backdrop 220ms ease-out both}
+@keyframes crm-backdrop{from{opacity:0}to{opacity:1}}
+.app-content .task-modal,.dialog-inner{animation:crm-modal-enter var(--motion-enter) var(--motion-spring) both;transform-origin:50% 24%}
+@keyframes crm-modal-enter{from{opacity:0;transform:translate3d(0,12px,0) scale(.977)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+.app-content .task-modal input,.app-content .task-modal select,.app-content .task-modal textarea,
+.app-content .dialog-inner input,.app-content .dialog-inner textarea{
+ transition:border-color var(--motion-fast),box-shadow var(--motion-fast),background var(--motion-fast)
+}
+.app-content .task-modal input:focus,.app-content .task-modal select:focus,.app-content .task-modal textarea:focus{
+ border-color:#a67689;box-shadow:0 0 0 3px rgba(138,83,103,.11)
+}
+.app-content .task-history-point{transition:transform var(--motion-fast),background var(--motion-fast)}
+.app-content .task-history li:hover .task-history-point{transform:scale(1.3);background:#eee3e9}
+.app-content .task-list-footer{background:linear-gradient(90deg,#fcfafb,#fff)}
+.app-content :focus-visible,.app-sidebar :focus-visible,.login :focus-visible{
+ outline:3px solid #d1a8bb!important;outline-offset:3px
+}
+/* Skeletons use the same shapes as live data and exist only while loading. */
+.task-skeleton-grid{display:grid;gap:12px;padding:4px 24px 20px}
+.task-skeleton-row{
+ height:90px;border:1px solid #f0e8eb;border-radius:11px;
+ background:linear-gradient(95deg,#faf6f8 28%,#fff 48%,#faf6f8 72%);
+ background-size:210% 100%;
+ animation:crm-skeleton 1.65s ease-in-out 2
+}
+@keyframes crm-skeleton{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media(max-width:700px){
+ .app-content .task-metric:hover,.app-content .metric:hover{transform:none}
+ .app-content .task-item:hover{box-shadow:none}
+ .task-skeleton-grid{padding:5px 14px 18px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation-duration:0.01ms!important;animation-iteration-count:1!important;
+  transition-duration:0.01ms!important;scroll-behavior:auto!important
+ }
+ html{scroll-behavior:auto!important}
+ .app-content .task-item,.app-content .task-metric,.app-content .metric{transform:none!important}
+}
