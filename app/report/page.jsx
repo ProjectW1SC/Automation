@@ -48,7 +48,7 @@ function PortfolioDistribution({portfolio}){
  const active=portfolio.active||0,finished=portfolio.finalized||0;
  const stop=(active/total*100).toFixed(2);
  return <div className="report-portfolio-distribution">
-  <div className="report-donut" style={{background:`conic-gradient(#79314d 0% ${stop}%,#d8b6c4 ${stop}% 100%)`}} role="img" aria-label={`Carteira: ${active} ativos e ${finished} finalizados`}><div><strong>{fmt(portfolio.total)}</strong><small>clientes</small></div></div>
+  <div className="report-donut" style={{background:`conic-gradient(#79314d 0% ${stop}%,#9599a4 ${stop}% 100%)`}} role="img" aria-label={`Carteira: ${active} ativos e ${finished} finalizados`}><div><strong>{fmt(portfolio.total)}</strong><small>clientes</small></div></div>
   <div className="report-portfolio-labels"><div><span><i className="report-swatch attendance"/>Ativos</span><b>{fmt(active)}</b></div><div><span><i className="report-swatch final"/>Finalizados</span><b>{fmt(finished)}</b></div><div><span><i className="report-swatch warn"/>Vencidos ativos</span><b>{fmt(portfolio.overdue)}</b></div></div>
  </div>;
 }
