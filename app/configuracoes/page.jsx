@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Camera,Check,ChevronLeft,Eye,EyeOff,Image as ImageIcon,KeyRound,LockKeyhole,Palette,Save,ShieldCheck,UserRound,Trash2,UploadCloud} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,changePassword} from '../../lib/login.mjs';
 import {CRM_THEMES,resolveTheme} from '../../lib/crm-themes.mjs';
@@ -173,7 +174,7 @@ export default function SettingsPage(){
  }
  if(!db)return <main className="reference-auth">Configuração do Supabase indisponível.</main>;
  if(loading)return <main className="reference-auth">Verificando sua sessão...</main>;
- if(!session)return <main className="reference-auth"><div className="reference-auth-card"><h1>Configurações</h1><p>Entre no CRM para alterar seu perfil.</p><a className="reference-primary" href="/">Voltar ao acesso</a></div></main>;
+ if(!session)return <ProfessionalAuth eyebrow="PREFERÊNCIAS DA CONTA" title="Acesse configurações" description="Para alterar seu perfil e as preferências do CRM, faça login primeiro."><a className="w1-auth-submit" href="/">Ir para a tela de acesso</a></ProfessionalAuth>;
  if(user?.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth">Conta não autorizada. <button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
