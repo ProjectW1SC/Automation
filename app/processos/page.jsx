@@ -5,7 +5,7 @@ import CrmShell from '../../components/crm-shell';
 import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
-import {formatProcessNumber,mergeEvents} from '../../lib/processos-oficiais.mjs';
+import {formatProcessNumber,mergeEvents,normalizeDjen,buildDjenUrl} from '../../lib/processos-oficiais.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 const formatDate=x=>x&&!Number.isNaN(Date.parse(x))?new Date(x).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}):'Data não informada';
 const sourceLabels={datajud:'DataJud',djen:'DJEN'};
@@ -71,6 +71,14 @@ export default function ProcessosPage(){
   }
   return [...map.values()].sort((a,b)=>a.number.localeCompare(b.number));
  },[saved,activityRecords]);
+ useEffect(()=>{
+  // /processos?numero=... opens the saved CNJ from the activity history.
+  const requested=new URLSearchParams(window.location.search).get('numero');
+  if(!requested||!records.length)return;
+  try{const formatted=formatProcessNumber(requested);
+   if(records.some(x=>x.number===formatted))setSelected(formatted)
+  }catch{}
+ },[records]);
  const matching=useMemo(()=>records.filter(p=>[p.number,clientById.get(p.clientId)?.name].some(x=>String(x||'').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim()))),[records,search,clientById]);
  const current=records.find(p=>p.number===selected);
  const merged=useMemo(()=>mergeEvents(sourceStatus.datajud.items,sourceStatus.djen.items),[sourceStatus]);
@@ -105,7 +113,24 @@ export default function ProcessosPage(){
     url.searchParams.set('numero',current.number);url.searchParams.set('fonte',source);
     if(source==='djen'){url.searchParams.set('inicio',start);url.searchParams.set('fim',end)}
     const resp=await fetch(url,{headers:{Authorization:'Bearer '+fresh.access_token},cache:'no-store'});
-    const body=await resp.json();
+    let body=await resp.json();
+    // LexisPredict's fallback: official DJEN may block datacenter IPs but allow
+    // the public API directly from a user's browser. Never retry on rate limit.
+    if(source==='djen'&&resp.status===502&&
+       String(body?.error||'').includes('bloqueou esta rede (HTTP 403)')){
+      try{
+       const official=await fetch(buildDjenUrl(current.number,{start,end}),{
+        method:'GET',headers:{Accept:'application/json'},cache:'no-store'
+       });
+       if(official.ok){
+        const payload=await official.json();
+        const items=normalizeDjen(payload,current.number);
+        body={ok:true,source:'DJEN',items,checkedAt:new Date().toISOString(),limited:items.length>=100,
+          notice:items.length?'Publicações obtidas diretamente na API oficial do CNJ.':
+            'Consulta direta concluída. Nenhuma publicação encontrada nas datas informadas.'};
+       }
+      }catch{/* Show the original official upstream error instead of inventing success. */}
+    }
     if(requestId.current!==request)return;
     setSourceStatus(old=>({...old,[source]:body.ok?{state:'ok',items:body.items||[],checkedAt:body.checkedAt||null,notice:body.notice||'',meta:body.meta,limited:body.limited,error:''}:
      {state:'error',items:[],error:body.error||'Fonte não respondeu.',checkedAt:null,notice:''}}));
