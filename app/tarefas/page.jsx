@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,AlertTriangle,ArrowLeft,ArrowUpRight,BadgeCheck,CalendarDays,CheckCircle2,ChevronRight,ClipboardCheck,Clock3,FileClock,Filter,Flag,History,Inbox,ListChecks,Loader2,Pencil,Phone,Plus,RefreshCcw,Search,Send,ShieldCheck,UserRound,Users,X} from 'lucide-react';
 import {getClient} from '../../lib/supabase-client';
+import CrmShell from '../../components/crm-shell';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {ATTENDANCE_CHANNELS,ATTENDANCE_OUTCOMES,dueDate,filterTaskQueue,queueCounts,taskStatus,todayBrazil,validateAttendance,validISO} from '../../lib/tarefas.mjs';
 import './tarefas.css';
@@ -153,14 +154,7 @@ export default function TarefasPage(){
  if(!session)return <TaskLogin db={db} onLogged={setSession}/>;
  if(session?.user?.email?.toLowerCase()!==ADMIN_EMAIL)return <div className="task-auth-wrap"><div className="task-auth"><h1>Acesso não autorizado</h1><p>Esta conta não tem acesso à carteira da ProjectW1SC.</p><button className="task-button" onClick={()=>db.auth.signOut()}>Sair</button></div></div>;
  const selectedStatus=selected?taskStatus(selected,today):null;
- return <div className="task-shell">
-  <aside className="task-sidebar">
-   <div className="task-brand">PROJECT<span>W1SC</span><small>CONTROLE DE NEGOCIAÇÕES</small></div>
-   <div className="task-side-group">ÁREA DE TRABALHO</div>
-   <a className="task-side-item" href="/"><Users size={17}/> Visão geral do CRM</a>
-   {queueViews.map(item=>{const Icon=item.icon;return <button key={item.id} className={'task-side-item '+(view===item.id?'task-side-active':'')} onClick={()=>go(item.id)}><Icon size={17}/>{item.label}{item.id==='vencidos'&&counts.vencido>0&&<span className="task-side-count">{counts.vencido}</span>}</button>})}
-   <div className="task-side-foot"><div><span className="task-online-dot"/> Dados do Supabase</div><small>{session.user.email}</small><button onClick={()=>db.auth.signOut()}>Sair da conta <ArrowUpRight size={14}/></button></div>
-  </aside>
+ return <CrmShell active="Tarefas" email={session.user.email||''} onSignOut={()=>db.auth.signOut()}><div className="task-shell">
   <main className="task-main">
    <header className="task-header">
     <div><div className="task-kicker">PROJECTW1SC <span>/ FILA OPERACIONAL</span></div><h1>Fila de prioridades</h1><p>Atenda primeiro os retornos vencidos. Edite, registre o contato e agende o próximo retorno.</p></div>
@@ -264,5 +258,5 @@ export default function TarefasPage(){
     </div>}
    </section>
   </div>}
- </div>;
+ </div></CrmShell>;
 }
