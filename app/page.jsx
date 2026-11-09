@@ -94,7 +94,37 @@ export default function Page(){
   setCreateDialog(null);setNewParty({name:'',kind:'financeira',contact:''});
   await load();setNotice('Instituição salva no CRM.');setBusy(false);
  }
-  const last=runs[0];
+ function openInstitution(p){setEditParty({...p});setLogoFile(null);setLogoRemove(false)}
+ async function saveInstitution(e){
+  e.preventDefault();if(!editParty||busy)return;
+  try{if(logoFile)validateImageFile(logoFile,'logo')}catch(err){setNotice(err.message);return}
+  setBusy(true);setNotice('');
+  const previous=editParty.logo_path||null;
+  let path=null;
+  try{
+   if(logoFile){
+    const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[logoFile.type];
+    path='parties/'+editParty.id+'/'+crypto.randomUUID()+'.'+ext;
+    const {error}=await db.storage.from('crm-institution-logos').upload(path,logoFile,{contentType:logoFile.type,cacheControl:'3600',upsert:false});
+    if(error)throw Error('Falha ao armazenar imagem: '+error.message);
+   }
+   const payload={contact:editParty.contact?.trim()||null,logo_path:logoRemove?null:path||previous,updated_at:new Date().toISOString()};
+   const {error,data}=await db.from('crm_parties').update(payload).eq('id',editParty.id).select('id');
+   if(error||!data?.length)throw Error(error?.message||'Não foi possível atualizar esta instituição.');
+   if(previous&&(logoRemove||path))await db.storage.from('crm-institution-logos').remove([previous]);
+   setEditParty(null);setLogoFile(null);setLogoRemove(false);
+   await load();setNotice('Instituição atualizada. A imagem personalizada já está disponível na carteira.');
+  }catch(err){
+   if(path)await db.storage.from('crm-institution-logos').remove([path]).catch(()=>{});
+   setNotice('Imagem não salva: '+err.message);
+  }finally{setBusy(false)}
+ }
+ useEffect(()=>{
+  if(!logoFile){setLogoPreview('');return}
+  const url=URL.createObjectURL(logoFile);setLogoPreview(url);
+  return()=>URL.revokeObjectURL(url);
+ },[logoFile]);
+   const last=runs[0];
  async function importExcel(event){const file=event.target.files?.[0];if(!file)return;if(!file.name.toLowerCase().endsWith('.xlsx')){setNotice('Selecione uma planilha .xlsx.');return;}setBusy(true);setNotice('Lendo a planilha e conferindo os documentos...');try{const {default:readExcelFile}=await import('read-excel-file/browser');const sheets=await readExcelFile(file);const parsed=parseExcelSheets(sheets,file.name);let accepted=0,rejected=0;for(let i=0;i<parsed.rows.length;i+=100){const {data,error}=await db.rpc('crm_import_excel',{p_rows:parsed.rows.slice(i,i+100)});if(error)throw Error(error.message);accepted+=(data?.processed||0);rejected+=(data?.need_review||0);}if(parsed.parties.length){const {error}=await db.from('crm_parties').upsert(parsed.parties,{onConflict:'name,kind'});if(error)throw Error('Clientes importados, mas a agenda de financeiras falhou: '+error.message);}setNotice('Importação concluída: '+accepted+' registros associados por CPF/CNPJ; '+rejected+' separados para revisão. Nenhuma quitação foi marcada como comprovada automaticamente.');await load()}catch(e){setNotice('Erro na importação: '+e.message)}finally{setBusy(false);if(uploadRef.current)uploadRef.current.value='';}}
  async function signIn(e){
   e.preventDefault();setBusy(true);setNotice('');
@@ -183,7 +213,7 @@ export default function Page(){
  <ReferencePages page={page} clients={clients} parties={parties} kpis={kpis} last={last} updated={updated} busy={busy}
   onRefresh={load} onImport={()=>uploadRef.current?.click()}
   onGo={label=>{if(label==='Tarefas')window.location.href='/tarefas';else if(label==='Minhas atividades')window.location.href='/minhas-atividades';else changeArea(label)}}
-  onSelectClient={openClient} onReopen={c=>{setReopenTarget(c);setReopenReason('')}}
+  onSelectClient={openClient} partyLogos={partyLogos} onEditInstitution={openInstitution} onReopen={c=>{setReopenTarget(c);setReopenReason('')}}
   onCreate={()=>setCreateDialog('client')} onCreateClient={()=>setCreateDialog('client')} onCreateParty={()=>setCreateDialog('party')}/>
  {notice&&<div className="reference-floating-notice" role="status"><span>{notice}</span><button onClick={()=>setNotice('')} aria-label="Fechar">×</button></div>}
  {createDialog&&<div className="dialog" role="presentation" onClick={e=>{if(e.target===e.currentTarget&&!busy)setCreateDialog(null)}}>
@@ -203,7 +233,16 @@ export default function Page(){
    </form>
  </div>}
 
- {selected&&<div className="dialog" role="dialog" aria-modal="true"><div className="dialog-inner"><div className="top"><div><div className="eyebrow">FICHA DE NEGOCIAÇÃO</div><h2>{selected.name}</h2></div><button className="btn ghost" onClick={()=>setSelected(null)}>Fechar</button></div><div className="details"><div><b>Instituição</b><span>{txt(selected.institution)}</span></div><div><b>Contato (coluna T)</b><span>{txt(selected.contacted_party)}</span></div><div><b>Telefone</b><span>{txt(selected.phone)}</span></div><div><b>Consultor</b><span>{txt(selected.consultant)}</span></div><div><b>Origem</b><span>{selected.source_tabs?.join(' · ')}</span></div><div><b>Próximo retorno</b><span>{date(selected.next_return)}</span></div><div><b>Saldo devedor</b><span>{selected.debtor_balance==null?'—':BRL.format(Number(selected.debtor_balance))}</span></div><div><b>Valor atual</b><span>{selected.current_amount==null?'—':BRL.format(Number(selected.current_amount))}</span></div></div><div className="form-row"><label>Etapa da negociação<select className="input" value={stage} onChange={e=>setStage(e.target.value)}>{['a_analisar','contatado','em_negociacao','proposta_enviada','aguardando_resposta','concluido','arquivado'].map(x=><option value={x} key={x}>{x.replaceAll('_',' ')}</option>)}</select></label><label>Verificação documental<select className="input" value={evidence} onChange={e=>setEvidence(e.target.value)}><option value="sem_validacao">Sem validação</option><option value="comprovante_recebido">Comprovante recebido</option><option value="quitacao_verificada">Quitação verificada</option><option value="divergente">Divergente</option></select></label></div><div className="form-row"><label>Nível de criticidade<select className="input" value={criticidade} onChange={e=>setCriticidade(e.target.value)}><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label></div><div className="form-row"><label>Link privado do comprovante<input className="input" value={evidenceUrl} onChange={e=>setEvidenceUrl(e.target.value)} placeholder="Link de acesso restrito"/></label></div><div className="form-row"><label>Nova anotação<textarea className="input" rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Anotação interna sobre a negociação (não conta como atendimento)"/></label></div><div className="actions" style={{marginTop:18}}><button className="btn" disabled={busy} onClick={save}>Salvar alterações</button></div><h2>Histórico</h2>{activities.length?activities.map(a=><p key={a.id}><span className="muted">{new Date(a.created_at).toLocaleString('pt-BR')} · {a.kind}</span><div>{a.body}</div></p>):<p>Sem atividades registradas.</p>}</div></div>}
+ {editParty&&<div className="dialog" role="presentation" onClick={e=>{if(e.target===e.currentTarget&&!busy)setEditParty(null)}}>
+  <form className="dialog-inner institution-logo-editor" onSubmit={saveInstitution} aria-label="Editar identidade visual da instituição">
+   <div className="top"><div><div className="eyebrow">INSTITUIÇÃO / IDENTIDADE VISUAL</div><h2>{editParty.name}</h2></div><button type="button" className="btn ghost" disabled={busy} onClick={()=>setEditParty(null)}>Fechar</button></div>
+   <div className="institution-edit-preview"><InstitutionLogo name={editParty.name} size="lg" customUrl={logoRemove?'':logoPreview||partyLogos[normalizeInstitutionName(editParty.name)]||''} showName/><p>Você pode usar a marca oficial reconhecida, enviar um arquivo próprio ou manter o monograma automático.</p></div>
+   <label>Contato principal<input className="input" value={editParty.contact||''} maxLength={350} onChange={e=>setEditParty(x=>({...x,contact:e.target.value}))}/></label>
+   <label className="reference-outline institution-image-picker">Escolher imagem JPG, PNG ou WebP (até 2 MB)<input type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{const file=e.target.files?.[0];if(!file)return;try{validateImageFile(file,'logo');setLogoFile(file);setLogoRemove(false);setNotice('')}catch(err){setNotice(err.message)}e.target.value=''}}/></label>
+   <div className="institution-edit-actions"><button type="button" className="reference-outline" disabled={busy} onClick={()=>{setLogoRemove(true);setLogoFile(null)}}>Remover imagem personalizada</button><button type="submit" className="reference-primary" disabled={busy}>{busy?'Salvando...':'Salvar instituição'}</button></div>
+  </form>
+ </div>}
+  {selected&&<div className="dialog" role="dialog" aria-modal="true"><div className="dialog-inner"><div className="top"><div><div className="eyebrow">FICHA DE NEGOCIAÇÃO</div><h2>{selected.name}</h2></div><button className="btn ghost" onClick={()=>setSelected(null)}>Fechar</button></div><div className="details"><div><b>Instituição</b><span>{txt(selected.institution)}</span></div><div><b>Contato (coluna T)</b><span>{txt(selected.contacted_party)}</span></div><div><b>Telefone</b><span>{txt(selected.phone)}</span></div><div><b>Consultor</b><span>{txt(selected.consultant)}</span></div><div><b>Origem</b><span>{selected.source_tabs?.join(' · ')}</span></div><div><b>Próximo retorno</b><span>{date(selected.next_return)}</span></div><div><b>Saldo devedor</b><span>{selected.debtor_balance==null?'—':BRL.format(Number(selected.debtor_balance))}</span></div><div><b>Valor atual</b><span>{selected.current_amount==null?'—':BRL.format(Number(selected.current_amount))}</span></div></div><div className="form-row"><label>Etapa da negociação<select className="input" value={stage} onChange={e=>setStage(e.target.value)}>{['a_analisar','contatado','em_negociacao','proposta_enviada','aguardando_resposta','concluido','arquivado'].map(x=><option value={x} key={x}>{x.replaceAll('_',' ')}</option>)}</select></label><label>Verificação documental<select className="input" value={evidence} onChange={e=>setEvidence(e.target.value)}><option value="sem_validacao">Sem validação</option><option value="comprovante_recebido">Comprovante recebido</option><option value="quitacao_verificada">Quitação verificada</option><option value="divergente">Divergente</option></select></label></div><div className="form-row"><label>Nível de criticidade<select className="input" value={criticidade} onChange={e=>setCriticidade(e.target.value)}><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label></div><div className="form-row"><label>Link privado do comprovante<input className="input" value={evidenceUrl} onChange={e=>setEvidenceUrl(e.target.value)} placeholder="Link de acesso restrito"/></label></div><div className="form-row"><label>Nova anotação<textarea className="input" rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Anotação interna sobre a negociação (não conta como atendimento)"/></label></div><div className="actions" style={{marginTop:18}}><button className="btn" disabled={busy} onClick={save}>Salvar alterações</button></div><h2>Histórico</h2>{activities.length?activities.map(a=><p key={a.id}><span className="muted">{new Date(a.created_at).toLocaleString('pt-BR')} · {a.kind}</span><div>{a.body}</div></p>):<p>Sem atividades registradas.</p>}</div></div>}
  {reopenTarget&&<div className="dialog" role="dialog" aria-modal="true" aria-label="Reabrir acompanhamento" onClick={e=>{if(e.target===e.currentTarget&&!busy)setReopenTarget(null)}}>
   <form className="dialog-inner crm-reopen-modal" onSubmit={reopenClient}>
    <div className="top"><div><div className="eyebrow">FINALIZADOS / REABERTURA</div><h2>Reabrir acompanhamento</h2></div><button type="button" className="btn ghost" onClick={()=>setReopenTarget(null)} disabled={busy}>Fechar</button></div>
