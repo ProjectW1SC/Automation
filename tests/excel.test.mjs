@@ -22,3 +22,9 @@ test('sem CPF não gera documento fictício nem correspondência automática por
  const x=parseExcelSheets([{sheet:'CÓPIA VENDAS QUIT',data:[[],[],[],[],r]}],'excel.xlsx');
  assert.equal(x.rows.length,1); assert.equal(x.rows[0].doc_digits,'');
 });
+
+test('Excel Quitados requires explicit Quitado status, not approximate or blank',()=>{
+ const row=(status)=>{const r=Array(17).fill(null);r[2]=status;r[4]='Pessoa Exemplo';r[6]='123.456.789-09';return r};
+ const p=parseExcelSheets([{sheet:'Quitados',data:[[],[],row('Quitado'),row('Aproximado'),row('')]}],'quitados.xlsx');
+ assert.deepEqual(p.rows.map(x=>x.source_status),['quitado_na_planilha','revisar','revisar']);
+});
