@@ -19,7 +19,7 @@ function EntryCard({item,client,onEdit,onDelete,busy}){
   </div>
   <h3>{item.title}</h3>
   {item.description&&<p>{item.description}</p>}
-  {item.process_number&&<div className="reference-process-row"><FileText size={15}/><span><strong>Processo:</strong> {item.process_number}</span><span className="reference-status neutral">{processTypeLabel(item.process_type)}</span></div>}
+  {item.process_number&&<div className="reference-process-row"><FileText size={15}/><span><strong>Processo:</strong> {item.process_number}</span><span className="reference-status neutral">{processTypeLabel(item.process_type)}</span><a href={'/processos?numero='+encodeURIComponent(item.process_number)} className="reference-outline" style={{minHeight:28,padding:'5px 8px'}}>Consultar DataJud / DJEN</a></div>}
   <div className="reference-related">
     <span className="reference-overline">VÍNCULO COM O CLIENTE</span>
     {client?<div className="reference-related-grid"><span><b>Cliente</b>{client.name}</span><span><b>Financeira</b>{client.institution||'Não cadastrada'}</span><span><b>Contato realizado</b>{client.contacted_party||'Não informado'}</span><span><b>Situação</b>{client.workflow_status==='finalizado'?'Finalizado':'Ativo'}</span></div>:<p>Atividade sem cliente vinculado. Nenhuma associação presumida.</p>}
