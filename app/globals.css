@@ -2,4 +2,58 @@
 
 .login input[type="checkbox"]{width:auto;margin:0;accent-color:#612a39}.login button{max-width:100%}.login label{display:block;margin-top:8px}
 
-.side .nav .crm-tarefas-link{display:block;padding:12px;font-size:13px;font-weight:800;border-radius:10px;color:#fff;background:#774658;margin-bottom:10px}.side .nav .crm-tarefas-link:hover{background:#916176}.crm-tarefas-action{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#612a39;color:#fff!important;white-space:nowrap}
+
+
+/* Estrutura compartilhada: um CRM, uma barra lateral. Tarefas é uma aba, não outro aplicativo. */
+.app-shell{display:flex;align-items:stretch;min-height:100vh;background:#f7f6f4;color:#302831}
+.app-sidebar{position:sticky;top:0;align-self:flex-start;height:100vh;min-height:100vh;width:247px;flex:0 0 247px;background:#32151f;color:#f4e9ec;padding:30px 17px 20px;display:flex;flex-direction:column;z-index:20}
+.app-identity{padding:3px 13px 35px}
+.app-identity strong{display:block;font-weight:900;font-size:21px;letter-spacing:-1.2px;color:white}
+.app-identity strong span{color:#d6b4c0}
+.app-identity small{display:block;font-size:9px;color:#c6aeb8;letter-spacing:1.65px;font-weight:800;margin-top:4px}
+.app-section-name{padding:0 13px 12px;font-size:10px;letter-spacing:1.7px;color:#ab8795;font-weight:800}
+.app-nav{display:grid;gap:6px}
+.app-nav-link{display:flex;align-items:center;gap:12px;min-height:44px;padding:12px 13px;color:#e4d4d9!important;font-size:13px;font-weight:600;border-radius:10px;transition:background .15s,color .15s;text-decoration:none;white-space:nowrap}
+.app-nav-link svg{flex:none;color:#b896a3}
+.app-nav-link:hover{background:#51303b;color:white!important}
+.app-nav-link.active,.app-nav-link[aria-current="page"]{background:#724756!important;color:white!important;font-weight:800}
+.app-nav-link.active svg{color:#fff}
+.app-nav-footer{margin-top:auto;padding:20px 11px 3px;display:grid;gap:13px;border-top:1px solid #66414d;color:#d2bfc5}
+.app-private{display:flex;align-items:center;gap:8px;font-size:12px;color:#d5c1c8}
+.app-indicator{width:7px;height:7px;flex:none;background:#8fd1a7;border-radius:50%}
+.app-nav-footer small{font-size:10px;line-height:1.4;overflow-wrap:anywhere;color:#b8a1a8}
+.app-account-actions{display:flex;gap:10px;flex-wrap:wrap}
+.app-account-actions button,.app-account-actions a{color:#e5d1d9;background:transparent;border:0;display:inline-flex;align-items:center;gap:5px;padding:5px 0;font-size:11px;text-decoration:none}
+.app-account-actions button:hover,.app-account-actions a:hover{color:white}
+.app-content{flex:1;min-width:0;min-height:100vh}
+.app-content .main{min-height:100vh;width:100%;padding:33px clamp(20px,3.2vw,52px)}
+/* A mesma navegação permanece ao alternar entre as filas: apenas o conteúdo central muda. */
+.app-content .task-shell{display:block;min-height:0;width:100%;background:transparent}
+.app-content .task-main{width:100%;max-width:1590px;padding:33px clamp(20px,3.2vw,52px) 50px}
+@media(max-width:900px){
+ .app-sidebar{width:204px;flex-basis:204px;padding:21px 11px}
+ .app-identity{padding:3px 9px 28px}
+ .app-nav-link{padding:10px}
+ .app-content .task-main{padding:24px 17px}
+}
+@media(max-width:700px){
+ .app-shell{display:block}
+ .app-sidebar{height:auto;min-height:0;width:100%;position:sticky;top:0;align-self:auto;padding:13px 12px 9px;box-shadow:0 3px 10px #2b142023}
+ .app-identity{padding:0 4px 10px}
+ .app-identity strong{font-size:17px}
+ .app-identity small{font-size:8px;margin-top:1px}
+ .app-section-name,.app-nav-footer{display:none}
+ .app-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+ .app-nav-link{min-height:35px;padding:9px 10px;border-radius:8px;gap:6px;flex-shrink:0;font-size:11px}
+ .app-nav-link svg{width:15px;height:15px}
+ .app-content{min-height:calc(100vh - 95px)}
+ .app-content .main{padding:19px 14px}
+ .app-content .task-main{padding:20px 13px 32px}
+}
+
+.app-mobile-account{display:none}
+@media(max-width:700px){
+ .app-mobile-account{display:flex;position:absolute;top:11px;right:12px;align-items:center;gap:6px}
+ .app-mobile-account a,.app-mobile-account button{display:grid;place-items:center;color:#f3dfe6;background:#51303e;border:1px solid #754c5b;border-radius:8px;width:31px;height:31px;padding:0}
+ .app-identity{padding-right:90px}
+}
