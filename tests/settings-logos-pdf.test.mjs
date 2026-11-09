@@ -14,7 +14,8 @@ test('the menu has one authenticated settings screen',()=>{
  assert.match(page,/CrmShell/);
  assert.match(page,/changePassword/);
  assert.match(page,/updateUser/);
- assert.match(page,/crm-profile-photos/);
+ assert.match(page,/PROFILE_BUCKET/);
+ assert.match(file('lib/profile-settings.mjs'),/crm-profile-photos/);
  assert.match(page,/CRM_THEMES/);
 });
 
