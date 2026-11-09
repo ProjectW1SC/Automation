@@ -188,6 +188,30 @@ export default function SettingsPage(){
     </button>)}</div>
     <div className="settings-hint"><ShieldCheck size={16}/> Temas com cores de texto e fundo verificadas para alto contraste.</div>
    </section>
+   <section className="reference-panel settings-panel settings-customize-panel">
+    <div className="settings-section-heading"><span className="settings-section-icon"><ImageIcon size={21}/></span><div><h2>Personalização avançada</h2><p>Altere a cor do fundo e das letras sem comprometer o contraste. As cores precisam atingir pelo menos 4,5:1 para preservar a leitura.</p></div></div>
+    <form className="settings-custom-form" onSubmit={saveAppearance}>
+     <div className="settings-color-controls">
+      <label>Cor do fundo do CRM<div className="settings-color-field"><input type="color" value={colors.page} onChange={e=>changeColor('page',e.target.value)}/><span>{colors.page.toUpperCase()}</span></div></label>
+      <label>Cor primária do texto<div className="settings-color-field"><input type="color" value={colors.primary} onChange={e=>changeColor('primary',e.target.value)}/><span>{colors.primary.toUpperCase()}</span></div><small>Títulos e informações principais</small></label>
+      <label>Cor secundária do texto<div className="settings-color-field"><input type="color" value={colors.secondary} onChange={e=>changeColor('secondary',e.target.value)}/><span>{colors.secondary.toUpperCase()}</span></div><small>Descrições e textos de apoio</small></label>
+      <label>Cor terciária do texto<div className="settings-color-field"><input type="color" value={colors.tertiary} onChange={e=>changeColor('tertiary',e.target.value)}/><span>{colors.tertiary.toUpperCase()}</span></div><small>Legendas e detalhes discretos</small></label>
+     </div>
+     <div className="settings-appearance-preview" aria-label="Prévia de cores" style={{background:colors.page}}>
+      <div className="settings-preview-card"><strong style={{color:colors.primary}}>Exemplo de título</strong><p style={{color:colors.secondary}}>Uma apresentação clara da sua carteira.</p><small style={{color:colors.tertiary}}>Texto terciário · dados e legendas</small></div>
+     </div>
+     <div className="settings-background-control">
+      <div><h3>Imagem de fundo</h3><p>Opcional. Você pode carregar uma foto JPG, PNG ou WebP de até 3 MB. A interface aplica uma camada de leitura sobre ela e mantém os cartões legíveis.</p></div>
+      <div className="settings-background-picker">
+       <label className="reference-outline settings-upload-button"><UploadCloud size={17}/> Escolher imagem de fundo<input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseBackground}/></label>
+       {(backgroundPreview||backgroundUrl)&&!removeBackground&&<img className="settings-background-preview" src={backgroundPreview||backgroundUrl} alt="Prévia da imagem de fundo"/>}
+       {(backgroundFile||backgroundUrl)&&<button className="reference-outline" type="button" onClick={()=>{setBackgroundFile(null);setRemoveBackground(true)}}><Trash2 size={15}/> Remover fundo</button>}
+      </div>
+     </div>
+     <div className="settings-custom-actions"><button type="button" className="reference-outline" onClick={()=>{const palette=CRM_THEMES.find(t=>t.id===theme)||CRM_THEMES[0];const original=appearanceDefaults(palette);setColors(original);applyAppearanceToDocument(document.documentElement,palette,original,removeBackground?'':backgroundUrl);setError('')}}>Restaurar cores do tema</button>
+      <button className="reference-primary" type="submit" disabled={!!saving}><Save size={16}/>{saving==='appearance'?'Salvando preferências...':'Salvar aparência'}</button></div>
+    </form>
+   </section>
    <div className="settings-grid">
     <section className="reference-panel settings-panel">
      <div className="settings-section-heading"><span className="settings-section-icon"><UserRound size={21}/></span><div><h2>Meu perfil</h2><p>Seu nome e sua foto serão exibidos no menu do CRM.</p></div></div>
