@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="1100" viewBox="0 0 320 1100" role="img" aria-label="Barra lateral violeta com símbolos circulares e raios">
+<defs><linearGradient id="night" x2=".3" y2="1"><stop stop-color="#090b1c"/><stop offset=".5" stop-color="#12122c"/><stop offset="1" stop-color="#060b1a"/></linearGradient><radialGradient id="purple"><stop stop-color="#6448a5" stop-opacity=".4"/><stop offset="1" stop-color="#5d3b9d" stop-opacity="0"/></radialGradient></defs><rect width="320" height="1100" fill="url(#night)"/><ellipse cx="160" cy="700" rx="300" ry="380" fill="url(#purple)"/>
+<g fill="none" stroke="#8b7af0" opacity=".15" stroke-width="3"><circle cx="160" cy="610" r="167"/><circle cx="160" cy="610" r="130"/><circle cx="160" cy="610" r="96"/><circle cx="160" cy="610" r="62"/><circle cx="160" cy="610" r="27"/></g>
+<g fill="none" stroke="#709dff" stroke-linecap="round" stroke-linejoin="round"><path d="m308 175-95 85 34 24-109 103 28 19-109 114" stroke-width="13" opacity=".07"/><path d="m308 175-95 85 34 24-109 103 28 19-109 114" stroke-width="3" opacity=".27"/></g>
+<path d="M0 890 60 803 115 853 162 781 222 843 279 774 320 841v259H0Z" fill="#0a0b1d" opacity=".65"/>
+<g opacity=".18" fill="#8475d6"><path d="M12 947h296v8H12zM30 963h260v3H30z"/></g>
+<g stroke="#8777ea" stroke-opacity=".18" stroke-width="2" fill="none"><path d="M0 25h320M0 1070h320"/><path d="M-36 291q91-48 177 0t199-7"/></g>
+</svg>
