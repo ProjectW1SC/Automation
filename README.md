@@ -22,3 +22,10 @@ Repositório público contém **somente código e mapeamento de estrutura**; nã
 
 ## Comandos
 `npm install` · `npm run dev` · `npm test` · `npm run build`.
+
+## Uso simples
+
+- Entre com `intermedioesenegociacoes@gmail.com` (link de acesso por e-mail Supabase Auth). Configure o Site URL e o redirecionamento dessa aplicação nas configurações Auth do Supabase.
+- As planilhas já consultadas foram conciliadas inicialmente no Supabase. Para uma nova versão do Excel, use **Importar Excel** na tela: leitura local no navegador, gravação autenticada com RLS e conciliação pelo documento; nenhuma prova de quitação é presumida.
+- O botão de sincronização automática foi removido porque ainda não existe credencial Google de servidor autorizada no projeto. Não há sincronização Google Sheets em segundo plano até configurar um acesso de serviço seguro.
+- O Excel original foi importado como cópia privada para o Drive GET, preservando o arquivo anexado.
