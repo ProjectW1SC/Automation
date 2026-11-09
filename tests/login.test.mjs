@@ -37,3 +37,27 @@ test('rejects empty or too short passwords locally',async()=>{
   await assert.rejects(()=>signInWithPassword(auth,''),/senha/i);
   await assert.rejects(()=>signInWithPassword(auth,'abc'),/senha/i);
 });
+
+test('Supabase 400 invalid_credentials receives actionable message',()=> {
+  const error={status:400,code:'invalid_credentials',message:'Invalid login credentials'};
+  assert.match(interpretLoginError(error),/senha incorret/i);
+});
+
+test('Supabase 429 mail quota is identified instead of recommending immediate retries',async()=>{
+  const {isRecoveryRateLimit,canRequestRecovery,RECOVERY_COOLDOWN_MS}=await import('../lib/login.mjs');
+  const error={status:429,code:'over_email_send_rate_limit',message:'email rate limit exceeded'};
+  assert.equal(isRecoveryRateLimit(error),true);
+  assert.match(interpretLoginError(error),/limite|e-mails/i);
+  const t=Date.UTC(2026,10,9,13,5);
+  assert.equal(canRequestRecovery(t+RECOVERY_COOLDOWN_MS,t+1000),false);
+  assert.equal(canRequestRecovery(t+RECOVERY_COOLDOWN_MS,t+RECOVERY_COOLDOWN_MS),true);
+});
+
+test('a recuperação preserva o código 429 e não mascara o bloqueio do Supabase',async()=>{
+  const {isRecoveryRateLimit}=await import('../lib/login.mjs');
+  const auth={resetPasswordForEmail:async()=>({error:{status:429,code:'over_email_send_rate_limit',message:'email rate limit exceeded'}})};
+  await assert.rejects(async()=>{
+    try{await sendRecovery(auth,'https://projectw1sc-crm.vercel.app')}
+    catch(error){assert.equal(isRecoveryRateLimit(error),true);throw error}
+  },/limite|e-mails/i);
+});
