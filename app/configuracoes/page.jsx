@@ -182,7 +182,7 @@ export default function SettingsPage(){
    {(error||message)&&<div role={error?'alert':'status'} className={'settings-feedback '+(error?'bad':'good')}>{error||message}<button type="button" onClick={()=>{setError('');setMessage('')}} aria-label="Fechar aviso">×</button></div>}
    <section className="reference-panel settings-panel">
     <div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Aparência do CRM</h2><p>Escolha um tema para todas as abas. As letras e os botões permanecem legíveis.</p></div></div>
-    <div className="settings-theme-grid">{CRM_THEMES.map(t=><button type="button" key={t.id} className={'settings-theme-option '+(theme===t.id?'selected':'')} aria-pressed={theme===t.id} onClick={()=>setChosenTheme(t.id)}>
+    <div className="settings-theme-grid">{CRM_THEMES.map(t=><button type="button" key={t.id} className={'settings-theme-option settings-theme-'+t.id+' '+(theme===t.id?'selected':'')} aria-pressed={theme===t.id} onClick={()=>setChosenTheme(t.id)}>
      <span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.accent}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span>
      <span className="settings-theme-option-label">{t.label}{theme===t.id&&<Check size={16}/>}</span>
     </button>)}</div>
