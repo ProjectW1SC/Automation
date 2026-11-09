@@ -12,7 +12,7 @@ async function google(){
  throw Error('Credenciais Google não configuradas');
 }
 async function sheet(g,id,tab){const range=encodeURIComponent(`'${tab}'!A1:AE2000`);const url=`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}/values/${range}?valueRenderOption=FORMATTED_VALUE`;const r=await g.request({url});return r.data.values||[]}
-async function authorized(request,db){const h=request.headers.get('authorization')||'';const cron=process.env.CRON_SECRET&&h===`Bearer ${process.env.CRON_SECRET}`;if(cron)return true;const token=h.startsWith('Bearer ')?h.slice(7):'';if(!token)return false;const {data,error}=await db.auth.getUser(token);return !error&&data?.user?.email?.toLowerCase()==='intermedioesenegociacoes@gmail.com'}
+async function authorized(request,db){const h=request.headers.get('authorization')||'';const cron=process.env.CRON_SECRET&&h===`Bearer ${process.env.CRON_SECRET}`;if(cron)return true;const token=h.startsWith('Bearer ')?h.slice(7):'';if(!token)return false;const {data,error}=await db.auth.getUser(token);if(error||!data?.user)return false;if(data.user.email?.toLowerCase()==='intermedioesenegociacoes@gmail.com')return true;const {data:member,error:memberError}=await db.from('crm_memberships').select('role,enabled').eq('user_id',data.user.id).eq('enabled',true).maybeSingle();return !memberError&&member?.role==='admin'&&member.enabled}
 async function run(request){let db;try{db=serverDB()}catch(e){return fail(e.message,503)}if(!await authorized(request,db))return fail('Acesso não autorizado',401);
  const ids=(process.env.GOOGLE_SHEETS_IDS||'').split(',').map(x=>x.trim()).filter(Boolean);if(!ids.length)return fail('Nenhuma planilha configurada',503);
  let g;try{g=await google()}catch(e){return fail(e.message,503)}

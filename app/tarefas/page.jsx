@@ -5,6 +5,7 @@ import {getClient} from '../../lib/supabase-client';
 import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {ATTENDANCE_CHANNELS,ATTENDANCE_OUTCOMES,dueDate,filterTaskQueue,queueCounts,taskStatus,todayBrazil,validateAttendance,validateCriticidade,validateNote,validISO} from '../../lib/tarefas.mjs';
 import './tarefas.css';
@@ -38,16 +39,17 @@ function TaskBadge({client,today}){
 }
 function InfoLine({label,children}){return <div className="task-info-line"><span>{label}</span><strong>{children||'—'}</strong></div>}
 function TaskLogin({db,onLogged}){
+ const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
  const [password,setPassword]=useState(''),[show,setShow]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
  async function login(e){
   e.preventDefault();setLoading(true);setError('');
-  try{const {session}=await signInWithPassword(db.auth,password);setPassword('');onLogged(session)}
+  try{const {session}=await signInWithPassword(db.auth,password,loginEmail);setPassword('');onLogged(session)}
   catch(err){setError(err.message||'Não foi possível entrar.')}
   finally{setLoading(false)}
  }
  return <ProfessionalAuth eyebrow="FILA OPERACIONAL" title="Central de tarefas" description="Acesse suas prioridades, registre atendimentos e acompanhe os próximos retornos.">
   <form className="w1-auth-form" onSubmit={login}>
-   <label className="w1-auth-label" htmlFor="task-user">Conta autorizada</label><input id="task-user" type="email" value={ADMIN_EMAIL} autoComplete="username" readOnly/>
+   <label className="w1-auth-label" htmlFor="task-user">Conta autorizada</label><input id="task-user" type="email" required value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} autoComplete="username"/>
    <label className="w1-auth-label" htmlFor="task-password">Senha de acesso</label>
    <div className="w1-auth-password-wrap"><input id="task-password" required minLength={8} type={show?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/><button type="button" onClick={()=>setShow(v=>!v)} aria-label={show?'Ocultar senha':'Mostrar senha'} aria-pressed={show}>{show?'Ocultar':'Mostrar'}</button></div>
    <button className="w1-auth-submit" disabled={loading}>{loading?'Verificando acesso...':'Entrar nas tarefas'}</button>
@@ -58,6 +60,7 @@ function TaskLogin({db,onLogged}){
 export default function TarefasPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true);
+ const access=useCrmAccess(db,session?.user);
  const [clients,setClients]=useState([]),[loading,setLoading]=useState(false),[notice,setNotice]=useState('');
  const [view,setView]=useState('prioridades'),[search,setSearch]=useState(''),[priorityFilter,setPriorityFilter]=useState('todos'),[institutionFilter,setInstitutionFilter]=useState('todos');
  const [selected,setSelected]=useState(null),[modal,setModal]=useState(null),[focusId,setFocusId]=useState(null);
@@ -161,7 +164,8 @@ export default function TarefasPage(){
  if(!db)return <div className="task-auth-wrap"><div className="task-auth"><h1>CRM em configuração</h1><p>Configure a conexão Supabase antes de acessar dados privados.</p></div></div>;
  if(authLoading)return <div className="task-auth-wrap"><div className="task-loading"><Loader2 className="task-spin" size={24}/> Carregando acesso seguro...</div></div>;
  if(!session)return <TaskLogin db={db} onLogged={setSession}/>;
- if(session?.user?.email?.toLowerCase()!==ADMIN_EMAIL)return <div className="task-auth-wrap"><div className="task-auth"><h1>Acesso não autorizado</h1><p>Esta conta não tem acesso à carteira da ProjectW1SC.</p><button className="task-button" onClick={()=>db.auth.signOut()}>Sair</button></div></div>;
+ if(access.loading)return <div className="task-auth-wrap"><div className="task-loading">Validando acesso...</div></div>;
+ if(!access.allowed)return <div className="task-auth-wrap"><div className="task-auth"><h1>Acesso não autorizado</h1><p>Esta conta não tem acesso à carteira da ProjectW1SC.</p><button className="task-button" onClick={()=>db.auth.signOut()}>Sair</button></div></div>;
  const selectedStatus=selected?taskStatus(selected,today):null;
  const focusClient=queue.find(c=>c.id===focusId)||queue[0]||null;
  const focusIndex=Math.max(0,queue.findIndex(c=>c.id===focusClient?.id));

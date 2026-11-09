@@ -11,6 +11,7 @@ import {normalizeInstitutionName} from '../lib/institution-brands.mjs';
 import {validateImageFile} from '../lib/appearance-settings.mjs';
 import {crmAreaHref,areaFromQuery} from '../lib/crm-navigation.mjs';
 import {getClient} from '../lib/supabase-client';
+import {useCrmAccess} from '../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword as passwordLogin,sendRecovery,changePassword,isRecoveryRateLimit,canRequestRecovery,RECOVERY_COOLDOWN_MS} from '../lib/login.mjs';
 const RECOVERY_LOCK_KEY='projectw1sc:recovery-until';
 const labelStatus={em_andamento:'Em andamento',vencido:'Vencido',quitado_na_planilha:'Quitado na planilha',finalizado_na_planilha:'Finalizado na planilha',historico:'Histórico',revisar:'Revisar'};
@@ -18,9 +19,11 @@ const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const date=x=>x?new Date(x+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const txt=x=>x??'—';
 export default function Page(){
+ const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
  const uploadRef=useRef(null);const db=getClient(),[session,setSession]=useState(null),[password,setPassword]=useState(''),[recoveryPassword,setRecoveryPassword]=useState(''),[recoveryMode,setRecoveryMode]=useState(false),[showPassword,setShowPassword]=useState(false),[recoveryUntil,setRecoveryUntil]=useState(0),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [createDialog,setCreateDialog]=useState(null),[newClient,setNewClient]=useState({name:'',document:'',institution:''}),[newParty,setNewParty]=useState({name:'',kind:'financeira',contact:''}),[editParty,setEditParty]=useState(null),[logoFile,setLogoFile]=useState(null),[logoPreview,setLogoPreview]=useState(''),[logoRemove,setLogoRemove]=useState(false),[partyLogos,setPartyLogos]=useState({});
  const [unmatched,setUnmatched]=useState([]),[statusFilter,setStatusFilter]=useState('todos'),[page,setPage]=useState('Visão geral'),[clients,setClients]=useState([]),[parties,setParties]=useState([]),[runs,setRuns]=useState([]),[query,setQuery]=useState(''),[filter,setFilter]=useState('todos'),[selected,setSelected]=useState(null),[stage,setStage]=useState(''),[evidence,setEvidence]=useState(''),[evidenceUrl,setEvidenceUrl]=useState(''),[note,setNote]=useState(''),[criticidade,setCriticidade]=useState('normal'),[activities,setActivities]=useState([]),[updated,setUpdated]=useState(null),[reopenTarget,setReopenTarget]=useState(null),[reopenReason,setReopenReason]=useState('');
+ const access=useCrmAccess(db,session?.user);
  useEffect(()=>{
   if(!db)return;
   setRecoveryUntil(Number(window.sessionStorage.getItem(RECOVERY_LOCK_KEY)||0));
@@ -130,7 +133,7 @@ export default function Page(){
  async function signIn(e){
   e.preventDefault();setBusy(true);setNotice('');
   try{
-   await passwordLogin(db.auth,password);
+   await passwordLogin(db.auth,password,loginEmail);
    setPassword('');setNotice('');
   }catch(err){setNotice(err.message)}
   finally{setBusy(false)}
@@ -142,7 +145,7 @@ export default function Page(){
   }
   setBusy(true);setNotice('');
   try{
-   await sendRecovery(db.auth,window.location.origin);
+   await sendRecovery(db.auth,window.location.origin,loginEmail);
    const until=Date.now()+60*1000;
    setRecoveryUntil(until);
    window.sessionStorage.setItem(RECOVERY_LOCK_KEY,String(until));
@@ -214,11 +217,13 @@ export default function Page(){
  </form><button type="button" className="w1-auth-secondary-link" onClick={()=>setRecoveryMode(false)}>Cancelar alteração</button>{notice&&<p className="w1-auth-feedback" role="status">{notice}</p>}</ProfessionalAuth>;
  if(!session)return <ProfessionalAuth eyebrow="BEM-VINDO DE VOLTA" title="Acesse seu espaço" description="Entre para acompanhar clientes, negociações e tarefas em uma única plataforma."><form className="w1-auth-form" onSubmit={signIn}>
   <label className="w1-auth-label" htmlFor="admin-email">Conta autorizada</label>
-  <input className="w1-auth-input" id="admin-email" type="email" readOnly autoComplete="username" value={ADMIN_EMAIL}/>
+  <input className="w1-auth-input" id="admin-email" type="email" required autoComplete="username" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/>
   <div className="w1-auth-field-heading"><label htmlFor="admin-password">Senha de acesso</label><button type="button" disabled={busy||!canRequestRecovery(recoveryUntil)} onClick={recover}>{canRequestRecovery(recoveryUntil)?'Esqueci minha senha':'Recuperação indisponível'}</button></div>
   <div className="w1-auth-password-wrap"><input className="w1-auth-input" id="admin-password" type={showPassword?'text':'password'} required autoComplete="current-password" minLength={8} placeholder="Digite sua senha" value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={showPassword?'Ocultar senha':'Mostrar senha'} aria-pressed={showPassword} onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Ocultar':'Mostrar'}</button></div>
   <button className="w1-auth-submit" disabled={busy}>{busy?'Verificando acesso...':'Entrar no CRM'}</button>
  </form><p className="w1-auth-note">Acesso restrito a contas autorizadas. Sua sessão é gerenciada pelo Supabase.</p>{notice&&<p role={/erro|incorret|expir|falha|limite|não foi possível|não retornou/i.test(notice)?'alert':'status'} className={'w1-auth-feedback '+(/erro|incorret|expir|falha|limite|não foi possível|não retornou/i.test(notice)?'error':'')}>{notice}</p>}</ProfessionalAuth>;
+ if(access.loading)return <ProfessionalAuth eyebrow="ACESSO SEGURO" title="Validando permissão" description="Conferindo sua autorização."/>;
+ if(!access.allowed)return <ProfessionalAuth eyebrow="ACESSO RESTRITO" title="Conta não autorizada" description="Sua conta ainda não tem acesso à carteira."><button className="w1-auth-submit" type="button" onClick={()=>db.auth.signOut()}>Sair</button></ProfessionalAuth>;
  return <CrmShell active={page} email={session.user.email||''} onNavigate={changeArea} onSignOut={()=>db.auth.signOut()} onPassword={()=>{setRecoveryMode(true);setRecoveryPassword('')}}>
  <input ref={uploadRef} type="file" accept=".xlsx" hidden onChange={importExcel}/>
  <ReferencePages page={page} clients={clients} parties={parties} kpis={kpis} last={last} updated={updated} busy={busy}

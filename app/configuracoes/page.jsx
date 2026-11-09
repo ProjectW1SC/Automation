@@ -1,9 +1,10 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {Camera,Check,ChevronLeft,Eye,EyeOff,Image as ImageIcon,KeyRound,LockKeyhole,Palette,Save,ShieldCheck,UserRound,Trash2,UploadCloud} from 'lucide-react';
+import {Camera,Check,ChevronLeft,Eye,EyeOff,Image as ImageIcon,KeyRound,LockKeyhole,Palette,Save,ShieldCheck,UserRound,Users,Trash2,UploadCloud} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,changePassword} from '../../lib/login.mjs';
 import {CRM_THEMES,resolveTheme} from '../../lib/crm-themes.mjs';
 import {PROFILE_BUCKET,validateProfileName,validateAvatarFile,avatarPathFor,validatePasswordChange,ownerAvatarPath} from '../../lib/profile-settings.mjs';
@@ -13,7 +14,9 @@ const labelForTheme=id=>CRM_THEMES.find(x=>x.id===id)?.label||'Vinho clássico';
 export default function SettingsPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[loading,setLoading]=useState(true);
+ const access=useCrmAccess(db,session?.user);
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
+ const [newMemberEmail,setNewMemberEmail]=useState(''),[newMemberPassword,setNewMemberPassword]=useState(''),[memberSaving,setMemberSaving]=useState(false);
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
  const [theme,setTheme]=useState('vinho'),[saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
  const [colors,setColors]=useState(()=>appearanceDefaults(CRM_THEMES[0]));
@@ -172,10 +175,26 @@ export default function SettingsPage(){
   }catch(err){setError(err.message||'Não foi possível atualizar a senha.')}
   finally{setSaving('')}
  }
+ async function createMember(e){
+  e.preventDefault();
+  if(memberSaving||!db)return;
+  setMemberSaving(true);setError('');setMessage('');
+  try{
+   const {data,error}=await db.functions.invoke('projectw1sc-provision-account',{
+    body:{email:newMemberEmail.trim().toLowerCase(),password:newMemberPassword}
+   });
+   if(error)throw new Error(data?.error||error.message||'Não foi possível cadastrar a conta.');
+   if(!data?.ok)throw new Error(data?.error||'O cadastro não foi confirmado.');
+   setMessage('Conta criada e autorizada a acessar a mesma carteira do CRM.');
+   setNewMemberPassword('');
+  }catch(e){setError(e.message||'Falha ao adicionar usuário.')}
+  finally{setMemberSaving(false)}
+ }
  if(!db)return <main className="reference-auth">Configuração do Supabase indisponível.</main>;
  if(loading)return <main className="reference-auth">Verificando sua sessão...</main>;
  if(!session)return <ProfessionalAuth eyebrow="PREFERÊNCIAS DA CONTA" title="Acesse configurações" description="Para alterar seu perfil e as preferências do CRM, faça login primeiro."><a className="w1-auth-submit" href="/">Ir para a tela de acesso</a></ProfessionalAuth>;
- if(user?.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth">Conta não autorizada. <button onClick={()=>db.auth.signOut()}>Sair</button></main>;
+ if(access.loading)return <main className="reference-auth">Validando permissão...</main>;
+ if(!access.allowed)return <main className="reference-auth">Conta não autorizada. <button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
@@ -238,6 +257,15 @@ export default function SettingsPage(){
      </form>
     </section>
    </div>
+   {user.email?.toLowerCase()===ADMIN_EMAIL&&<section className="reference-panel settings-panel" aria-label="Gestão de acesso">
+    <div className="settings-section-heading"><span className="settings-section-icon"><Users size={21}/></span><div><h2>Adicionar usuário ao CRM</h2><p>Crie uma conta individual com acesso aos mesmos clientes, processos, tarefas e relatórios. Os dados continuam na mesma base.</p></div></div>
+    <form className="settings-form" onSubmit={createMember}>
+     <label>E-mail da nova pessoa<input type="email" required autoComplete="off" value={newMemberEmail} onChange={e=>setNewMemberEmail(e.target.value)} placeholder="exemplo@empresa.com"/></label>
+     <label>Senha inicial<input type="password" required minLength={8} maxLength={128} autoComplete="new-password" value={newMemberPassword} onChange={e=>setNewMemberPassword(e.target.value)} placeholder="Escolha uma senha temporária"/></label>
+     <p className="settings-security-note"><ShieldCheck size={15}/> Apenas o administrador principal pode criar contas. Recomenda-se trocar a senha temporária no primeiro acesso.</p>
+     <button className="reference-primary" type="submit" disabled={memberSaving}><Users size={16}/>{memberSaving?'Criando acesso...':'Criar usuário com acesso completo'}</button>
+    </form>
+   </section>}
   </main>
  </CrmShell>;
 }

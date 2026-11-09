@@ -5,6 +5,7 @@ import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 import {ACTIVITY_CATEGORIES,PROCESS_TYPES,processTypeLabel,categoryLabel,validateCompletedActivity,toActivityUpdate,activitySummary,paginateActivities,toCsvCell} from '../../lib/minhas-atividades.mjs';
@@ -31,7 +32,9 @@ function EntryCard({item,client,onEdit,onDelete,busy}){
 }
 export default function MinhasAtividades(){
  const db=useMemo(()=>getClient(),[]);
+ const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
  const [session,setSession]=useState(null),[checking,setChecking]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[password,setPassword]=useState('');
+ const access=useCrmAccess(db,session?.user);
  const [records,setRecords]=useState([]),[clients,setClients]=useState([]),[search,setSearch]=useState(''),[categoryFilter,setCategoryFilter]=useState('todos'),[page,setPage]=useState(1);
  const [form,setForm]=useState({title:'',description:'',category:'atendimento',date:'',clientId:'',contactConfirmed:false,minutes:'0',processNumber:'',processType:''});
  const [editingId,setEditingId]=useState(null);
@@ -135,17 +138,18 @@ export default function MinhasAtividades(){
  if(!session)return <ProfessionalAuth eyebrow="REGISTRO DE ATIVIDADES" title="Minhas atividades" description="Acesse seus registros, acompanhe o trabalho realizado e organize seu histórico.">
   <form className="w1-auth-form" onSubmit={async e=>{
    e.preventDefault();setBusy(true);setNotice('');
-   try{const {session:s}=await signInWithPassword(db.auth,password);setSession(s)}
+   try{const {session:s}=await signInWithPassword(db.auth,password,loginEmail);setSession(s)}
    catch(err){setNotice(err.message)}
    finally{setBusy(false)}
   }}>
-   <label className="w1-auth-label" htmlFor="activities-user">Conta autorizada</label><input id="activities-user" type="email" readOnly autoComplete="username" value={ADMIN_EMAIL}/>
+   <label className="w1-auth-label" htmlFor="activities-user">Conta autorizada</label><input id="activities-user" type="email" required autoComplete="username" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/>
    <label className="w1-auth-label" htmlFor="activities-pass">Senha de acesso</label><input id="activities-pass" type="password" minLength={8} required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/>
    <button type="submit" disabled={busy} className="w1-auth-submit">{busy?'Verificando acesso...':'Entrar nas atividades'}</button>
   </form>{notice&&<p className="w1-auth-feedback error" role="alert">{notice}</p>}
   <a className="w1-auth-back" href="/">Voltar ao CRM ou recuperar senha</a>
  </ProfessionalAuth>;
- if(session.user.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth"><p>Conta não autorizada neste CRM.</p><button onClick={()=>db.auth.signOut()}>Sair</button></main>;
+ if(access.loading)return <main className="reference-auth">Validando permissão...</main>;
+ if(!access.allowed)return <main className="reference-auth"><p>Conta não autorizada neste CRM.</p><button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  return <CrmShell active="Minhas atividades" email={session.user.email||''} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard reference-activities">
    <header className="reference-header"><div><div className="reference-overline">GESTÃO OPERACIONAL · PROJECTW1SC</div><h1>Minhas atividades</h1><p>Registro pessoal de tarefas realizadas, contatos e tempo dedicado.</p></div><div className="reference-actions"><button className="reference-outline" disabled={busy} onClick={load}><RefreshCw size={17}/> Atualizar</button><button className="reference-outline" disabled={filtered.length===0} onClick={exportCsv}><Download size={17}/> Exportar</button></div></header>
