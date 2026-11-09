@@ -4,6 +4,7 @@ import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,Calenda
 import {queueCounts,taskStatus,todayBrazil,dueDate} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
 import InstitutionLogo from './institution-logo';
+import EfferdKpi from './efferd-kpi';
 const brDate=d=>d?new Date(d+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'—';
 const brTimestamp=d=>d?new Date(d).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—';
 const txt=x=>String(x??'').trim();
@@ -13,7 +14,7 @@ const getStatus=(c,today)=>taskStatus(c,today);
 function IconHeading({icon:Icon,children,sub}){return <div className="reference-panel-title"><span className="reference-panel-title-icon"><Icon size={24}/></span><div><h2>{children}</h2>{sub&&<p>{sub}</p>}</div></div>}
 function Header({page,subtitle,actions,subheading='GESTÃO OPERACIONAL · PROJECTW1SC'}){return <header className="reference-header"><div><div className="reference-overline">{subheading}</div><h1>{page}</h1><p>{subtitle}</p></div><div className="reference-actions">{actions}</div></header>}
 function Action({children,icon:Icon,onClick,primary=false,disabled=false}){return <button type="button" disabled={disabled} onClick={onClick} className={primary?'reference-primary':'reference-outline'}>{Icon&&<Icon size={18}/>} {children}</button>}
-function Kpi({icon:Icon,title,value,sub,kind=''}){return <div className="reference-kpi"><span className={'reference-kpi-icon '+kind}><Icon size={22}/></span><div className="reference-kpi-text"><span>{title}</span><strong className={String(value).length>10?'compact':''}>{value}</strong>{sub&&<small>{sub}</small>}</div></div>}
+function Kpi({icon,title,value,sub,kind=''}){return <EfferdKpi icon={icon} title={title} value={value} sub={sub} tone={kind==='danger'?'danger':kind==='good'?'ok':kind==='pending'?'warn':'default'}/>}
 function Status({client,today}){
  const s=getStatus(client,today);
  const map={vencido:['danger','Vencido'],hoje:['pending','Hoje'],em_dia:['good','Em dia'],finalizado:['good','Finalizado'],sem_data:['neutral','Sem data']};

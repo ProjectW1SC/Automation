@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Activity,ArrowLeft,CalendarDays,CheckCircle2,Clock3,Download,FileClock,History,Loader2,Play,Plus,RefreshCw,Search,Square,UserRound,Users,ShieldCheck,FileText,Pencil,Trash2} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
@@ -18,7 +19,7 @@ function EntryCard({item,client,onEdit,onDelete,busy}){
   </div>
   <h3>{item.title}</h3>
   {item.description&&<p>{item.description}</p>}
-  {item.process_number&&<div className="reference-process-row"><FileText size={15}/><span><strong>Processo:</strong> {item.process_number}</span><span className="reference-status neutral">{processTypeLabel(item.process_type)}</span></div>}
+  {item.process_number&&<div className="reference-process-row"><FileText size={15}/><span><strong>Processo:</strong> {item.process_number}</span><span className="reference-status neutral">{processTypeLabel(item.process_type)}</span><a href={'/processos?numero='+encodeURIComponent(item.process_number)} className="reference-outline" style={{minHeight:28,padding:'5px 8px'}}>Consultar DataJud / DJEN</a></div>}
   <div className="reference-related">
     <span className="reference-overline">VÍNCULO COM O CLIENTE</span>
     {client?<div className="reference-related-grid"><span><b>Cliente</b>{client.name}</span><span><b>Financeira</b>{client.institution||'Não cadastrada'}</span><span><b>Contato realizado</b>{client.contacted_party||'Não informado'}</span><span><b>Situação</b>{client.workflow_status==='finalizado'?'Finalizado':'Ativo'}</span></div>:<p>Atividade sem cliente vinculado. Nenhuma associação presumida.</p>}
@@ -137,14 +138,12 @@ export default function MinhasAtividades(){
  return <CrmShell active="Minhas atividades" email={session.user.email||''} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard reference-activities">
    <header className="reference-header"><div><div className="reference-overline">GESTÃO OPERACIONAL · PROJECTW1SC</div><h1>Minhas atividades</h1><p>Registro pessoal de tarefas realizadas, contatos e tempo dedicado.</p></div><div className="reference-actions"><button className="reference-outline" disabled={busy} onClick={load}><RefreshCw size={17}/> Atualizar</button><button className="reference-outline" disabled={filtered.length===0} onClick={exportCsv}><Download size={17}/> Exportar</button></div></header>
-   <div className="reference-metrics reference-metrics-5">
-    {[{icon:Activity,label:'Atividades registradas',value:summary.total,description:'Lançamentos realizados'},
-      {icon:Users,label:'Clientes vinculados',value:summary.clients,description:'Clientes distintos'},
-      {icon:CheckCircle2,label:'Contatos confirmados',value:summary.contacts,description:'Marcados manualmente'},
-      {icon:FileClock,label:'Sem cliente vinculado',value:summary.withoutClient,description:'Atividades gerais'},
-      {icon:Clock3,label:'Horas registradas',value:clock(summary.durationSeconds),description:'Tempo informado'}].map((m,i)=>{
-        const Icon=m.icon;return <div className="reference-kpi" key={m.label}><div className="reference-kpi-icon"><Icon size={20}/></div><div><span>{m.label}</span><strong className={i===4?'compact':''}>{m.value}</strong><small>{m.description}</small></div></div>
-      })}
+   <div className="efferd-kpi-grid efferd-activities-metrics">
+    <EfferdKpi icon={Activity} title="Atividades registradas" value={summary.total} sub="Lançamentos realizados"/>
+    <EfferdKpi icon={Users} title="Clientes vinculados" value={summary.clients} sub="Clientes distintos" tone="info"/>
+    <EfferdKpi icon={CheckCircle2} title="Contatos confirmados" value={summary.contacts} sub="Marcados manualmente" tone="ok"/>
+    <EfferdKpi icon={FileClock} title="Sem cliente vinculado" value={summary.withoutClient} sub="Atividades gerais" tone="warn"/>
+    <EfferdKpi icon={Clock3} title="Horas registradas" value={clock(summary.durationSeconds)} sub="Tempo informado" tone="default"/>
    </div>
    {notice&&<div role="status" className="reference-notice">{notice}<button onClick={()=>setNotice('')} aria-label="Fechar aviso">×</button></div>}
    <div className="reference-activity-grid">

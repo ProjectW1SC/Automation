@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,AlertTriangle,ArrowLeft,ArrowUpRight,BadgeCheck,CalendarDays,CheckCircle2,ChevronRight,ClipboardCheck,Clock3,FileClock,Filter,Flag,History,Inbox,ListChecks,Loader2,Pencil,Phone,Plus,RefreshCcw,Search,Send,ShieldCheck,UserRound,Users,X} from 'lucide-react';
 import {getClient} from '../../lib/supabase-client';
 import CrmShell from '../../components/crm-shell';
+import EfferdKpi from '../../components/efferd-kpi';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {ATTENDANCE_CHANNELS,ATTENDANCE_OUTCOMES,dueDate,filterTaskQueue,queueCounts,taskStatus,todayBrazil,validateAttendance,validISO} from '../../lib/tarefas.mjs';
 import './tarefas.css';
@@ -160,22 +161,12 @@ export default function TarefasPage(){
     <div><div className="task-kicker">PROJECTW1SC <span>/ FILA OPERACIONAL</span></div><h1>Fila de prioridades</h1><p>Atenda primeiro os retornos vencidos. Edite, registre o contato e agende o próximo retorno.</p></div>
     <button className="task-button task-button-outline" disabled={loading||saving} onClick={load}><RefreshCcw size={16} className={loading?'task-spin':''}/> Atualizar</button>
    </header>
-   <div className="task-metrics">
-    <button onClick={()=>go('vencidos')} className={'task-metric '+(view==='vencidos'?'selected':'')}>
-      <span className="task-metric-icon danger"><AlertTriangle size={18}/></span><div><small>Vencidos</small><strong>{counts.vencido}</strong><em>Precisam de atenção</em></div>
-    </button>
-    <button onClick={()=>go('hoje')} className={'task-metric '+(view==='hoje'?'selected':'')}>
-      <span className="task-metric-icon amber"><CalendarDays size={18}/></span><div><small>Vencem hoje</small><strong>{counts.hoje}</strong><em>Retornos do dia</em></div>
-    </button>
-    <button onClick={()=>go('em_dia')} className={'task-metric '+(view==='em_dia'?'selected':'')}>
-      <span className="task-metric-icon mint"><CheckCircle2 size={18}/></span><div><small>Em dia</small><strong>{counts.em_dia}</strong><em>Próximos retornos</em></div>
-    </button>
-    <button onClick={()=>go('sem_data')} className={'task-metric '+(view==='sem_data'?'selected':'')}>
-      <span className="task-metric-icon slate"><FileClock size={18}/></span><div><small>Sem data</small><strong>{counts.sem_data}</strong><em>Definir retorno</em></div>
-    </button>
-    <button onClick={()=>go('finalizados')} className={'task-metric '+(view==='finalizados'?'selected':'')}>
-      <span className="task-metric-icon plum"><BadgeCheck size={18}/></span><div><small>Finalizados</small><strong>{counts.finalizado}</strong><em>Fora da fila ativa</em></div>
-    </button>
+   <div className="efferd-kpi-grid efferd-task-metrics">
+    <EfferdKpi icon={AlertTriangle} title="Vencidos" value={counts.vencido} sub="Precisam de atenção" tone="danger" onClick={()=>go('vencidos')} selected={view==='vencidos'}/>
+    <EfferdKpi icon={CalendarDays} title="Vencem hoje" value={counts.hoje} sub="Retornos do dia" tone="warn" onClick={()=>go('hoje')} selected={view==='hoje'}/>
+    <EfferdKpi icon={CheckCircle2} title="Em dia" value={counts.em_dia} sub="Próximos retornos" tone="ok" onClick={()=>go('em_dia')} selected={view==='em_dia'}/>
+    <EfferdKpi icon={FileClock} title="Sem data" value={counts.sem_data} sub="Definir retorno" onClick={()=>go('sem_data')} selected={view==='sem_data'}/>
+    <EfferdKpi icon={BadgeCheck} title="Finalizados" value={counts.finalizado} sub="Fora da fila ativa" tone="info" onClick={()=>go('finalizados')} selected={view==='finalizados'}/>
    </div>
    {notice&&<div className="task-notice" role="status" aria-live="polite"><AlertCircle size={16}/>{notice}<button aria-label="Fechar aviso" onClick={()=>setNotice('')}><X size={15}/></button></div>}
    <section className="task-board">
