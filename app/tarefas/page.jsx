@@ -177,7 +177,7 @@ export default function TarefasPage(){
       <span className="task-metric-icon plum"><BadgeCheck size={18}/></span><div><small>Finalizados</small><strong>{counts.finalizado}</strong><em>Fora da fila ativa</em></div>
     </button>
    </div>
-   {notice&&<div className="task-notice" role="status"><AlertCircle size={16}/>{notice}<button aria-label="Fechar aviso" onClick={()=>setNotice('')}><X size={15}/></button></div>}
+   {notice&&<div className="task-notice" role="status" aria-live="polite"><AlertCircle size={16}/>{notice}<button aria-label="Fechar aviso" onClick={()=>setNotice('')}><X size={15}/></button></div>}
    <section className="task-board">
     <div className="task-board-head">
      <div><span className="task-kicker">ROTINA DE ATENDIMENTO</span><h2>{queueViews.find(x=>x.id===view)?.label||'Prioridades'} <span>({queue.length})</span></h2>
@@ -191,13 +191,19 @@ export default function TarefasPage(){
      <select className="task-select-institution" aria-label="Filtrar financeira" value={institutionFilter} onChange={e=>setInstitutionFilter(e.target.value)}><option value="todos">Todas as financeiras</option>{institutionOptions.map(x=><option key={x} value={x}>{x}</option>)}</select>
     </div>
     <div className="task-queue-tabs" role="tablist" aria-label="Filas de acompanhamento">
-     {queueViews.map(item=><button role="tab" aria-selected={view===item.id} key={item.id} onClick={()=>go(item.id)} className={view===item.id?'active':''}>{item.label}{['vencidos','hoje','finalizados'].includes(item.id)&&<span>{counts[item.id==='vencidos'?'vencido':item.id==='finalizados'?'finalizado':'hoje']}</span>}</button>)}
+     {queueViews.map((item,tabIndex)=><button role="tab" aria-selected={view===item.id} tabIndex={view===item.id?0:-1} key={item.id} onClick={()=>go(item.id)} onKeyDown={e=>{
+       if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
+       e.preventDefault();
+       const next=e.key==='Home'?0:e.key==='End'?queueViews.length-1:(tabIndex+(e.key==='ArrowRight'?1:-1)+queueViews.length)%queueViews.length;
+       go(queueViews[next].id);
+       e.currentTarget.parentElement?.querySelectorAll('[role="tab"]')[next]?.focus();
+      }} className={view===item.id?'active':''}>{item.label}{['vencidos','hoje','finalizados'].includes(item.id)&&<span>{counts[item.id==='vencidos'?'vencido':item.id==='finalizados'?'finalizado':'hoje']}</span>}</button>)}
     </div>
-    {loading?<div className="task-empty"><Loader2 className="task-spin" size={25}/> Carregando a carteira...</div>:
+    {loading?<div className="task-skeleton-grid" role="status" aria-live="polite" aria-label="Carregando a carteira de clientes"><span>Atualizando a lista de clientes...</span>{[1,2,3,4].map(n=><div key={n} className="task-skeleton-row" aria-hidden="true"/>)}</div>:
       queue.length===0?<div className="task-empty"><Inbox size={35}/><strong>Nenhum cliente nesta fila</strong><p>Altere os filtros ou consulte a fila de prioridades.</p><button onClick={()=>go('prioridades')} className="task-button task-button-outline">Ver todas as prioridades</button></div>:
       <div className="task-list">{queue.map((client,index)=>{
        const s=taskStatus(client,today),isFinal=s.code==='finalizado';
-       return <article key={client.id} className={'task-item '+(s.code==='vencido'?'task-overdue':'')}>
+       return <article key={client.id} style={index<8?{animationDelay:`${index*36}ms`}:undefined} className={'task-item '+(s.code==='vencido'?'task-overdue':'')}>
         <div className="task-item-rank">{index+1}</div>
         <div className="task-item-main">
          <div className="task-name-row"><strong>{client.name}</strong><TaskBadge client={client} today={today}/>{client.priority_level&&client.priority_level!=='normal'&&<span className={'task-priority task-priority-'+client.priority_level}><Flag size={12}/> {prioOptions[client.priority_level]||client.priority_level}</span>}{client.source_conflict&&<span className="task-source-warning" title="Divergência entre fontes">Revisar origem</span>}</div>
