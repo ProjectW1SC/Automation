@@ -5,6 +5,9 @@ import {isFinalizedClient,finalizedClients,reopenClientPatch} from '../lib/final
 import {queueCounts,todayBrazil,validateCriticidade,validateNote} from '../lib/tarefas.mjs';
 import CrmShell from '../components/crm-shell';
 import ReferencePages from '../components/reference-pages';
+import InstitutionLogo from '../components/institution-logo';
+import {normalizeInstitutionName} from '../lib/institution-brands.mjs';
+import {validateImageFile} from '../lib/appearance-settings.mjs';
 import {crmAreaHref,areaFromQuery} from '../lib/crm-navigation.mjs';
 import {getClient} from '../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword as passwordLogin,sendRecovery,changePassword,isRecoveryRateLimit,canRequestRecovery,RECOVERY_COOLDOWN_MS} from '../lib/login.mjs';
@@ -15,7 +18,7 @@ const date=x=>x?new Date(x+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const txt=x=>x??'—';
 export default function Page(){
  const uploadRef=useRef(null);const db=getClient(),[session,setSession]=useState(null),[password,setPassword]=useState(''),[recoveryPassword,setRecoveryPassword]=useState(''),[recoveryMode,setRecoveryMode]=useState(false),[showPassword,setShowPassword]=useState(false),[recoveryUntil,setRecoveryUntil]=useState(0),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
- const [createDialog,setCreateDialog]=useState(null),[newClient,setNewClient]=useState({name:'',document:'',institution:''}),[newParty,setNewParty]=useState({name:'',kind:'financeira',contact:''});
+ const [createDialog,setCreateDialog]=useState(null),[newClient,setNewClient]=useState({name:'',document:'',institution:''}),[newParty,setNewParty]=useState({name:'',kind:'financeira',contact:''}),[editParty,setEditParty]=useState(null),[logoFile,setLogoFile]=useState(null),[logoPreview,setLogoPreview]=useState(''),[logoRemove,setLogoRemove]=useState(false),[partyLogos,setPartyLogos]=useState({});
  const [unmatched,setUnmatched]=useState([]),[statusFilter,setStatusFilter]=useState('todos'),[page,setPage]=useState('Visão geral'),[clients,setClients]=useState([]),[parties,setParties]=useState([]),[runs,setRuns]=useState([]),[query,setQuery]=useState(''),[filter,setFilter]=useState('todos'),[selected,setSelected]=useState(null),[stage,setStage]=useState(''),[evidence,setEvidence]=useState(''),[evidenceUrl,setEvidenceUrl]=useState(''),[note,setNote]=useState(''),[criticidade,setCriticidade]=useState('normal'),[activities,setActivities]=useState([]),[updated,setUpdated]=useState(null),[reopenTarget,setReopenTarget]=useState(null),[reopenReason,setReopenReason]=useState('');
  useEffect(()=>{
   if(!db)return;
@@ -43,7 +46,17 @@ export default function Page(){
   }
   return()=>{alive=false;subscription.unsubscribe()};
  },[db]);
- async function load(){if(!db)return;setBusy(true);const [a,b,c,d]=await Promise.all([db.from('crm_clients').select('*').order('name').limit(1000),db.from('crm_parties').select('*').order('name'),db.from('crm_import_runs').select('id,status,started_at,finished_at,rows_read,clients_merged,error').order('started_at',{ascending:false}).limit(10),db.from('crm_unmatched_sources').select('source_ref,client_name,source_tab,reason').order('created_at',{ascending:false}).limit(700)]);if(a.error)setNotice('Erro ao consultar dados: '+a.error.message);else{setClients(a.data||[]);setUpdated(new Date())}if(!b.error)setParties(b.data||[]);if(!c.error)setRuns(c.data||[]);if(!d.error)setUnmatched(d.data||[]);setBusy(false)}
+ async function load(){if(!db)return;setBusy(true);const [a,b,c,d]=await Promise.all([db.from('crm_clients').select('*').order('name').limit(1000),db.from('crm_parties').select('*').order('name'),db.from('crm_import_runs').select('id,status,started_at,finished_at,rows_read,clients_merged,error').order('started_at',{ascending:false}).limit(10),db.from('crm_unmatched_sources').select('source_ref,client_name,source_tab,reason').order('created_at',{ascending:false}).limit(700)]);if(a.error)setNotice('Erro ao consultar dados: '+a.error.message);else{setClients(a.data||[]);setUpdated(new Date())}if(!b.error){
+  const entries=b.data||[];setParties(entries);
+  const uploaded=entries.filter(x=>x.logo_path);
+  if(uploaded.length){
+   const {data:urls,error}=await db.storage.from('crm-institution-logos').createSignedUrls(uploaded.map(x=>x.logo_path),3600);
+   if(!error){
+    const map={};(urls||[]).forEach((u,i)=>{if(u?.signedUrl)map[normalizeInstitutionName(uploaded[i].name)]=u.signedUrl});
+    setPartyLogos(map);
+   }else{setPartyLogos({});setNotice('Cadastros carregados, mas as imagens particulares das instituições não puderam ser consultadas.')}
+  }else setPartyLogos({});
+ }if(!c.error)setRuns(c.data||[]);if(!d.error)setUnmatched(d.data||[]);setBusy(false)}
  useEffect(()=>{if(session)load();else{setClients([]);setParties([])}},[session]);
  useEffect(()=>{
   const syncLocation=()=>{
