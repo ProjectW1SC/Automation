@@ -74,3 +74,10 @@ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header)>:
     box-shadow:none!important;
   }
 }
+
+/* Readable Naruto executive report text on the newly light full-color banner.
+   Legacy report styles expected a dark burgundy strip with white lettering. */
+html[data-crm-theme="naruto"] .app-content .report-dashboard .report-executive-hero :is(h2,p,small,strong,span,.hero-overline){
+  color:var(--ui-ink)!important;
+  text-shadow:0 1px 1px rgba(255,251,242,.65);
+}
