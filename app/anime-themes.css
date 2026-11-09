@@ -48,18 +48,18 @@ html[data-crm-theme="sasuke"] .app-brand-monogram{
  width:70px;height:70px;margin:0 auto 8px;
  filter:drop-shadow(0 0 12px var(--anime-glow))
 }
-html[data-crm-theme="naruto"] .app-nav-link.active,
-html[data-crm-theme="naruto"] .app-nav-link[aria-current="page"]{
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link.active,
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link[aria-current="page"]{
  color:#fff!important;background:linear-gradient(110deg,#bb3c07,#9b350c 75%,#67230d)!important;
  box-shadow:inset 0 0 0 1px #ffbe80,0 0 17px 1px var(--anime-glow)!important
 }
-html[data-crm-theme="sasuke"] .app-nav-link.active,
-html[data-crm-theme="sasuke"] .app-nav-link[aria-current="page"]{
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link.active,
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link[aria-current="page"]{
  color:#f8f7ff!important;background:linear-gradient(105deg,#4b3caa,#24245e 80%,#1e1a48)!important;
  box-shadow:inset 0 0 0 1px #a899ff,0 0 16px 0 var(--anime-glow)!important
 }
-html[data-crm-theme="naruto"] .app-nav-link.active svg,
-html[data-crm-theme="sasuke"] .app-nav-link.active svg{color:#fff!important}
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link.active svg,
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link.active svg{color:#fff!important}
 html[data-crm-theme="naruto"] .app-nav-footer,
 html[data-crm-theme="sasuke"] .app-nav-footer{background:color-mix(in srgb,var(--ui-nav) 75%,transparent);border-radius:12px;padding:14px 9px!important}
 html[data-crm-theme="naruto"] .app-nav-footer :is(small,span),
@@ -105,13 +105,13 @@ html[data-crm-theme="sasuke"] :is(.task-badge-finalizado,.reference-status.finis
  color:var(--ui-neutral-ink)!important;background:var(--ui-neutral-bg)!important
 }
 /* Distinctive business marks when external corporate favicons cannot load. */
-.reference-institution-brand-bradesco .reference-institution-fallback{background:#ad1434!important;color:#fff!important}
-.reference-institution-brand-itau .reference-institution-fallback{background:#163995!important;color:#fff!important}
-.reference-institution-brand-santander .reference-institution-fallback{background:#a91d2e!important;color:#fff!important}
-.reference-institution-brand-caixa .reference-institution-fallback{background:#144d9d!important;color:#fff!important}
-.reference-institution-brand-banco-pan .reference-institution-fallback{background:#282b33!important;color:#fff!important}
-.reference-institution-brand-nubank .reference-institution-fallback{background:#642393!important;color:#fff!important}
-.reference-institution-brand-paschoalotto .reference-institution-fallback{background:#4e206d!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-bradesco .reference-institution-fallback{background:#ad1434!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-itau .reference-institution-fallback{background:#163995!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-santander .reference-institution-fallback{background:#a91d2e!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-caixa .reference-institution-fallback{background:#144d9d!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-banco-pan .reference-institution-fallback{background:#282b33!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-nubank .reference-institution-fallback{background:#642393!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-paschoalotto .reference-institution-fallback{background:#4e206d!important;color:#fff!important}
 html[data-crm-theme="naruto"] .reference-institution-mark,
 html[data-crm-theme="sasuke"] .reference-institution-mark{
  border-color:var(--ui-border)!important;box-shadow:0 2px 12px color-mix(in srgb,var(--anime-halo) 13%,transparent)
