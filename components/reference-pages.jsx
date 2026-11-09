@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,CalendarDays,CheckCircle2,Clock3,Download,FileCheck2,FileClock,FileSpreadsheet,FileWarning,Filter,History,Landmark,Mail,MoreHorizontal,Phone,Plus,RefreshCw,RotateCcw,Search,ShieldCheck,Users,Wallet} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,CalendarDays,CheckCircle2,Clock3,Download,FileCheck2,FileClock,FileSpreadsheet,FileWarning,Filter,History,Landmark,Mail,MoreHorizontal,Phone,Plus,RefreshCw,RotateCcw,Search,ShieldCheck,Users,UserRound,Wallet} from 'lucide-react';
 import {queueCounts,taskStatus,todayBrazil,dueDate} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
 const brDate=d=>d?new Date(d+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'—';
