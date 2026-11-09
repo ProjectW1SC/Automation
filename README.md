@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/themes/projectw1sc-mark.svg" alt="Logotipo ProjectW1SC" width="96" />
+<img src="./public/branding/projectw1sc-wordmark.svg" alt="Logotipo ProjectW1SC" width="96" />
 
 # ProjectW1SC
 
@@ -9,6 +9,8 @@
 Uma plataforma para organizar a carteira de clientes, acompanhar pendências, registrar atendimentos e transformar informações dispersas em uma rotina de trabalho clara e rastreável.
 
 [**Acessar o CRM**](https://projectw1sc-crm.vercel.app)
+
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-682a47)](./LICENSE)
 
 </div>
 
@@ -159,8 +161,8 @@ O objetivo do ProjectW1SC é continuar evoluindo como uma ferramenta de trabalho
 
 ---
 
-## Direitos autorais
+## Licença e direitos autorais
 
-**© 2026 W1 Capital. Todos os direitos reservados.**
+**© 2026 W1 Capital.** O código-fonte original do ProjectW1SC é distribuído sob a [Licença MIT](./LICENSE). É permitido estudar, modificar, compartilhar e utilizar o software nos termos dessa licença, preservando os avisos de copyright.
 
-O código, a documentação e os materiais originais do ProjectW1SC são de titularidade da W1 Capital. A disponibilização deste repositório para consulta não constitui, por si só, autorização para reprodução, redistribuição ou exploração comercial. Bibliotecas, marcas, referências visuais e outros conteúdos de terceiros permanecem sujeitos aos direitos dos respectivos titulares.
+A marca ProjectW1SC/W1 Capital, seus logotipos, obras visuais de personagens e marcas de terceiros não recebem automaticamente uma licença de reutilização comercial pela licença MIT do código. Respeite os direitos de seus titulares.
