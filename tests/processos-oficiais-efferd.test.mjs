@@ -47,7 +47,7 @@ test('official lookup endpoint requires user token and saved CNJ',()=>{
  assert.match(route,/crm_completed_activities/);
  assert.match(route,/crm_processes/);
  assert.match(route,/api-publica\.datajud\.cnj\.jus\.br/);
- assert.match(route,/comunicaapi\.pje\.jus\.br/);
+ assert.match(read('lib/processos-oficiais.mjs'),/comunicaapi\.pje\.jus\.br/);
  assert.match(route,/cache:\s*'no-store'/);
  assert.doesNotMatch(route,/service_role|SUPABASE_SERVICE_ROLE_KEY/);
 });
