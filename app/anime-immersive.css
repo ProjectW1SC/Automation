@@ -1,0 +1,219 @@
+/*
+ * Immersive anime theme coverage, applied after all legacy styles.
+ * Backgrounds are full-bleed SVG canvases; Naruto/Sasuke artwork remains
+ * independently scaled and feathered so it never becomes distorted.
+ * No data, business logic, authentication or exported PDF content changes.
+ */
+html[data-crm-theme="naruto"]{
+ --anime-wallpaper:url('/themes/wallpaper-naruto.svg');
+ --anime-side-wallpaper:url('/themes/sidebar-naruto.svg');
+ --anime-panel-bg:
+   radial-gradient(ellipse 100% 90% at 100% 0%,rgba(224,128,51,.095),transparent 70%),
+   linear-gradient(140deg,var(--ui-surface) 0%,var(--ui-surface) 43%,color-mix(in srgb,var(--ui-surface) 92%,#edba84) 100%);
+ --anime-workspace-scrim:linear-gradient(180deg,rgba(255,250,243,.08),rgba(255,246,232,.12));
+ --anime-card-shadow:0 8px 24px rgba(120,67,32,.09);
+ --anime-side-scrim:linear-gradient(180deg,rgba(12,9,11,.55),rgba(12,9,11,.16) 48%,rgba(12,9,11,.76));
+ --anime-divider:rgba(177,98,46,.28);
+}
+html[data-crm-theme="sasuke"]{
+ --anime-wallpaper:url('/themes/wallpaper-sasuke.svg');
+ --anime-side-wallpaper:url('/themes/sidebar-sasuke.svg');
+ --anime-panel-bg:
+   radial-gradient(ellipse 100% 88% at 100% 0%,rgba(111,81,195,.14),transparent 70%),
+   linear-gradient(140deg,var(--ui-surface) 0%,var(--ui-surface) 45%,color-mix(in srgb,var(--ui-surface) 88%,#424183) 100%);
+ --anime-workspace-scrim:linear-gradient(180deg,rgba(6,7,19,.08),rgba(6,7,19,.16));
+ --anime-card-shadow:0 8px 30px rgba(0,0,0,.22);
+ --anime-side-scrim:linear-gradient(180deg,rgba(4,4,17,.53),rgba(4,4,17,.12) 47%,rgba(4,4,17,.72));
+ --anime-divider:rgba(145,132,239,.35);
+}
+
+/* Full workspace. Neutral legacy backgrounds must not mask the wallpaper.
+ * Keep one continuous canvas while scrolling through every app route. */
+html[data-crm-theme="naruto"] .app-shell .app-content,
+html[data-crm-theme="sasuke"] .app-shell .app-content{
+ background-color:var(--ui-page)!important;
+ background-image:var(--anime-workspace-scrim),var(--anime-wallpaper)!important;
+ background-size:100% 100%,cover!important;
+ background-position:center center,center top!important;
+ background-repeat:no-repeat!important;
+ background-attachment:scroll,fixed!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(.reference-dashboard,.task-shell,.task-main,.settings-dashboard,.report-dashboard,.processes-dashboard,.reference-activities),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-dashboard,.task-shell,.task-main,.settings-dashboard,.report-dashboard,.processes-dashboard,.reference-activities){
+ background-color:transparent!important;
+ background-image:none!important;
+}
+/* Respect the customer's own background photo when selected in settings. */
+html[data-crm-theme="naruto"][data-crm-background="image"] .app-shell .app-content,
+html[data-crm-theme="sasuke"][data-crm-background="image"] .app-shell .app-content{
+ background-image:linear-gradient(color-mix(in srgb,var(--ui-page) 88%,transparent),color-mix(in srgb,var(--ui-page) 90%,transparent)),var(--crm-background-image)!important;
+ background-size:100% 100%,cover!important;
+ background-attachment:scroll,fixed!important;
+}
+
+/* Complete sidebar background at expanded AND collapsed widths: the scenery
+   is a feathered accent above an actual full-height dark vertical canvas. */
+html[data-crm-theme="naruto"] .app-shell .app-sidebar,
+html[data-crm-theme="sasuke"] .app-shell .app-sidebar,
+html[data-crm-theme="naruto"] .app-shell.sidebar-collapsed .app-sidebar,
+html[data-crm-theme="sasuke"] .app-shell.sidebar-collapsed .app-sidebar{
+ position:sticky;
+ isolation:isolate;
+ background-color:var(--ui-nav)!important;
+ background-image:var(--anime-side-scrim),var(--anime-side-wallpaper)!important;
+ background-size:100% 100%,cover!important;
+ background-position:center,center!important;
+ background-repeat:no-repeat!important;
+ border-right:1px solid var(--anime-divider)!important;
+}
+html[data-crm-theme="naruto"] .app-shell .app-sidebar::before,
+html[data-crm-theme="sasuke"] .app-shell .app-sidebar::before{
+ content:"";
+ position:absolute;
+ z-index:0;
+ left:0;right:0;top:32%;bottom:11%;
+ pointer-events:none;
+ background-image:var(--anime-side);
+ background-position:center center;
+ background-repeat:no-repeat;
+ background-size:cover;
+ opacity:.40;
+ -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20%,#000 74%,transparent 100%);
+ mask-image:linear-gradient(180deg,transparent 0%,#000 20%,#000 74%,transparent 100%);
+}
+html[data-crm-theme="naruto"] .app-shell .app-sidebar>:not(.app-section-name),
+html[data-crm-theme="sasuke"] .app-shell .app-sidebar>:not(.app-section-name){
+ position:relative;
+ z-index:1;
+}
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link:not(.active),
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link:not(.active){
+ text-shadow:0 1px 8px rgba(0,0,0,.8);
+}
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-footer,
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-footer{
+ border-top:1px solid var(--anime-divider)!important;
+ background:color-mix(in srgb,var(--ui-nav) 88%,transparent)!important;
+ backdrop-filter:blur(6px);
+}
+/* Close the visual gap in collapsed mode, without forcing the portrait into
+   70px width or stretching a source photo. */
+html[data-crm-theme="naruto"] .app-shell.sidebar-collapsed .app-sidebar::before,
+html[data-crm-theme="sasuke"] .app-shell.sidebar-collapsed .app-sidebar::before{
+ opacity:.24;top:28%;bottom:12%;
+ background-size:auto 62%;
+}
+
+/* Panorama is 1600×320; cover always fills the whole header.
+   The existing raster character is not a full-width screenshot layer. */
+html[data-crm-theme="naruto"] .app-content :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero){
+ position:relative!important;
+ isolation:isolate;
+ overflow:hidden!important;
+ background-image:var(--anime-header-scrim),var(--anime-panorama)!important;
+ background-size:100% 100%,cover!important;
+ background-position:center,center!important;
+ background-repeat:no-repeat!important;
+ min-height:212px!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before,
+html[data-crm-theme="sasuke"] .app-content :is(.reference-dashboard .reference-header,.app-content .task-header,.report-dashboard .report-executive-hero)::before{
+ background-image:var(--anime-hero)!important;
+ background-repeat:no-repeat!important;
+ background-size:auto 121%!important;
+ background-position:72% center!important;
+ opacity:.90;
+ -webkit-mask-image:radial-gradient(ellipse 44% 113% at 72% 50%,#000 29%,rgba(0,0,0,.9) 54%,transparent 100%);
+ mask-image:radial-gradient(ellipse 44% 113% at 72% 50%,#000 29%,rgba(0,0,0,.9) 54%,transparent 100%);
+}
+html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header)>:is(div,.reference-actions),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header)>:is(div,.reference-actions){
+ position:relative;z-index:1;
+}
+/* Decorate entire functional surfaces, not just a tiny accent crop.
+   Status badge colors remain semantic and contrast-tested. */
+html[data-crm-theme="naruto"] .app-content :is(.reference-kpi,.efferd-kpi,.dashboard-chart-card,.task-metric,.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.report-filters,.reference-client-detail,.reference-activity-card,.panel,.metric,.processes-source,.report-mini-stats>div),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-kpi,.efferd-kpi,.dashboard-chart-card,.task-metric,.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.report-filters,.reference-client-detail,.reference-activity-card,.panel,.metric,.processes-source,.report-mini-stats>div){
+ background-color:var(--ui-surface)!important;
+ background-image:var(--anime-panel-bg)!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ color:var(--ui-ink)!important;
+ border-color:var(--ui-border)!important;
+ box-shadow:var(--anime-card-shadow)!important;
+}
+/* Theme-appropriate depth, dividers, navigation and working forms. */
+html[data-crm-theme="naruto"] .app-content :is(.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.reference-client-detail),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.reference-client-detail){
+ border-radius:16px!important;
+ border-top:1px solid var(--anime-divider)!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(.reference-panel-title,.settings-section-heading,.task-board-head,.report-section-head),
+html[data-crm-theme="sasuke"] .app-content :is(.reference-panel-title,.settings-section-heading,.task-board-head,.report-section-head){
+ border-color:var(--anime-divider)!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(.task-queue-tabs,.reference-table thead,.settings-theme-grid),
+html[data-crm-theme="sasuke"] .app-content :is(.task-queue-tabs,.reference-table thead,.settings-theme-grid){
+ border-color:var(--anime-divider)!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(input,select,textarea,.reference-filter-button,.task-select-wrap,.task-search,.reference-search),
+html[data-crm-theme="sasuke"] .app-content :is(input,select,textarea,.reference-filter-button,.task-select-wrap,.task-search,.reference-search){
+ border-color:var(--ui-border)!important;
+}
+html[data-crm-theme="naruto"] .app-content :is(.reference-panel,.task-board,.reference-kpi,.efferd-kpi,.settings-panel):hover,
+html[data-crm-theme="sasuke"] .app-content :is(.reference-panel,.task-board,.reference-kpi,.efferd-kpi,.settings-panel):hover{
+ border-color:var(--ui-accent)!important;
+}
+@media(max-width:1100px){
+ html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header)::before,
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header)::before{
+  background-size:auto 112%!important;background-position:79% center!important;
+ }
+}
+@media(max-width:750px){
+ html[data-crm-theme="naruto"] .app-shell .app-sidebar,
+ html[data-crm-theme="sasuke"] .app-shell .app-sidebar{
+  position:sticky;top:0;height:auto;min-height:0;background-size:100% 100%,cover!important;
+ }
+ html[data-crm-theme="naruto"] .app-shell .app-sidebar::before,
+ html[data-crm-theme="sasuke"] .app-shell .app-sidebar::before{display:none!important}
+ html[data-crm-theme="naruto"] .app-shell .app-content,
+ html[data-crm-theme="sasuke"] .app-shell .app-content{background-attachment:scroll,scroll!important}
+ html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header,.report-executive-hero),
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header,.report-executive-hero){
+  min-height:180px!important;padding:19px 16px!important;
+  background-size:100% 100%,cover!important;
+ }
+ html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header,.report-executive-hero)::before,
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header,.report-executive-hero)::before{
+  opacity:.34;background-size:auto 90%!important;background-position:90% center!important;
+  -webkit-mask-image:radial-gradient(ellipse 70% 115% at 85% 50%,#000 25%,transparent 100%);
+  mask-image:radial-gradient(ellipse 70% 115% at 85% 50%,#000 25%,transparent 100%);
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="naruto"] .app-content *,
+ html[data-crm-theme="sasuke"] .app-content *{
+  scroll-behavior:auto!important;animation-duration:.01ms!important;
+ }
+}
+@media print{
+ html[data-crm-theme="naruto"] .app-content,
+ html[data-crm-theme="sasuke"] .app-content,
+ html[data-crm-theme="naruto"] .reference-dashboard,
+ html[data-crm-theme="sasuke"] .reference-dashboard{
+  background:#fff!important;
+ }
+ html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header,.report-executive-hero)::before,
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header,.report-executive-hero)::before{display:none!important}
+ html[data-crm-theme="naruto"] .app-content :is(.reference-header,.task-header,.report-executive-hero),
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-header,.task-header,.report-executive-hero){
+  background-image:none!important;box-shadow:none!important
+ }
+ html[data-crm-theme="naruto"] .app-content :is(.reference-kpi,.efferd-kpi,.dashboard-chart-card,.task-metric,.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.report-filters),
+ html[data-crm-theme="sasuke"] .app-content :is(.reference-kpi,.efferd-kpi,.dashboard-chart-card,.task-metric,.reference-panel,.task-board,.settings-panel,.sales-contact-focus,.report-filters){
+  background-image:none!important;box-shadow:none!important
+ }
+}
