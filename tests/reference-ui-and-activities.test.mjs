@@ -9,7 +9,7 @@ test('minhas atividades has dedicated navigation within one CRM',()=>{
  assert.deepEqual(CRM_AREAS.map(a=>a.label),['Visão geral','Tarefas','Clientes','Finalizados','Instituições','Minhas atividades']);
  assert.equal(crmAreaHref('Minhas atividades'),'/minhas-atividades');
  const shell=file('components/crm-shell.jsx');
- assert.match(shell,/PROJECTW1SC/);
+ assert.match(shell,/PROJECT<span>W1SC/);
  assert.match(shell,/CRM_AREAS/);
  assert.match(shell,/CrmShell/);
 });
