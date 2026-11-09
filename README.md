@@ -156,3 +156,11 @@ Os dados dos clientes pertencem ao ambiente privado de operação. Não inclua i
 As melhorias são desenvolvidas de maneira incremental, procurando preservar os dados existentes e manter a operação estável. Correções, novas funcionalidades e ajustes visuais devem passar por revisão, testes e verificação da implantação.
 
 O objetivo do ProjectW1SC é continuar evoluindo como uma ferramenta de trabalho **prática, organizada e confiável**, com atenção à segurança, à rastreabilidade e à experiência de quem utiliza o CRM todos os dias.
+
+---
+
+## Direitos autorais
+
+**© 2026 W1 Capital. Todos os direitos reservados.**
+
+O código, a documentação e os materiais originais do ProjectW1SC são de titularidade da W1 Capital. A disponibilização deste repositório para consulta não constitui, por si só, autorização para reprodução, redistribuição ou exploração comercial. Bibliotecas, marcas, referências visuais e outros conteúdos de terceiros permanecem sujeitos aos direitos dos respectivos titulares.
