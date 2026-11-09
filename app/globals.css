@@ -57,3 +57,13 @@
  .app-mobile-account a,.app-mobile-account button{display:grid;place-items:center;color:#f3dfe6;background:#51303e;border:1px solid #754c5b;border-radius:8px;width:31px;height:31px;padding:0}
  .app-identity{padding-right:90px}
 }
+
+/* Finalizados é uma área do CRM, não uma fila paralela; reabrir mantém trilha de auditoria. */
+.crm-row-actions{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.crm-reopen-button{background:#714355;border:1px solid #714355;color:#fff;white-space:nowrap}
+.crm-reopen-button:hover{background:#5d3042}
+.crm-reopen-modal{display:grid;gap:12px}
+.crm-reopen-modal .crm-reopen-label{font-size:12px;font-weight:750;color:#5c4050}
+.crm-reopen-modal textarea{min-width:100%;max-width:100%;resize:vertical}
+.crm-reopen-modal .actions{display:flex;justify-content:flex-end;flex-wrap:wrap}
+@media(max-width:700px){.crm-row-actions{flex-wrap:wrap}.crm-reopen-modal{padding:19px}}
