@@ -1,3 +1,4 @@
+import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl} from '../../../../lib/processos-oficiais.mjs';
@@ -58,7 +59,7 @@ export async function GET(request){
   if(!url||!key)return json({ok:false,error:'Conexão segura do CRM não configurada.'},503);
   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:'Bearer '+token}}});
   const {data:{user},error:authError}=await db.auth.getUser(token);
-  if(authError||!user||user.email?.toLowerCase()!=='intermedioesenegociacoes@gmail.com')
+  if(authError||!user||!(await checkCrmAccess(db,user)))
    return json({ok:false,error:'Conta sem permissão para consultar processos neste CRM.'},403);
   const params=new URL(request.url).searchParams;
   const number=formatProcessNumber(params.get('numero'));
@@ -66,7 +67,7 @@ export async function GET(request){
   if(!['datajud','djen'].includes(source))return json({ok:false,error:'Escolha DataJud ou DJEN.'},400);
   // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
   const [registry,activities]=await Promise.all([
-   db.from('crm_processes').select('id').eq('actor_id',user.id).eq('process_number',number).limit(1),
+   db.from('crm_processes').select('id').eq('process_number',number).limit(1),
    db.from('crm_completed_activities').select('id').eq('actor_id',user.id).eq('process_number',number).is('deleted_at',null).limit(1)
   ]);
   if(registry.error||activities.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
