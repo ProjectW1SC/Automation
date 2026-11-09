@@ -41,6 +41,11 @@ join crm_internal.pending_users p on p.email=lower(u.email)
 where u.email_confirmed_at is not null and p.enabled
 on conflict(user_id) do update set role=excluded.role,enabled=true;
 
+-- O administrador original também participa da carteira compartilhada.
+insert into public.crm_memberships(user_id,role,enabled)
+select id,'admin',true from auth.users where lower(email)='intermedioesenegociacoes@gmail.com'
+on conflict(user_id) do update set role='admin',enabled=true;
+
 -- Administradores autorizados enxergam a mesma carteira, independentemente de quem cadastrou.
 drop policy if exists crm_processes_admin_read on public.crm_processes;
 create policy crm_processes_admin_read on public.crm_processes
