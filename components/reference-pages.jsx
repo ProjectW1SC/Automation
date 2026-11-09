@@ -1,9 +1,11 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,CalendarDays,CheckCircle2,Clock3,Download,FileCheck2,FileClock,FileSpreadsheet,FileWarning,Filter,History,Landmark,Mail,MoreHorizontal,Phone,Plus,RefreshCw,RotateCcw,Search,ShieldCheck,Users,UserRound,Wallet} from 'lucide-react';
+import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,CalendarDays,CheckCircle2,Clock3,Download,FileCheck2,FileClock,FileSpreadsheet,FileWarning,Filter,History,Landmark,Mail,MoreHorizontal,Phone,Plus,RefreshCw,RotateCcw,Search,ShieldCheck,Users,UserRound,Wallet,Image as ImageIcon} from 'lucide-react';
 import {queueCounts,taskStatus,todayBrazil,dueDate} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
 import InstitutionLogo from './institution-logo';
+import {normalizeInstitutionName} from '../lib/institution-brands.mjs';
+import DashboardCharts from './dashboard-charts';
 import EfferdKpi from './efferd-kpi';
 const brDate=d=>d?new Date(d+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'—';
 const brTimestamp=d=>d?new Date(d).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—';
@@ -30,7 +32,7 @@ function Pager({page,pages,count,size,onPage}){
  return <div className="reference-pager"><span>Mostrando {count?(page-1)*size+1:0}–{Math.min(page*size,count)} de {count} registros</span><div><button type="button" disabled={page===1} onClick={()=>onPage(page-1)} aria-label="Página anterior"><ArrowLeft size={16}/></button><b className="active">{page}</b><span>de {pages}</span><button type="button" disabled={page===pages} onClick={()=>onPage(page+1)} aria-label="Próxima página"><ArrowRight size={16}/></button></div></div>
 }
 function ClientName({client}){return <div className="reference-client-name"><span className="reference-avatar">{initial(client.name)}</span><b>{client.name}</b></div>}
-function Overview({clients,kpis,last,updated,onGo,onSelectClient,onRefresh,onImport,busy}){
+function Overview({clients,kpis,last,updated,onGo,onSelectClient,onRefresh,onImport,busy,partyLogos={}}){
  const today=todayBrazil();const preview=clients.filter(c=>c.workflow_status!=='finalizado').slice(0,3);
  return <main className="reference-dashboard">
   <Header page="Visão geral" subtitle="Negociações, contatos e comprovação de quitações em um só lugar." actions={<><Action primary icon={Activity} onClick={()=>onGo('Tarefas')}>Abrir fila de tarefas</Action><Action icon={RefreshCw} onClick={onRefresh} disabled={busy}>Atualizar</Action><Action icon={Download} onClick={onImport} disabled={busy}>Importar Excel</Action></>}/>
@@ -45,15 +47,16 @@ function Overview({clients,kpis,last,updated,onGo,onSelectClient,onRefresh,onImp
    <Kpi icon={Download} title="Última importação" value={last?brTimestamp(last.started_at):'—'} sub={last?.status||'Não realizada'}/>
    <Kpi icon={Clock3} title="Atualizado na tela" value={updated?updated.toLocaleTimeString('pt-BR'):'—'} sub="Atualização desta sessão"/>
   </div>
+  <DashboardCharts clients={clients} today={today}/>
   <section className="reference-panel reference-overview-list">
    <div className="reference-row-between"><IconHeading icon={Users} sub={clients.length+' clientes na carteira'}>Carteira de clientes</IconHeading><Action icon={ArrowRight} onClick={()=>onGo('Clientes')}>Ver carteira completa</Action></div>
    <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Cliente</th><th>Instituição</th><th>Situação</th><th>Próximo retorno</th><th>Contato</th><th></th></tr></thead><tbody>
-    {preview.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} showName/></td><td><Status client={c} today={today}/></td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brDate(dueDate(c))}</span></td><td>{c.phone?<span className="reference-cell-icon"><Phone size={15}/>{c.phone}</span>:'—'}</td><td><button className="reference-more" aria-label={'Abrir '+c.name} onClick={()=>onSelectClient(c)}><MoreHorizontal size={17}/></button></td></tr>)}
+    {preview.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} customUrl={partyLogos[normalizeInstitutionName(c.institution)]||''} showName/></td><td><Status client={c} today={today}/></td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brDate(dueDate(c))}</span></td><td>{c.phone?<span className="reference-cell-icon"><Phone size={15}/>{c.phone}</span>:'—'}</td><td><button className="reference-more" aria-label={'Abrir '+c.name} onClick={()=>onSelectClient(c)}><MoreHorizontal size={17}/></button></td></tr>)}
    </tbody></table>{preview.length===0&&<p className="reference-empty">Nenhum acompanhamento ativo cadastrado.</p>}</div>
   </section>
  </main>
 }
-function Clients({clients,kpis,onGo,onSelectClient,onRefresh,onCreate,busy}){
+function Clients({clients,kpis,onGo,onSelectClient,onRefresh,onCreate,busy,partyLogos={}}){
  const today=todayBrazil(),sum=queueCounts(clients,today);
  const [q,setQ]=useState(''),[state,setState]=useState('todos'),[step,setStep]=useState('todos'),[institution,setInstitution]=useState('todos'),[focused,setFocused]=useState(null),[p,setP]=useState(1);
  const institutions=useMemo(()=>[...new Set(clients.map(c=>txt(c.institution)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')),[clients]);
@@ -82,14 +85,14 @@ function Clients({clients,kpis,onGo,onSelectClient,onRefresh,onCreate,busy}){
      <label className="reference-filter-label">Financeira<select value={institution} onChange={e=>filterSet(setInstitution,e.target.value)}><option value="todos">Todas</option>{institutions.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
     </div>
     <div className="reference-table-scroll"><table className="reference-table reference-clients-table"><thead><tr><th>Cliente</th><th>Financeira</th><th>Situação</th><th>Próximo retorno</th><th>Consultor</th><th>Contato</th><th></th></tr></thead><tbody>
-     {rows.map(c=><tr key={c.id} className={focus?.id===c.id?'selected':''} onClick={()=>setFocused(c.id)}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} showName/></td><td><Status client={c} today={today}/></td><td>{brDate(dueDate(c))}</td><td>{c.consultant||'—'}</td><td>{c.phone||'—'}</td><td><button className="reference-more" aria-label={'Detalhes de '+c.name} onClick={e=>{e.stopPropagation();onSelectClient(c)}}><MoreHorizontal size={16}/></button></td></tr>)}
+     {rows.map(c=><tr key={c.id} className={focus?.id===c.id?'selected':''} onClick={()=>setFocused(c.id)}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} customUrl={partyLogos[normalizeInstitutionName(c.institution)]||''} showName/></td><td><Status client={c} today={today}/></td><td>{brDate(dueDate(c))}</td><td>{c.consultant||'—'}</td><td>{c.phone||'—'}</td><td><button className="reference-more" aria-label={'Detalhes de '+c.name} onClick={e=>{e.stopPropagation();onSelectClient(c)}}><MoreHorizontal size={16}/></button></td></tr>)}
     </tbody></table>{rows.length===0&&<div className="reference-empty">Nenhum cliente corresponde aos filtros.</div>}</div>
     <Pager page={page} pages={pages} count={list.length} size={8} onPage={setP}/>
    </section>
    <aside className="reference-panel reference-client-detail">
     {focus?<><div className="reference-detail-head"><span className="reference-avatar large">{initial(focus.name)}</span><div><h2>{focus.name}</h2><span>CPF/CNPJ: {focus.doc_digits?'•••'+focus.doc_digits.slice(-4):'Não cadastrado'}</span></div><Status client={focus} today={today}/></div>
      <div className="reference-detail-grid">
-      <div><Landmark size={20}/><span>Financeira<b><InstitutionLogo name={focus.institution} showName/></b></span></div>
+      <div><Landmark size={20}/><span>Financeira<b><InstitutionLogo name={focus.institution} customUrl={partyLogos[normalizeInstitutionName(focus.institution)]||''} showName/></b></span></div>
       <div><Activity size={20}/><span>Etapa<b>{focus.stage?.replaceAll('_',' ')||'—'}</b></span></div>
       <div><UserRound size={20}/><span>Consultor<b>{focus.consultant||'—'}</b></span></div>
       <div><CalendarDays size={20}/><span>Próximo retorno<b>{brDate(dueDate(focus))}</b></span></div>
@@ -127,7 +130,7 @@ function Finished({clients,onSelectClient,onReopen,onRefresh,busy}){
   </section>
  </main>;
 }
-function Institutions({parties,onRefresh,onCreate,busy}){
+function Institutions({parties,onRefresh,onCreate,onEditInstitution,partyLogos={},busy}){
  const [q,setQ]=useState(''),[kind,setKind]=useState('todas'),[p,setP]=useState(1);
  const items=useMemo(()=>parties.filter(x=>(kind==='todas'||x.kind===kind)&&(!q.trim()||[x.name,x.kind,x.contact].some(v=>txt(v).toLocaleLowerCase('pt-BR').includes(q.toLocaleLowerCase('pt-BR').trim())))),[parties,kind,q]);
  const pages=Math.max(1,Math.ceil(items.length/12)),page=Math.min(p,pages),rows=items.slice((page-1)*12,page*12);
@@ -143,8 +146,8 @@ function Institutions({parties,onRefresh,onCreate,busy}){
   </div>
   <section className="reference-panel reference-institutions">
    <div className="reference-inline-filters"><label className="reference-search"><Search size={18}/><input value={q} onChange={e=>{setQ(e.target.value);setP(1)}} placeholder="Buscar instituição por nome ou contato..."/></label><label className="reference-filter-button"><Filter size={16}/><select value={kind} onChange={e=>{setKind(e.target.value);setP(1)}}><option value="todas">Todas as categorias</option>{kinds.map(x=><option key={x} value={x}>{kindText(x)}</option>)}</select></label></div>
-   <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Instituição</th><th>Categoria</th><th>Contato principal</th><th>Última atualização</th><th></th></tr></thead><tbody>
-     {rows.map(c=><tr key={c.id}><td><div className="reference-client-name"><InstitutionLogo name={c.name} size="lg"/><b>{c.name}</b></div></td><td><span className="reference-status neutral"><Landmark size={14}/>{kindText(c.kind)}</span></td><td>{c.contact||'Contato não cadastrado'}</td><td>{brTimestamp(c.updated_at)}</td><td><span className="reference-status good"><CheckCircle2 size={13}/> Cadastrada</span></td></tr>)}
+   <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Instituição</th><th>Categoria</th><th>Contato principal</th><th>Última atualização</th><th>Situação</th><th>Ações</th></tr></thead><tbody>
+     {rows.map(c=><tr key={c.id}><td><div className="reference-client-name"><InstitutionLogo name={c.name} size="lg" customUrl={partyLogos[normalizeInstitutionName(c.name)]||''}/><b>{c.name}</b></div></td><td><span className="reference-status neutral"><Landmark size={14}/>{kindText(c.kind)}</span></td><td>{c.contact||'Contato não cadastrado'}</td><td>{brTimestamp(c.updated_at)}</td><td><span className="reference-status good"><CheckCircle2 size={13}/> Cadastrada</span></td><td><button type="button" className="reference-outline reference-institution-edit" onClick={()=>onEditInstitution?.(c)} aria-label={"Editar imagem de "+c.name}><ImageIcon size={15}/> Editar imagem</button></td></tr>)}
    </tbody></table>{!rows.length&&<div className="reference-empty">Nenhuma instituição encontrada.</div>}</div>
    <Pager page={page} pages={pages} count={items.length} size={12} onPage={setP}/>
   </section>
