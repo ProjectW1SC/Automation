@@ -1,0 +1,147 @@
+
+/* Final pass for theme-scoped contrast and independent visual customization.
+   The theme tokens and WCAG checks are the sole source of text colors. */
+html[data-crm-theme]{--ui-tertiary:var(--ui-muted)}
+html[data-crm-theme] .reference-dashboard .dashboard-chart-section-head h2,
+html[data-crm-theme] .reference-dashboard .dashboard-chart-card h3{color:var(--ui-ink)!important}
+html[data-crm-theme] .reference-dashboard .dashboard-chart-section-head p,
+html[data-crm-theme] .reference-dashboard .dashboard-chart-date,
+html[data-crm-theme] .dashboard-chart-legend{color:var(--ui-muted)!important}
+html[data-crm-theme] .reference-dashboard .dashboard-chart-card{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+/* Fix the very specific generic report-dashboard h2/p selectors that previously made
+   the white text dark against a burgundy hero. No hard-coded theme exceptions. */
+html[data-crm-theme] .report-dashboard .report-executive-hero{
+ background:linear-gradient(125deg,var(--ui-nav),color-mix(in srgb,var(--ui-nav) 90%,var(--ui-accent)))!important;
+ color:var(--ui-nav-ink)!important
+}
+html[data-crm-theme] .report-dashboard .report-executive-hero h2,
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-overline,
+html[data-crm-theme] .report-dashboard .report-executive-hero p,
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-highlight,
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-highlight small,
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-highlight strong{
+ color:var(--ui-nav-ink)!important;opacity:1!important
+}
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-overline{font-size:11px!important;font-weight:850}
+html[data-crm-theme] .report-dashboard .report-executive-hero p{font-size:13px!important;line-height:1.65!important}
+html[data-crm-theme] .report-dashboard .report-executive-hero h2{font-size:clamp(23px,2.1vw,29px)!important;line-height:1.25!important}
+html[data-crm-theme] .report-dashboard .report-executive-hero .hero-highlight{
+ background:color-mix(in srgb,var(--ui-nav-ink) 10%,transparent)!important;border-color:color-mix(in srgb,var(--ui-nav-ink) 34%,transparent)!important
+}
+/* Print preview and actual PDF always use independent, print-safe colors.
+   Dynamic themes, customized primary text and background images cannot override them. */
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover,
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover *{
+ color:#fff!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover .pdf-cover-main h1{
+ color:#fff!important;font-weight:700!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover .pdf-cover-main h1 em{
+ color:#f4d6e2!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover p,
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover small,
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-cover span{
+ color:#f7eaf0!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover){
+ background:#fff!important;color:#2d2028!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover) :is(h1,h2,h3,h4,p,span,small,strong,b,td,th){
+ color:#372631!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover) .pdf-daily-table thead th{
+ color:#fff!important;background:#57203a!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover) .pdf-priority-level.urgente{
+ background:#feecef!important;color:#942637!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover) .pdf-priority-level.alta{
+ background:#fff1df!important;color:#75480e!important
+}
+html[data-crm-theme] .report-dashboard .report-print-document .pdf-page:not(.pdf-cover) .pdf-priority-level.normal{
+ background:#e8e9ed!important;color:#444c55!important
+}
+/* Institution index remains readable at common 90% browser zoom. */
+html[data-crm-theme] .reference-institutions .reference-table tbody td{font-size:12px!important;line-height:1.45!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .reference-institutions .reference-table thead th{font-size:10px!important;letter-spacing:.6px!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .reference-institutions .reference-client-name b{font-size:12px!important;color:var(--ui-ink)!important}
+.reference-institution-edit{display:inline-flex;align-items:center;gap:6px;padding:7px 9px!important;min-height:30px!important;font-size:11px!important;white-space:nowrap}
+.reference-institution-mark{box-shadow:0 2px 6px rgba(50,24,38,.05)}
+.reference-institution-fallback{font-size:11px!important;letter-spacing:-.2px;font-family:system-ui,sans-serif!important;font-weight:850!important;line-height:1}
+.reference-institution-variant-0 .reference-institution-fallback{background:color-mix(in srgb,#8b4272 15%,var(--ui-surface))!important}
+.reference-institution-variant-1 .reference-institution-fallback{background:color-mix(in srgb,#4775ac 15%,var(--ui-surface))!important}
+.reference-institution-variant-2 .reference-institution-fallback{background:color-mix(in srgb,#447e6e 15%,var(--ui-surface))!important}
+.reference-institution-variant-3 .reference-institution-fallback{background:color-mix(in srgb,#bb8b3b 15%,var(--ui-surface))!important}
+.reference-institution-variant-4 .reference-institution-fallback{background:var(--ui-tint)!important}
+.reference-institution-variant-5 .reference-institution-fallback{background:color-mix(in srgb,#a95c68 13%,var(--ui-surface))!important}
+html[data-crm-theme] .reference-institution-fallback{color:var(--ui-ink)!important}
+.institution-logo-editor{width:min(92vw,550px);display:grid;gap:15px}
+.institution-logo-editor h2{font-size:25px}
+.institution-logo-editor label:not(.institution-image-picker){display:grid;gap:7px;font-size:12px;color:var(--ui-ink);font-weight:750}
+.institution-edit-preview{display:grid;gap:10px;padding:14px;border-radius:12px;border:1px solid var(--ui-border);background:var(--ui-tint)}
+.institution-edit-preview .reference-institution-logo-lg .reference-institution-mark{width:62px;height:62px}
+.institution-edit-preview .reference-institution-logo-lg img{width:52px;height:52px}
+.institution-edit-preview p{margin:0;font-size:12px;line-height:1.6;color:var(--ui-tint-ink)}
+.institution-image-picker{display:flex;justify-content:center;cursor:pointer;padding:13px!important}
+.institution-edit-actions{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap}
+/* Background photos stay behind opaque cards: a high-opacity tint prevents text loss. */
+html[data-crm-theme][data-crm-background="image"] .app-content{
+ background-color:var(--ui-page)!important;
+ background-image:linear-gradient(color-mix(in srgb,var(--ui-page) 91%,transparent),color-mix(in srgb,var(--ui-page) 93%,transparent)),var(--crm-background-image)!important;
+ background-size:cover!important;background-position:center!important;background-attachment:fixed!important
+}
+html[data-crm-theme][data-crm-background="image"] .app-content :is(.reference-dashboard,.task-shell,.task-main){
+ background:transparent!important
+}
+html[data-crm-theme][data-crm-background="image"] .reference-dashboard :is(.reference-panel,.dashboard-chart-card,.settings-panel),
+html[data-crm-theme][data-crm-background="image"] .app-content .task-board{
+ background:var(--ui-surface)!important
+}
+html[data-crm-theme][data-crm-background="image"] .report-pdf-print-host{background:var(--ui-surface)!important}
+/* All three editable semantic text roles. Navigation/on-accent use safe fixed token pairs. */
+html[data-crm-theme] .reference-dashboard :is(.reference-header h1,.reference-client-name b,.reference-panel h2,.reference-panel h3){color:var(--ui-ink)!important}
+html[data-crm-theme] .reference-dashboard :is(.reference-header p,.reference-panel p,.reference-table td){color:var(--ui-muted)!important}
+html[data-crm-theme] .reference-dashboard :is(.reference-overline,.reference-table thead th,.reference-pager,.reference-meta-label,.reference-footer small),
+html[data-crm-theme] .app-content :is(.task-kicker,.task-queue-tabs button,.report-subtitle,.sales-focus-top span:last-child){
+ color:var(--ui-tertiary,var(--ui-muted))!important
+}
+html[data-crm-theme] .app-content .reference-table thead th{color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .reference-dashboard .reference-primary,
+html[data-crm-theme] .app-content .task-button-primary{color:var(--ui-accent-ink)!important}
+html[data-crm-theme] .reference-institutions .reference-status{font-size:11px!important}
+/* Appearance editor inputs and preview */
+.settings-custom-form{display:grid;gap:19px}
+.settings-color-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.settings-color-controls>label{display:grid;gap:8px;font-size:12px;font-weight:750;color:var(--ui-ink)}
+.settings-color-controls small{font-size:10px;color:var(--ui-tertiary,var(--ui-muted));font-weight:500}
+.settings-color-field{border:1px solid var(--ui-border);background:var(--ui-surface);border-radius:11px;padding:8px;display:flex;align-items:center;gap:9px}
+.settings-color-field input[type=color]{width:42px;height:37px;border:0;padding:0;background:none;cursor:pointer;flex:none}
+.settings-color-field span{font-size:12px;color:var(--ui-ink);font-variant-numeric:tabular-nums;font-weight:750}
+.settings-appearance-preview{padding:15px;border:1px solid var(--ui-border);border-radius:13px}
+.settings-preview-card{border:1px solid var(--ui-border);border-radius:11px;background:var(--ui-surface);padding:17px;display:grid;gap:7px}
+.settings-preview-card strong{font:700 20px Georgia,serif}
+.settings-preview-card p{margin:0;font-size:12px}
+.settings-preview-card small{font-size:11px}
+.settings-background-control{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding-top:18px;border-top:1px solid var(--ui-border)}
+.settings-background-control>div:first-child{max-width:470px}
+.settings-background-control h3{color:var(--ui-ink);font-size:16px;margin:0 0 6px}
+.settings-background-control p{margin:0;font-size:12px;color:var(--ui-muted);line-height:1.65}
+.settings-background-picker{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.settings-background-preview{width:100px;height:65px;object-fit:cover;border:1px solid var(--ui-border);border-radius:8px}
+.settings-custom-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px}
+@media(max-width:1040px){.settings-color-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.settings-color-controls{grid-template-columns:1fr}.settings-background-control{flex-direction:column}.settings-background-picker{width:100%}}
+@media print{
+ html[data-crm-theme][data-crm-background="image"] .app-content,
+ html[data-crm-theme][data-crm-background="image"] .reference-dashboard{
+  background:#fff!important;background-image:none!important
+ }
+ .report-dashboard .report-pdf-print-host{background:#fff!important}
+ .report-dashboard .report-print-document .pdf-cover{background:#3f142a!important}
+ html[data-crm-theme] .report-dashboard .report-print-document .pdf-page,
+ html[data-crm-theme] .report-dashboard .report-print-document .pdf-page *{
+  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important
+ }
+}
