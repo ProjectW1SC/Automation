@@ -10,7 +10,8 @@ const example={title:'Atividade processual realizada',category:'analise_processu
 test('o numero do processo CNJ pode ser digitado com ou sem mascara e tipo definido',()=>{
  assert.equal(formatCNJ('10012183620265020040'),'1001218-36.2026.5.02.0040');
  assert.equal(formatCNJ('1001218-36.2026.5.02.0040'),'1001218-36.2026.5.02.0040');
- assert.deepEqual(({process_number,process_type})=>({process_number,process_type}))(validateCompletedActivity({...example,processNumber:'10012183620265020040',processType:'busca_apreensao'},'2026-11-09'),{process_number:'1001218-36.2026.5.02.0040',process_type:'busca_apreensao'});
+ const activity=validateCompletedActivity({...example,processNumber:'10012183620265020040',processType:'busca_apreensao'},'2026-11-09');
+ assert.deepEqual({process_number:activity.process_number,process_type:activity.process_type},{process_number:'1001218-36.2026.5.02.0040',process_type:'busca_apreensao'});
  assert.equal(validateCompletedActivity({...example,processNumber:'',processType:''},'2026-11-09').process_number,null);
 });
 
