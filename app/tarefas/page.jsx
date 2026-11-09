@@ -63,7 +63,7 @@ export default function TarefasPage(){
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true);
  const [clients,setClients]=useState([]),[loading,setLoading]=useState(false),[notice,setNotice]=useState('');
  const [view,setView]=useState('prioridades'),[search,setSearch]=useState(''),[priorityFilter,setPriorityFilter]=useState('todos'),[institutionFilter,setInstitutionFilter]=useState('todos');
- const [selected,setSelected]=useState(null),[modal,setModal]=useState(null);
+ const [selected,setSelected]=useState(null),[modal,setModal]=useState(null),[focusId,setFocusId]=useState(null);
  const [edit,setEdit]=useState({}),[reason,setReason]=useState(''),[noteBody,setNoteBody]=useState('');
  const [attendance,setAttendance]=useState({channel:'whatsapp',outcome:'contatado',body:'',next_due:'',responsible:'Davi Alves Figueredo',priority_level:'normal',note:''});
  const [history,setHistory]=useState([]),[historyLoading,setHistoryLoading]=useState(false),[saving,setSaving]=useState(false);
@@ -166,6 +166,9 @@ export default function TarefasPage(){
  if(!session)return <TaskLogin db={db} onLogged={setSession}/>;
  if(session?.user?.email?.toLowerCase()!==ADMIN_EMAIL)return <div className="task-auth-wrap"><div className="task-auth"><h1>Acesso não autorizado</h1><p>Esta conta não tem acesso à carteira da ProjectW1SC.</p><button className="task-button" onClick={()=>db.auth.signOut()}>Sair</button></div></div>;
  const selectedStatus=selected?taskStatus(selected,today):null;
+ const focusClient=queue.find(c=>c.id===focusId)||queue[0]||null;
+ const focusIndex=Math.max(0,queue.findIndex(c=>c.id===focusClient?.id));
+ const focusStatus=focusClient?taskStatus(focusClient,today):null;
  return <CrmShell active="Tarefas" email={session.user.email||''} onSignOut={()=>db.auth.signOut()}><div className="task-shell">
   <main className="task-main">
    <header className="task-header">
@@ -203,25 +206,55 @@ export default function TarefasPage(){
     </div>
     {loading?<div className="task-skeleton-grid" role="status" aria-live="polite" aria-label="Carregando a carteira de clientes"><span>Atualizando a lista de clientes...</span>{[1,2,3,4].map(n=><div key={n} className="task-skeleton-row" aria-hidden="true"/>)}</div>:
       queue.length===0?<div className="task-empty"><Inbox size={35}/><strong>Nenhum cliente nesta fila</strong><p>Altere os filtros ou consulte a fila de prioridades.</p><button onClick={()=>go('prioridades')} className="task-button task-button-outline">Ver todas as prioridades</button></div>:
-      <div className="task-list">{queue.map((client,index)=>{
-       const s=taskStatus(client,today),isFinal=s.code==='finalizado';
-       return <article key={client.id} style={index<8?{animationDelay:`${index*36}ms`}:undefined} className={'task-item '+(s.code==='vencido'?'task-overdue':'')}>
-        <div className="task-item-rank">{index+1}</div>
-        <div className="task-item-main">
-         <div className="task-name-row"><strong>{client.name}</strong><TaskBadge client={client} today={today}/>{client.priority_level&&client.priority_level!=='normal'&&<span className={'task-priority task-priority-'+client.priority_level}><Flag size={12}/> {prioOptions[client.priority_level]||client.priority_level}</span>}{client.source_conflict&&<span className="task-source-warning" title="Divergência entre fontes">Revisar origem</span>}</div>
-         <div className="task-item-description"><span>{client.institution||'Financeira não cadastrada'}</span><span className="task-dot"/> <span>{client.contacted_party?'Contato: '+client.contacted_party:'Sem escritório contatado informado'}</span></div>
-         <div className="task-item-meta"><span><CalendarDays size={14}/> Próximo: <strong>{dateBR(s.date)}</strong></span><span><Clock3 size={14}/> {statusDescription(s)}</span>{client.phone&&<span><Phone size={13}/> {client.phone}</span>}{client.last_attendance_at&&<span><ClipboardCheck size={14}/> Último atendimento: {timestampBR(client.last_attendance_at)}</span>}</div>
-         {s.code==='sem_data'&&client.source_status==='vencido'&&<p className="task-source-note">A planilha marcou como vencido, mas falta uma data válida. Confirme o retorno antes de agir.</p>}
+      <div className="sales-workspace">
+       <div className="sales-queue" role="listbox" aria-label="Fila de contatos priorizados">
+        <div className="sales-queue-heading"><span>CONTATOS NA FILA</span><strong>{queue.length} registros</strong></div>
+        {queue.map((client,index)=>{
+         const status=taskStatus(client,today);
+         const active=focusClient?.id===client.id;
+         return <button type="button" key={client.id} role="option" aria-selected={active} onClick={()=>setFocusId(client.id)} className={'sales-contact-card '+(active?'selected ':'')+(status.code==='vencido'?'overdue':'')}>
+          <span className="sales-contact-index">{index+1}</span>
+          <div className="sales-contact-body"><div className="sales-contact-name"><strong>{client.name}</strong><TaskBadge client={client} today={today}/></div>
+           <p>{client.institution||'Financeira não informada'} · {client.contacted_party||'Contato não informado'}</p>
+           <div className="sales-contact-meta"><span><CalendarDays size={13}/> {dateBR(status.date)}</span><span>{client.priority_level==='urgente'?'Criticidade urgente':client.priority_level==='alta'?'Criticidade alta':'Criticidade normal'}</span></div>
+          </div><ChevronRight size={17} className="sales-contact-chevron"/>
+         </button>
+        })}
+       </div>
+       <aside className="sales-contact-focus" aria-label="Área de atendimento do cliente selecionado">
+        <div className="sales-focus-top"><span>ATENDIMENTO EM FOCO</span><span>{focusIndex+1} de {queue.length}</span></div>
+        <div className="sales-focus-person"><div className="sales-focus-avatar">{(focusClient?.name||'?').slice(0,1).toUpperCase()}</div>
+         <div><h3>{focusClient?.name}</h3><div className="sales-focus-tags"><TaskBadge client={focusClient} today={today}/><span className={'sales-criticality '+(focusClient?.priority_level||'normal')}>Criticidade: {prioOptions[focusClient?.priority_level]||'Normal'}</span></div></div>
         </div>
-        <div className="task-item-actions">
-         {!isFinal&&<button className="task-button task-button-primary" onClick={()=>startAttendance(client)}><Plus size={15}/> Registrar atendimento</button>}
-         <button className="task-button task-button-subtle" onClick={()=>startEdit(client)}><Pencil size={15}/> Editar</button>
-         <button className="task-button task-button-subtle" onClick={()=>startNote(client)}><NotebookPen size={15}/> Anotar</button>
-         <button className="task-icon-button" title="Ver histórico" aria-label={'Ver histórico de '+client.name} onClick={()=>startHistory(client)}><History size={18}/></button>
-         {isFinal?<button className="task-link-mini" onClick={()=>startEdit(client,false)}>Reabrir</button>:<button className="task-link-mini" onClick={()=>startEdit(client,true)}>Finalizar</button>}
+        <div className="sales-focus-info">
+         <div><span>Instituição</span><strong>{focusClient?.institution||'Não informada'}</strong></div>
+         <div><span>Escritório / financeira contatada</span><strong>{focusClient?.contacted_party||'Não informado'}</strong></div>
+         <div><span>Próximo retorno</span><strong>{dateBR(focusStatus?.date)}</strong></div>
+         <div><span>Último atendimento</span><strong>{timestampBR(focusClient?.last_attendance_at)}</strong></div>
+         <div><span>Responsável</span><strong>{focusClient?.assigned_to||focusClient?.consultant||'Não informado'}</strong></div>
+         <div><span>Telefone</span>{focusClient?.phone?<a href={'tel:'+String(focusClient.phone).replace(/[^\d+]/g,'')}>{focusClient.phone}</a>:<strong>Não informado</strong>}</div>
         </div>
-       </article>;
-      })}</div>}
+        <div className="sales-focus-note"><div><NotebookPen size={15}/> Última observação da ficha</div><p>{focusClient?.notes||'Nenhuma anotação de ficha cadastrada. Consulte o histórico para verificar registros anteriores.'}</p></div>
+        <section className="sales-contact-checklist" aria-label="Fluxo de contato">
+         <h4>Próximas ações</h4>
+         <p><span>01</span> Confira o histórico e o contato informado.</p>
+         <p><span>02</span> Registre a tentativa ou o atendimento realizado.</p>
+         <p><span>03</span> Atualize a criticidade e a próxima data de retorno.</p>
+        </section>
+        <div className="sales-focus-actions">
+         {focusClient?.workflow_status==='finalizado'
+          ?<button type="button" className="task-button task-button-primary" onClick={()=>startEdit(focusClient,false)}>Reabrir acompanhamento</button>
+          :<button type="button" className="task-button task-button-primary" onClick={()=>startAttendance(focusClient)}><Plus size={16}/> Registrar atendimento</button>}
+         <div className="sales-focus-secondary">
+          <button type="button" className="task-button task-button-subtle" onClick={()=>startNote(focusClient)}><NotebookPen size={15}/> Anotar</button>
+          <button type="button" className="task-button task-button-subtle" onClick={()=>startEdit(focusClient)}><Pencil size={15}/> Editar</button>
+          <button type="button" className="task-button task-button-subtle" onClick={()=>startHistory(focusClient)}><History size={15}/> Histórico</button>
+         </div>
+         {focusClient?.workflow_status!=='finalizado'&&<button type="button" className="sales-finish-link" onClick={()=>startEdit(focusClient,true)}>Finalizar acompanhamento</button>}
+        </div>
+        <div className="sales-focus-pager"><button type="button" className="task-button task-button-outline" disabled={focusIndex===0} onClick={()=>setFocusId(queue[focusIndex-1]?.id)}><ArrowLeft size={15}/> Anterior</button><button type="button" className="task-button task-button-outline" disabled={focusIndex>=queue.length-1} onClick={()=>setFocusId(queue[focusIndex+1]?.id)}>Próximo contato <ChevronRight size={15}/></button></div>
+       </aside>
+      </div>}
     <div className="task-list-footer"><ShieldCheck size={15}/> Nenhuma mensagem é enviada automaticamente. Todos os registros ficam no Supabase.</div>
    </section>
   </main>
