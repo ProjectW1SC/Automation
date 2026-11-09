@@ -56,7 +56,7 @@ test('known real logos mapped without guessing ambiguous law firms',()=>{
  assert.equal(getInstitutionBrand('DIGI+')?.domain,'bancodigimais.com.br');
  assert.equal(getInstitutionBrand('ASSESSORIA J.A')?.domain,'jaassessoria.com.br');
  assert.equal(getInstitutionBrand('BRUNO VANDERLEI')?.domain,'brunovanderlei.adv.br');
- assert.equal(getInstitutionBrand('CARDOSO CORREA'),null);
+ assert.equal(getInstitutionBrand('CARDOSO CORREA')?.domain,'cardosoecorrea.com.br');
 });
 test('Efferd KPIs use restrained semantic styles in all CRM themes',()=>{
  const comp=read('components/efferd-kpi.jsx'),styles=read('app/efferd-crm.css');
