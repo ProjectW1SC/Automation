@@ -21,8 +21,8 @@ test('anime headers cover their entire width while keeping character artwork pro
  assert.match(css,/background-size:cover!important/);
  assert.match(css,/--anime-portrait-size:auto/);
  assert.match(css,/background-size:var\(--anime-portrait-size\)/);
- assert.match(css,/\.reference-header::before/);
- assert.match(css,/\.task-header::before/);
+ assert.match(css,/\.reference-header,\.app-content \.task-header,\.report-dashboard \.report-executive-hero\)::before/);
+ assert.match(css,/background-image:var\(--anime-hero\)/);
  assert.match(css,/mask-image:/);
 });
 
