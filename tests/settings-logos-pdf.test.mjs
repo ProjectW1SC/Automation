@@ -64,7 +64,7 @@ test('report PDF has dedicated A4 multi-page layout with no fictional numbers',(
  assert.match(view,/report\.portfolio\.total/);
  assert.match(view,/report\.daily/);
  assert.match(view,/reportHealthNotes/);
- assert.match(view,/Privado/);
+ assert.match(view,/Dados restritos/);
  assert.match(page,/ReportPrintDocument/);
  assert.match(page,/window\.print/);
  assert.deepEqual(reportPrintSections(['capa','resumo','operacao','metodologia']).length,4);
