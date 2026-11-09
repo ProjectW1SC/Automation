@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {Activity,AlertCircle,ArrowRight,CalendarDays,CheckCircle2,Clock3,ExternalLink,FileSearch,Gavel,History,Landmark,Loader2,Plus,RefreshCw,Search,ShieldCheck,Trash2} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
@@ -12,11 +13,20 @@ const sourceLabels={datajud:'DataJud',djen:'DJEN'};
 const twoYearsAgo=()=>{const d=new Date();d.setFullYear(d.getFullYear()-2);return d.toISOString().slice(0,10)};
 function ProcessLogin({db,onSession}){
  const [pw,setPw]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
- return <main className="reference-auth"><div className="reference-auth-card"><div className="reference-overline">PROJECTW1SC · ÁREA RESTRITA</div><h1>Processos</h1><p>Entre para consultar apenas os números CNJ salvos na sua carteira.</p>
- <form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{const {session}=await signInWithPassword(db.auth,pw);setPw('');onSession(session)}catch(x){setError(x.message)}finally{setBusy(false)}}}>
-  <input value={ADMIN_EMAIL} readOnly type="email" aria-label="E-mail da conta"/><input type="password" value={pw} minLength={8} required onChange={e=>setPw(e.target.value)} placeholder="Senha" autoComplete="current-password"/>
-  <button className="reference-primary" disabled={busy}>Entrar</button>
- </form>{error&&<p role="alert">{error}</p>}<a href="/">Voltar ao CRM</a></div></main>;
+ async function enter(e){
+  e.preventDefault();setBusy(true);setError('');
+  try{const {session}=await signInWithPassword(db.auth,pw);setPw('');onSession(session)}
+  catch(x){setError(x.message||'Não foi possível entrar.')}
+  finally{setBusy(false)}
+ }
+ return <ProfessionalAuth eyebrow="CONSULTAS PROCESSUAIS" title="Acesse processos" description="Consulte apenas os números CNJ registrados na sua carteira autorizada.">
+  <form className="w1-auth-form" onSubmit={enter}>
+   <label className="w1-auth-label" htmlFor="process-user">Conta autorizada</label><input id="process-user" value={ADMIN_EMAIL} autoComplete="username" readOnly type="email"/>
+   <label className="w1-auth-label" htmlFor="process-pass">Senha de acesso</label><input id="process-pass" type="password" value={pw} minLength={8} required onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password"/>
+   <button className="w1-auth-submit" disabled={busy}>{busy?'Verificando acesso...':'Entrar em processos'}</button>
+  </form>{error&&<p className="w1-auth-feedback error" role="alert">{error}</p>}
+  <a className="w1-auth-back" href="/">Voltar ao CRM ou recuperar senha</a>
+ </ProfessionalAuth>;
 }
 function SourceStatus({source,status}){
  const label=sourceLabels[source];
