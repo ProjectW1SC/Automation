@@ -163,6 +163,6 @@ O objetivo do ProjectW1SC é continuar evoluindo como uma ferramenta de trabalho
 
 ## Licença e direitos autorais
 
-**© 2026 W1 Capital.** O código-fonte original do ProjectW1SC é distribuído sob a [Licença MIT](./LICENSE). É permitido estudar, modificar, compartilhar e utilizar o software nos termos dessa licença, preservando os avisos de copyright.
+**© 2026 W1 Capital.** O código-fonte original do ProjectW1SC é distribuído sob a [Licença MIT (MIT License)](./LICENSE). É permitido estudar, modificar, compartilhar e utilizar o software nos termos dessa licença, preservando os avisos de copyright.
 
 A marca ProjectW1SC/W1 Capital, seus logotipos, obras visuais de personagens e marcas de terceiros não recebem automaticamente uma licença de reutilização comercial pela licença MIT do código. Respeite os direitos de seus titulares.
