@@ -1,5 +1,6 @@
 'use client';
 import {reportHealthNotes,percent} from '../lib/report-print.mjs';
+import {limitSnippet} from '../lib/report-priority.mjs';
 const number=v=>Number(v||0).toLocaleString('pt-BR');
 const date=v=>v?new Date(v+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'—';
 const time=v=>v?new Date(v).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—';
@@ -8,7 +9,7 @@ function PrintHead({chapter,title,number:page}){
  return <header className="pdf-sheet-heading"><div className="pdf-sheet-brand"><span className="pdf-mini-mark">W</span><div><b>PROJECTW1SC</b><small>NEGOCIAÇÕES · INTELIGÊNCIA OPERACIONAL</small></div></div><span className="pdf-chapter">{chapter}</span><h2>{title}</h2><span className="pdf-header-rule"/></header>;
 }
 function PrintFoot({page,generated}){
- return <footer className="pdf-sheet-foot"><span>PROJECTW1SC · Relatório interno · Dados restritos</span><span>Gerado em {time(generated)} · {String(page).padStart(2,'0')}/04</span></footer>;
+ return <footer className="pdf-sheet-foot"><span>PROJECTW1SC · Relatório interno · Dados restritos</span><span>Gerado em {time(generated)} · {String(page).padStart(2,'0')}/06</span></footer>;
 }
 function PrintMetric({label,value,sub}){
  return <article className="pdf-kpi"><small>{label}</small><strong>{number(value)}</strong><span>{sub}</span></article>;
@@ -33,7 +34,26 @@ function MiniTrend({days}){
   </svg><div className="pdf-chart-legend"><span><i className="pdf-dot" style={{background:'#802b4e'}}/>Atendimentos</span><span><i className="pdf-dot" style={{background:'#b889a0'}}/>Atividades</span><span><i className="pdf-dot" style={{background:'#37775b'}}/>Finalizações</span></div>
  </div>;
 }
-export default function ReportPrintDocument({report,periodName,scopeName,generated,incomplete=false,members=[]}){
+function PriorityPdfRow({item,index}){
+ return <article className="pdf-priority-row">
+  <span className="pdf-priority-number">{index+1}</span>
+  <div><div className="pdf-priority-name"><b>{item.name}</b><span className={'pdf-priority-level '+item.priority}>{item.priorityText}</span><span>{item.statusLabel}</span></div>
+   <p>{item.institution||'Instituição não informada'} · Retorno: {date(item.due)} {item.overdueDays?'· '+item.overdueDays+' dias em atraso':''}</p>
+   <p><strong>Nota:</strong> {item.note?limitSnippet(item.note,100):'Sem anotação cadastrada.'}</p>
+   <p><strong>Atividade:</strong> {item.lastActivity?limitSnippet(item.lastActivity,100):'Sem atividade registrada.'}</p>
+  </div>
+ </article>;
+}
+function PriorityDetail({item,index}){
+ return <article className="pdf-priority-detail">
+  <div className="pdf-priority-detail-head"><b>{String(index+1).padStart(2,'0')} · {item.name}</b><span className={'pdf-priority-level '+item.priority}>{item.priorityText}</span></div>
+  <small>{item.institution||'Sem instituição'} · {item.statusLabel} · Próximo retorno: {date(item.due)}</small>
+  <p><b>Nota:</b> {item.note?limitSnippet(item.note,180):'Sem anotação registrada.'}</p>
+  <p><b>Atividade:</b> {item.lastActivity?limitSnippet(item.lastActivity,180):'Sem atividade registrada.'}</p>
+  {item.activityAt&&<small>Atividade: {time(item.activityAt)} · {item.activitySource||'Registro'}</small>}
+ </article>;
+}
+export default function ReportPrintDocument({report,periodName,scopeName,generated,incomplete=false,members=[],priorityDigestRows=[]}){
  const p=report.portfolio,q=report.period;
  const notes=reportHealthNotes({incomplete,unverified:p.paidInSheet,conflicts:q.sourceConflicts});
  const total=Math.max(1,p.total);
@@ -103,6 +123,24 @@ export default function ReportPrintDocument({report,periodName,scopeName,generat
     {members.length>0&&<div className="pdf-staff-note"><div className="pdf-section-label">DISTRIBUIÇÃO ATUAL DA CARTEIRA</div><div className="pdf-staff-list">{members.slice(0,4).map(m=><div key={m.name}><span>{m.name}</span><b>{number(m.clients)} clientes · {number(m.overdue)} vencidos</b></div>)}</div></div>}
     <div className="pdf-methodology"><div className="pdf-section-label">FONTE E LIMITAÇÕES</div>{notes.map((note,i)=><p key={i}>{note}</p>)}</div>
    </div><PrintFoot page={4} generated={generated}/>
+  </section>
+  <section className="pdf-page">
+   <PrintHead chapter="04 / PRIORIDADES" title="10 prioridades operacionais" page={5}/>
+   <div className="pdf-page-content">
+    <p className="pdf-section-lead">Ordem idêntica à fila de Tarefas: vencimentos, urgência e criticidade. Somente acompanhamentos ativos. As notas e atividades abaixo correspondem aos últimos registros disponíveis, ainda que anteriores ao período do relatório.</p>
+    <div className="pdf-priority-list">{priorityDigestRows.slice(0,10).map((item,i)=><PriorityPdfRow key={item.id} item={item} index={i}/>)}</div>
+    {!priorityDigestRows.length&&<div className="pdf-empty-state">Não há acompanhamentos ativos para priorizar neste momento.</div>}
+    <p className="pdf-priority-disclaimer">Criticidade é uma classificação operacional do CRM. O status de finalização não comprova quitação.</p>
+   </div><PrintFoot page={5} generated={generated}/>
+  </section>
+  <section className="pdf-page">
+   <PrintHead chapter="05 / REGISTROS" title="Anotações e atividades" page={6}/>
+   <div className="pdf-page-content">
+    <p className="pdf-section-lead">Últimas anotações e atividades dos dez acompanhamentos prioritários. Informações extraídas do histórico do Supabase, com data e responsável quando disponíveis. Não são contatos presumidos.</p>
+    <div className="pdf-priority-details">{priorityDigestRows.slice(0,10).map((item,i)=><PriorityDetail key={item.id} item={item} index={i}/>)}</div>
+    {!priorityDigestRows.length&&<div className="pdf-empty-state">Sem atividades ou anotações prioritárias para exibir.</div>}
+    <p className="pdf-priority-disclaimer">Textos longos são resumidos nesta página para preservar a leitura e o tamanho A4. Consulte o histórico individual no CRM para o conteúdo integral.</p>
+   </div><PrintFoot page={6} generated={generated}/>
   </section>
  </div>;
 }
