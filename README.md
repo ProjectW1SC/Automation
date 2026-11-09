@@ -29,3 +29,17 @@ Repositório público contém **somente código e mapeamento de estrutura**; nã
 - As planilhas já consultadas foram conciliadas inicialmente no Supabase. Para uma nova versão do Excel, use **Importar Excel** na tela: leitura local no navegador, gravação autenticada com RLS e conciliação pelo documento; nenhuma prova de quitação é presumida.
 - O botão de sincronização automática foi removido porque ainda não existe credencial Google de servidor autorizada no projeto. Não há sincronização Google Sheets em segundo plano até configurar um acesso de serviço seguro.
 - O Excel original foi importado como cópia privada para o Drive GET, preservando o arquivo anexado.
+
+## Fila de tarefas e prioridades
+
+Acesse `/tarefas` após entrar com a conta autorizada. A central operacional é baseada nos padrões de fila da W1/W2 LexisPredict, adaptados à negociação de quitações (sem informações jurídicas fictícias).
+
+- **Prioridades**: vencidos primeiro, depois os retornos de hoje, em dia e casos sem data. A prioridade manual Alta/Urgente reorganiza cada faixa.
+- **Só vencidos**: reúne **apenas** os retornos com data anterior à data atual de São Paulo. O marcador VENCIDOS de uma planilha não basta sem data confirmada; casos sem data ficam na fila própria.
+- **Em dia / Hoje / Sem data / Finalizados**: situação operacional derivada do retorno, independentemente do rótulo financeiro e da quitação.
+- **Editar**: dados de contato, financeira, escritório, consultor, prioridade, responsável, observações e data do próximo retorno. A data operacional prevalece sem apagar a origem importada.
+- **Registrar atendimento**: descreve contato ou tentativa, canal, resultado, responsável e próximo retorno (sugestão editável de 30 dias). Uma transação salva a atividade e a nova data; se falhar, nada é considerado concluído.
+- **Finalizar/Reabrir**: exige um motivo e gera registro. Finalizar acompanhamento **não comprova pagamento** nem muda `evidence_status`.
+- **Histórico**: mostra atendimentos, alterações e finalizações; não envia WhatsApp, ligações ou e-mails automaticamente.
+
+Persistência: `supabase/migrations/20261109_003_fila_atendimentos.sql` no Project One. Funções RPC `crm_update_client` e `crm_register_attendance` usam permissões do usuário autenticado (RLS; sem `SECURITY DEFINER`). `npm test` cobre a ordenação, classificação e validação de registro. Fuso: `America/Sao_Paulo`.
