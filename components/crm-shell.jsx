@@ -93,7 +93,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     }}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
-    <svg className="app-brand-monogram" viewBox="0 0 92 52" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M8 10h21l12 27 7-16-5-11h14l10 27 12-27h9L68 49H58L47 28 36 49H27L8 10z" fill="none" stroke="#efd7df" strokeWidth="3.2" strokeLinejoin="miter"/><path d="M24 10h18m17 0h19" stroke="#efd7df" strokeWidth="2.2"/></svg>
+    <img className="app-brand-monogram" src="/themes/projectw1sc-mark.svg" alt="Logo ProjectW1SC" width="70" height="70"/>
     <strong>PROJECT<span>W1SC</span></strong><small>NEGOCIAÇÕES · CRM</small>
    </div>
    <div className="app-mobile-account">

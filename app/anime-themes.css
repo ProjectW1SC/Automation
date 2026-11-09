@@ -1,0 +1,172 @@
+/* Two original anime-inspired skins; data and navigation are shared with all CRM themes. */
+html[data-crm-theme="naruto"]{
+ --ui-page:#fff5e8;--ui-surface:#fffcf8;--ui-ink:#2d1a12;--ui-muted:#634b39;
+ --ui-accent:#a8400a;--ui-accent-ink:#fff;--ui-nav:#1d191a;--ui-nav-ink:#fff4dd;
+ --ui-border:#dbb995;--ui-tint:#f8e6d0;--ui-tint-ink:#633714;
+ --ui-warning-bg:#fff0d9;--ui-warning-ink:#754008;
+ --ui-success-bg:#e5f3df;--ui-success-ink:#22572f;
+ --ui-danger-bg:#ffe4df;--ui-danger-ink:#9c2920;
+ --ui-neutral-bg:#eae4db;--ui-neutral-ink:#4c4540;
+ --anime-side:url('/themes/naruto-sidebar.svg');--anime-hero:url('/themes/naruto-hero.svg');
+ --anime-halo:#f07818;--anime-glow:rgba(243,109,22,.32);--anime-soft:#fff2df;
+ color-scheme:light
+}
+html[data-crm-theme="sasuke"]{
+ --ui-page:#090b1b;--ui-surface:#19172c;--ui-ink:#f2f0ff;--ui-muted:#c7c4e6;
+ --ui-accent:#a899ff;--ui-accent-ink:#141124;--ui-nav:#0b0a1b;--ui-nav-ink:#f2efff;
+ --ui-border:#514b78;--ui-tint:#2a2448;--ui-tint-ink:#eae8ff;
+ --ui-warning-bg:#42351f;--ui-warning-ink:#ffe2af;
+ --ui-success-bg:#183e39;--ui-success-ink:#bff6e1;
+ --ui-danger-bg:#4a223e;--ui-danger-ink:#ffd4e8;
+ --ui-neutral-bg:#303044;--ui-neutral-ink:#e7e4f5;
+ --anime-side:url('/themes/sasuke-sidebar.svg');--anime-hero:url('/themes/sasuke-hero.svg');
+ --anime-halo:#8977ff;--anime-glow:rgba(108,112,255,.4);--anime-soft:#19172c;
+ color-scheme:dark
+}
+/* The appearance editor may override text/page tokens inline, preserving personal settings. */
+html[data-crm-theme="naruto"] body,
+html[data-crm-theme="sasuke"] body{background:var(--ui-page);color:var(--ui-ink)}
+html[data-crm-theme="naruto"] .app-sidebar,
+html[data-crm-theme="sasuke"] .app-sidebar{
+ background-color:var(--ui-nav)!important;
+ background-image:linear-gradient(180deg,rgba(5,5,12,.22),rgba(5,5,12,.12) 43%,rgba(5,5,12,.15)),var(--anime-side)!important;
+ background-position:center!important;background-size:cover!important;
+ border-right:1px solid color-mix(in srgb,var(--anime-halo) 45%,var(--ui-nav))!important
+}
+html[data-crm-theme="naruto"] .app-sidebar:after,
+html[data-crm-theme="sasuke"] .app-sidebar:after{display:none!important}
+html[data-crm-theme="naruto"] .app-identity,
+html[data-crm-theme="sasuke"] .app-identity{border-color:color-mix(in srgb,var(--anime-halo) 50%,transparent)!important}
+html[data-crm-theme="naruto"] .app-identity strong,
+html[data-crm-theme="sasuke"] .app-identity strong{
+ color:var(--ui-nav-ink)!important;letter-spacing:-1px;text-shadow:0 2px 14px rgba(0,0,0,.45)
+}
+html[data-crm-theme="naruto"] .app-identity small,
+html[data-crm-theme="sasuke"] .app-identity small{color:var(--ui-nav-ink)!important;opacity:.91}
+html[data-crm-theme="naruto"] .app-brand-monogram,
+html[data-crm-theme="sasuke"] .app-brand-monogram{
+ width:70px;height:70px;margin:0 auto 8px;
+ filter:drop-shadow(0 0 12px var(--anime-glow))
+}
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link.active,
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link[aria-current="page"]{
+ color:#fff!important;background:linear-gradient(110deg,#bb3c07,#9b350c 75%,#67230d)!important;
+ box-shadow:inset 0 0 0 1px #ffbe80,0 0 17px 1px var(--anime-glow)!important
+}
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link.active,
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link[aria-current="page"]{
+ color:#f8f7ff!important;background:linear-gradient(105deg,#4b3caa,#24245e 80%,#1e1a48)!important;
+ box-shadow:inset 0 0 0 1px #a899ff,0 0 16px 0 var(--anime-glow)!important
+}
+html[data-crm-theme="naruto"] .app-sidebar .app-nav-link.active svg,
+html[data-crm-theme="sasuke"] .app-sidebar .app-nav-link.active svg{color:#fff!important}
+html[data-crm-theme="naruto"] .app-nav-footer,
+html[data-crm-theme="sasuke"] .app-nav-footer{background:color-mix(in srgb,var(--ui-nav) 75%,transparent);border-radius:12px;padding:14px 9px!important}
+html[data-crm-theme="naruto"] .app-nav-footer :is(small,span),
+html[data-crm-theme="sasuke"] .app-nav-footer :is(small,span){color:var(--ui-nav-ink)!important}
+html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header),
+html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header){
+ position:relative;isolation:isolate;overflow:hidden;
+ min-height:185px!important;padding:25px 26px!important;
+ border-radius:17px;border:1px solid var(--ui-border);
+ background-color:var(--ui-page)!important;
+ background-image:linear-gradient(90deg,var(--ui-page) 0%,color-mix(in srgb,var(--ui-page) 88%,transparent) 29%,color-mix(in srgb,var(--ui-page) 20%,transparent) 68%,transparent 96%),var(--anime-hero)!important;
+ background-position:center,center!important;background-size:cover!important;
+ box-shadow:0 10px 28px color-mix(in srgb,var(--ui-nav) 13%,transparent);
+ margin-bottom:18px!important
+}
+html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header)>*,
+html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header)>*{position:relative;z-index:1}
+html[data-crm-theme="naruto"] .reference-header h1,
+html[data-crm-theme="naruto"] .task-header h1{color:var(--ui-ink)!important;text-shadow:0 2px 1px #fff1e3}
+html[data-crm-theme="sasuke"] .reference-header h1,
+html[data-crm-theme="sasuke"] .task-header h1{color:#f5f2ff!important;text-shadow:0 0 15px #5e51c5a8}
+html[data-crm-theme="naruto"] :is(.reference-header p,.task-header p),
+html[data-crm-theme="sasuke"] :is(.reference-header p,.task-header p){max-width:535px;color:var(--ui-muted)!important;font-weight:600}
+html[data-crm-theme="naruto"] .reference-overline,
+html[data-crm-theme="naruto"] .task-kicker{color:#85340c!important}
+html[data-crm-theme="sasuke"] .reference-overline,
+html[data-crm-theme="sasuke"] .task-kicker{color:#d8caff!important}
+html[data-crm-theme="naruto"] :is(.reference-kpi,.task-metric,.dashboard-chart-card,.reference-panel,.sales-contact-focus,.report-filters,.reference-client-detail),
+html[data-crm-theme="sasuke"] :is(.reference-kpi,.task-metric,.dashboard-chart-card,.reference-panel,.sales-contact-focus,.report-filters,.reference-client-detail){
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;
+ border:1px solid var(--ui-border)!important;
+ box-shadow:0 9px 24px color-mix(in srgb,var(--ui-nav) 11%,transparent)!important
+}
+html[data-crm-theme="naruto"] :is(.reference-kpi,.task-metric,.dashboard-chart-card,.reference-panel):hover{
+ border-color:#b96b37!important
+}
+html[data-crm-theme="sasuke"] :is(.reference-kpi,.task-metric,.dashboard-chart-card,.reference-panel):hover{
+ border-color:#a899ff!important;box-shadow:0 0 16px #5047aa3d!important
+}
+/* Legible badges: neutral finished != verified payment; colors are independent of theme. */
+html[data-crm-theme="naruto"] :is(.task-badge-finalizado,.reference-status.finished),
+html[data-crm-theme="sasuke"] :is(.task-badge-finalizado,.reference-status.finished){
+ color:var(--ui-neutral-ink)!important;background:var(--ui-neutral-bg)!important
+}
+/* Distinctive business marks when external corporate favicons cannot load. */
+html[data-crm-theme] .reference-institution-brand-bradesco .reference-institution-fallback{background:#ad1434!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-itau .reference-institution-fallback{background:#163995!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-santander .reference-institution-fallback{background:#a91d2e!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-caixa .reference-institution-fallback{background:#144d9d!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-banco-pan .reference-institution-fallback{background:#282b33!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-nubank .reference-institution-fallback{background:#642393!important;color:#fff!important}
+html[data-crm-theme] .reference-institution-brand-paschoalotto .reference-institution-fallback{background:#4e206d!important;color:#fff!important}
+html[data-crm-theme="naruto"] .reference-institution-mark,
+html[data-crm-theme="sasuke"] .reference-institution-mark{
+ border-color:var(--ui-border)!important;box-shadow:0 2px 12px color-mix(in srgb,var(--anime-halo) 13%,transparent)
+}
+html[data-crm-theme="naruto"] .report-dashboard .report-executive-hero,
+html[data-crm-theme="sasuke"] .report-dashboard .report-executive-hero{
+ background-image:linear-gradient(100deg,var(--ui-nav) 0%,color-mix(in srgb,var(--ui-nav) 92%,transparent) 52%,color-mix(in srgb,var(--ui-nav) 30%,transparent)),var(--anime-hero)!important;
+ background-size:cover!important;background-position:center!important;color:var(--ui-nav-ink)!important
+}
+html[data-crm-theme="naruto"] .report-dashboard .report-executive-hero :is(h2,p,small,strong,span),
+html[data-crm-theme="sasuke"] .report-dashboard .report-executive-hero :is(h2,p,small,strong,span){color:var(--ui-nav-ink)!important}
+/* Other pages share one common app shell, but backgrounds and cards still inherit the chosen skin. */
+html[data-crm-theme="naruto"] :is(.reference-dashboard,.task-main,.settings-dashboard,.report-dashboard,.sales-workspace),
+html[data-crm-theme="sasuke"] :is(.reference-dashboard,.task-main,.settings-dashboard,.report-dashboard,.sales-workspace){color:var(--ui-ink)!important}
+html[data-crm-theme="naruto"] :is(.crm-theme-picker,.reference-outline,.task-button-outline),
+html[data-crm-theme="sasuke"] :is(.crm-theme-picker,.reference-outline,.task-button-outline){
+ border-color:var(--ui-border)!important;color:var(--ui-ink)!important
+}
+html[data-crm-theme="sasuke"] :is(.reference-outline,.task-button-outline,.reference-primary,.task-button-primary):focus-visible{
+ outline:3px solid #b2a1ff!important;outline-offset:3px
+}
+html[data-crm-theme="sasuke"] :is(.reference-primary,.task-button-primary){box-shadow:0 0 12px #7e70ee50}
+html[data-crm-theme="naruto"] :is(.reference-primary,.task-button-primary){box-shadow:0 3px 12px #b23b0e45}
+html[data-crm-theme="naruto"] .settings-theme-option.selected,
+html[data-crm-theme="sasuke"] .settings-theme-option.selected{box-shadow:0 0 0 3px var(--anime-glow)!important}
+/* Protect PDFs and page break styles from decorative theme skin. */
+@media print{
+ html[data-crm-theme="naruto"] :is(.reference-header,.task-header,.report-executive-hero),
+ html[data-crm-theme="sasuke"] :is(.reference-header,.task-header,.report-executive-hero){
+  background-image:none!important;box-shadow:none!important
+ }
+ html[data-crm-theme="naruto"] .report-dashboard .report-print-document .pdf-page,
+ html[data-crm-theme="sasuke"] .report-dashboard .report-print-document .pdf-page{
+  background:#fff!important;color:#2d2028!important;border-color:transparent!important;box-shadow:none!important
+ }
+ html[data-crm-theme="naruto"] .report-dashboard .report-print-document .pdf-cover,
+ html[data-crm-theme="sasuke"] .report-dashboard .report-print-document .pdf-cover{
+  background:#3f142a!important;color:#fff!important
+ }
+}
+@media(max-width:1100px){
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header),
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header){min-height:152px!important;background-position:center,right center!important}
+}
+@media(max-width:750px){
+ html[data-crm-theme="naruto"] :is(.reference-dashboard .reference-header,.app-content .task-header),
+ html[data-crm-theme="sasuke"] :is(.reference-dashboard .reference-header,.app-content .task-header){
+  padding:23px 16px!important;min-height:180px!important;flex-wrap:wrap;align-items:flex-start!important;
+  background-position:center,75% center!important;background-size:cover,auto 100%!important
+ }
+ html[data-crm-theme="naruto"] .reference-header p,
+ html[data-crm-theme="sasuke"] .reference-header p{max-width:80%}
+ html[data-crm-theme="naruto"] .reference-actions,
+ html[data-crm-theme="sasuke"] .reference-actions{justify-content:flex-start!important;width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="naruto"] *,html[data-crm-theme="sasuke"] *{animation-duration:.01ms!important}
+}

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 370" role="img" aria-label="Arte Sasuke: tempestade violeta, Sharingan, relâmpagos e ninja de cabelos negros">
+<defs><linearGradient id="night" x2="1" y2="1"><stop stop-color="#080b20"/><stop offset=".5" stop-color="#16132f"/><stop offset="1" stop-color="#37205f"/></linearGradient><radialGradient id="moon"><stop stop-color="#8545bd" stop-opacity=".85"/><stop offset=".7" stop-color="#533481" stop-opacity=".5"/><stop offset="1" stop-color="#432767" stop-opacity="0"/></radialGradient><linearGradient id="cloak" x2="1" y2=".8"><stop stop-color="#9182b8"/><stop offset="1" stop-color="#34315e"/></linearGradient></defs><path fill="url(#night)" d="M0 0h1600v370H0z"/>
+<circle cx="1190" cy="140" r="205" fill="url(#moon)"/><circle cx="1260" cy="122" r="127" fill="none" stroke="#563f95" stroke-width="6" opacity=".7"/><circle cx="1260" cy="122" r="105" fill="none" stroke="#7560b6" stroke-width="4" opacity=".5"/><circle cx="1260" cy="122" r="73" fill="none" stroke="#7560b6" stroke-width="3" opacity=".4"/>
+<g opacity=".32" fill="#30244f"><path d="M560 319q118-130 267-52q86-118 221-39q126-108 265-8q126-91 287 9v141H560z"/><path d="M690 349q100-123 206-54q111-90 236-28q154-77 257 10q123-74 211 8v90H690z"/></g>
+<g fill="none" stroke="#446fff" stroke-linejoin="round" stroke-linecap="round"><path d="M1108 0l-24 57 36-9-39 75 32-17-55 112" stroke-width="7"/><path d="M1330 3l-20 58 34 13-49 68 28-11-23 71" stroke-width="4"/></g>
+<g fill="none" stroke="#9eaeff" stroke-width="2" opacity=".82"><path d="M1108 0l-24 57 36-9-39 75 32-17-55 112"/><path d="M1330 3l-20 58 34 13-49 68 28-11-23 71"/></g>
+<path d="M1365 122a52 52 0 1 1 2 0m-22-11a25 25 0 1 1 2 0" fill="none" stroke="#7452bb" stroke-width="5" opacity=".53"/><circle cx="1371" cy="96" r="15" fill="#452c7c" opacity=".8"/>
+<g transform="translate(885,-45)">
+<!-- high collar and torso -->
+<path d="M77 269q-92 18-106 143h480q-51-124-166-147" fill="#363153" stroke="#161226" stroke-width="9"/>
+<path d="M98 189l-40 171 135 29 64-152 58 153 99-23-69-201-72-27-127 20z" fill="url(#cloak)" stroke="#19142b" stroke-width="10" stroke-linejoin="round"/>
+<path d="M99 213l-25 141m271-162 35 145" fill="none" stroke="#c6b3dc" stroke-width="6" opacity=".55"/>
+<!-- neck / face -->
+<path d="M180 232l-16 64 88 13 37-78" fill="#b8a0ac" stroke="#292331" stroke-width="7"/>
+<path d="M143 110q25-69 110-65q79 12 79 95l-19 85q-25 60-90 63q-47-10-77-75l-16-43z" fill="#dfc2c8" stroke="#312a3c" stroke-width="8"/>
+<path d="M144 153q-16 15-19 38q6 15 20 14" fill="#c9a5af" stroke="#30263a" stroke-width="4"/>
+<path d="M174 160q28-13 48-4m58-4q14-6 29-1" stroke="#292338" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M170 174q26-12 48-5m61-5q15-9 30-4" stroke="#2e2738" stroke-width="4" fill="none"/>
+<ellipse cx="199" cy="173" rx="9" ry="10" fill="#bf263e"/><circle cx="199" cy="173" r="4" fill="#1f1125"/><ellipse cx="292" cy="170" rx="8" ry="11" fill="#bd2544"/><circle cx="292" cy="170" r="3" fill="#1f1125"/>
+<path d="M227 226l19 4m-16 20q15 5 28-2" stroke="#765761" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- hair bangs and rear spikes -->
+<path d="M117 158L49 120l63-19-58-47 74 11L112 0l57 33 45-67 20 65 59-37 10 59 69-33-29 77 58 27-57 25-31-43-27-31-54 14-34 19-17 70-31 15z" fill="#101020" stroke="#313049" stroke-width="7" stroke-linejoin="round"/>
+<path d="M160 40l-20 100 36-26 22-80m36 13-14 105 34-56m38-43-18 63 38-32" fill="none" stroke="#34324d" stroke-width="10" stroke-linecap="round"/>
+<path d="M174 116q19-12 25-37l-10 82-28 9" fill="#111020"/>
+<!-- purple lightning in front -->
+<path d="M352 218l31 29-18 9 43 33-29-2 34 29" fill="none" stroke="#7e83ff" stroke-width="7" stroke-linecap="round"/>
+<path d="M352 218l31 29-18 9 43 33-29-2 34 29" fill="none" stroke="#c4caff" stroke-width="2"/>
+</g>
+<path d="M0 353h1600" stroke="#544d9a" stroke-width="2" opacity=".8"/></svg>
