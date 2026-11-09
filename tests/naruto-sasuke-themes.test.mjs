@@ -42,7 +42,7 @@ test('ProjectW1SC preserves a default brand and shows genuine themed marks from 
  const logo=file('public/themes/projectw1sc-mark.svg');
  const shell=file('components/crm-shell.jsx');
  assert.match(logo,/<svg/);assert.match(logo,/W1SC/);
- assert.match(shell,/projectw1sc-mark\.svg/);
+ assert.match(shell,/projectw1sc-symbol\.svg/);assert.match(shell,/projectw1sc-wordmark\.svg/);
  for(const theme of ['naruto','sasuke'])assert.ok(existsSync(new URL('public/themes/reference-'+theme+'-mark.webp',root)));
  const animeCss=file('app/anime-themes.css');
  assert.match(animeCss,/reference-naruto-mark\.webp/);assert.match(animeCss,/reference-sasuke-mark\.webp/);
