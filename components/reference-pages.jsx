@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {Activity,AlertTriangle,ArrowLeft,ArrowRight,BadgeCheck,Building2,CalendarDays,CheckCircle2,Clock3,Download,FileCheck2,FileClock,FileSpreadsheet,FileWarning,Filter,History,Landmark,Mail,MoreHorizontal,Phone,Plus,RefreshCw,RotateCcw,Search,ShieldCheck,Users,UserRound,Wallet} from 'lucide-react';
 import {queueCounts,taskStatus,todayBrazil,dueDate} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
+import InstitutionLogo from './institution-logo';
 const brDate=d=>d?new Date(d+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'—';
 const brTimestamp=d=>d?new Date(d).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—';
 const txt=x=>String(x??'').trim();
@@ -46,7 +47,7 @@ function Overview({clients,kpis,last,updated,onGo,onSelectClient,onRefresh,onImp
   <section className="reference-panel reference-overview-list">
    <div className="reference-row-between"><IconHeading icon={Users} sub={clients.length+' clientes na carteira'}>Carteira de clientes</IconHeading><Action icon={ArrowRight} onClick={()=>onGo('Clientes')}>Ver carteira completa</Action></div>
    <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Cliente</th><th>Instituição</th><th>Situação</th><th>Próximo retorno</th><th>Contato</th><th></th></tr></thead><tbody>
-    {preview.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td>{c.institution||'—'}</td><td><Status client={c} today={today}/></td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brDate(dueDate(c))}</span></td><td>{c.phone?<span className="reference-cell-icon"><Phone size={15}/>{c.phone}</span>:'—'}</td><td><button className="reference-more" aria-label={'Abrir '+c.name} onClick={()=>onSelectClient(c)}><MoreHorizontal size={17}/></button></td></tr>)}
+    {preview.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} showName/></td><td><Status client={c} today={today}/></td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brDate(dueDate(c))}</span></td><td>{c.phone?<span className="reference-cell-icon"><Phone size={15}/>{c.phone}</span>:'—'}</td><td><button className="reference-more" aria-label={'Abrir '+c.name} onClick={()=>onSelectClient(c)}><MoreHorizontal size={17}/></button></td></tr>)}
    </tbody></table>{preview.length===0&&<p className="reference-empty">Nenhum acompanhamento ativo cadastrado.</p>}</div>
   </section>
  </main>
@@ -80,14 +81,14 @@ function Clients({clients,kpis,onGo,onSelectClient,onRefresh,onCreate,busy}){
      <label className="reference-filter-label">Financeira<select value={institution} onChange={e=>filterSet(setInstitution,e.target.value)}><option value="todos">Todas</option>{institutions.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
     </div>
     <div className="reference-table-scroll"><table className="reference-table reference-clients-table"><thead><tr><th>Cliente</th><th>Financeira</th><th>Situação</th><th>Próximo retorno</th><th>Consultor</th><th>Contato</th><th></th></tr></thead><tbody>
-     {rows.map(c=><tr key={c.id} className={focus?.id===c.id?'selected':''} onClick={()=>setFocused(c.id)}><td><ClientName client={c}/></td><td>{c.institution||'—'}</td><td><Status client={c} today={today}/></td><td>{brDate(dueDate(c))}</td><td>{c.consultant||'—'}</td><td>{c.phone||'—'}</td><td><button className="reference-more" aria-label={'Detalhes de '+c.name} onClick={e=>{e.stopPropagation();onSelectClient(c)}}><MoreHorizontal size={16}/></button></td></tr>)}
+     {rows.map(c=><tr key={c.id} className={focus?.id===c.id?'selected':''} onClick={()=>setFocused(c.id)}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} showName/></td><td><Status client={c} today={today}/></td><td>{brDate(dueDate(c))}</td><td>{c.consultant||'—'}</td><td>{c.phone||'—'}</td><td><button className="reference-more" aria-label={'Detalhes de '+c.name} onClick={e=>{e.stopPropagation();onSelectClient(c)}}><MoreHorizontal size={16}/></button></td></tr>)}
     </tbody></table>{rows.length===0&&<div className="reference-empty">Nenhum cliente corresponde aos filtros.</div>}</div>
     <Pager page={page} pages={pages} count={list.length} size={8} onPage={setP}/>
    </section>
    <aside className="reference-panel reference-client-detail">
     {focus?<><div className="reference-detail-head"><span className="reference-avatar large">{initial(focus.name)}</span><div><h2>{focus.name}</h2><span>CPF/CNPJ: {focus.doc_digits?'•••'+focus.doc_digits.slice(-4):'Não cadastrado'}</span></div><Status client={focus} today={today}/></div>
      <div className="reference-detail-grid">
-      <div><Landmark size={20}/><span>Financeira<b>{focus.institution||'—'}</b></span></div>
+      <div><Landmark size={20}/><span>Financeira<b><InstitutionLogo name={focus.institution} showName/></b></span></div>
       <div><Activity size={20}/><span>Etapa<b>{focus.stage?.replaceAll('_',' ')||'—'}</b></span></div>
       <div><UserRound size={20}/><span>Consultor<b>{focus.consultant||'—'}</b></span></div>
       <div><CalendarDays size={20}/><span>Próximo retorno<b>{brDate(dueDate(focus))}</b></span></div>
@@ -119,7 +120,7 @@ function Finished({clients,onSelectClient,onReopen,onRefresh,busy}){
    <div className="reference-row-between"><IconHeading icon={CheckCircle2} sub="Acompanhamentos encerrados, com histórico e possibilidade de reabertura.">Registros finalizados</IconHeading></div>
    <div className="reference-inline-filters"><label className="reference-search"><Search size={18}/><input value={q} onChange={e=>{setQ(e.target.value);setP(1)}} placeholder="Buscar por cliente, instituição ou origem..."/></label><label className="reference-filter-button"><Filter size={16}/><select value={origin} onChange={e=>{setOrigin(e.target.value);setP(1)}}><option value="todas">Todas as origens</option>{origins.map(x=><option key={x} value={x}>{x}</option>)}</select></label><label className="reference-filter-button"><CalendarDays size={16}/><select value={order} onChange={e=>setOrder(e.target.value)}><option value="recentes">Mais recentes</option><option value="antigos">Mais antigos</option></select></label><button className="reference-text-button" onClick={()=>{setQ('');setOrigin('todas');setOrder('recentes');setP(1)}}>Limpar filtros</button></div>
    <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Cliente</th><th>Instituição</th><th>Encerramento</th><th>Origem</th><th>Status</th><th></th></tr></thead><tbody>
-     {rows.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td>{c.institution||'—'}</td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brTimestamp(c.finished_at)}</span></td><td><span className="reference-cell-icon"><FileCheck2 size={15}/>{c.closure_source||c.source_tab||'Não informado'}</span></td><td><span className="reference-status good"><CheckCircle2 size={14}/> Finalizado</span></td><td><div className="reference-row-actions"><Action icon={RotateCcw} onClick={()=>onReopen(c)}>Reabrir</Action><Action icon={FileCheck2} onClick={()=>onSelectClient(c)}>Detalhes</Action></div></td></tr>)}
+     {rows.map(c=><tr key={c.id}><td><ClientName client={c}/></td><td><InstitutionLogo name={c.institution} showName/></td><td><span className="reference-cell-icon"><CalendarDays size={15}/>{brTimestamp(c.finished_at)}</span></td><td><span className="reference-cell-icon"><FileCheck2 size={15}/>{c.closure_source||c.source_tab||'Não informado'}</span></td><td><span className="reference-status good"><CheckCircle2 size={14}/> Finalizado</span></td><td><div className="reference-row-actions"><Action icon={RotateCcw} onClick={()=>onReopen(c)}>Reabrir</Action><Action icon={FileCheck2} onClick={()=>onSelectClient(c)}>Detalhes</Action></div></td></tr>)}
    </tbody></table>{!rows.length&&<div className="reference-empty">Nenhum acompanhamento finalizado nesta seleção.</div>}</div>
    <Pager page={page} pages={pages} count={list.length} size={8} onPage={setP}/>
   </section>
@@ -142,7 +143,7 @@ function Institutions({parties,onRefresh,onCreate,busy}){
   <section className="reference-panel reference-institutions">
    <div className="reference-inline-filters"><label className="reference-search"><Search size={18}/><input value={q} onChange={e=>{setQ(e.target.value);setP(1)}} placeholder="Buscar instituição por nome ou contato..."/></label><label className="reference-filter-button"><Filter size={16}/><select value={kind} onChange={e=>{setKind(e.target.value);setP(1)}}><option value="todas">Todas as categorias</option>{kinds.map(x=><option key={x} value={x}>{kindText(x)}</option>)}</select></label></div>
    <div className="reference-table-scroll"><table className="reference-table"><thead><tr><th>Instituição</th><th>Categoria</th><th>Contato principal</th><th>Última atualização</th><th></th></tr></thead><tbody>
-     {rows.map(c=><tr key={c.id}><td><div className="reference-client-name"><span className="reference-company-mark">{initial(c.name)}</span><b>{c.name}</b></div></td><td><span className="reference-status neutral"><Landmark size={14}/>{kindText(c.kind)}</span></td><td>{c.contact||'Contato não cadastrado'}</td><td>{brTimestamp(c.updated_at)}</td><td><span className="reference-status good"><CheckCircle2 size={13}/> Cadastrada</span></td></tr>)}
+     {rows.map(c=><tr key={c.id}><td><div className="reference-client-name"><InstitutionLogo name={c.name} size="lg"/><b>{c.name}</b></div></td><td><span className="reference-status neutral"><Landmark size={14}/>{kindText(c.kind)}</span></td><td>{c.contact||'Contato não cadastrado'}</td><td>{brTimestamp(c.updated_at)}</td><td><span className="reference-status good"><CheckCircle2 size={13}/> Cadastrada</span></td></tr>)}
    </tbody></table>{!rows.length&&<div className="reference-empty">Nenhuma instituição encontrada.</div>}</div>
    <Pager page={page} pages={pages} count={items.length} size={12} onPage={setP}/>
   </section>

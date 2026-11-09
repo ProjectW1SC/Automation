@@ -1,12 +1,13 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {Activity,AlertTriangle,BarChart3,BriefcaseBusiness,CalendarDays,CheckCircle2,ChevronRight,Clock3,Download,FileCheck2,FileText,Filter,Loader2,LockKeyhole,Printer,RefreshCw,ShieldCheck,Users,Wallet} from 'lucide-react';
+import {Activity,AlertTriangle,BarChart3,BriefcaseBusiness,CalendarDays,CheckCircle2,ChevronRight,Clock3,Download,FileCheck2,FileText,Filter,Loader2,LockKeyhole,Printer,Eye,RefreshCw,ShieldCheck,Users,Wallet} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
 import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 import {buildReport,periodBounds,exportReportCsv} from '../../lib/report.mjs';
 import {categoryLabel} from '../../lib/minhas-atividades.mjs';
+import ReportPrintDocument from '../../components/report-print-document';
 
 const periods=[{id:'esta_semana',label:'Esta semana'},{id:'semana_passada',label:'Semana passada'},{id:'mes',label:'Mês atual'}];
 const periodLabel=Object.fromEntries(periods.map(p=>[p.id,p.label]));
@@ -68,7 +69,7 @@ function ReportLogin({db,onLogged}){
 export default function ReportPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[loading,setLoading]=useState(false);
- const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[notice,setNotice]=useState('');
+ const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[notice,setNotice]=useState(''),[pdfPreview,setPdfPreview]=useState(false);
  const [clients,setClients]=useState([]),[audit,setAudit]=useState([]),[manual,setManual]=useState([]),[updated,setUpdated]=useState(null);
  const today=todayBrazil();
  useEffect(()=>{
@@ -98,6 +99,14 @@ export default function ReportPage(){
  },[db,period,session?.user?.id,today]);
  useEffect(()=>{if(session?.user?.email?.toLowerCase()===ADMIN_EMAIL)load();else{setClients([]);setAudit([]);setManual([])}},[session?.user?.id,load]);
  const report=useMemo(()=>buildReport({clients,audit,manual,period,scope,actorId:session?.user?.id,today}),[clients,audit,manual,period,scope,session?.user?.id,today]);
+ function printReport(){
+  if(loading)return;
+  const original=document.title;
+  document.title='ProjectW1SC-Relatorio-Executivo-'+period+'-'+scope;
+  const restore=()=>{document.title=original;window.removeEventListener('afterprint',restore)};
+  window.addEventListener('afterprint',restore,{once:true});
+  window.print();
+ }
  const members=useMemo(()=>{
   const map=new Map();
   for(const c of clients){
@@ -121,9 +130,14 @@ export default function ReportPage(){
     <div className="reference-actions">
      <button className="reference-outline" onClick={load} disabled={loading}><RefreshCw size={16}/> Atualizar</button>
      <button className="reference-outline" onClick={()=>exportAggregate(report)} disabled={loading}><Download size={16}/> Exportar CSV</button>
-     <button className="reference-primary" onClick={()=>window.print()}><Printer size={16}/> Imprimir / PDF</button>
+     <button className="reference-outline" onClick={()=>setPdfPreview(x=>!x)}><Eye size={16}/> {pdfPreview?'Ocultar prévia':'Prévia PDF'}</button>
+     <button className="reference-primary" onClick={printReport} disabled={loading}><Printer size={16}/> Exportar PDF</button>
     </div>
    </header>
+   <section className="report-executive-hero" aria-label="Apresentação executiva do relatório">
+    <div><span className="hero-overline">DOSSIÊ GERENCIAL · PROJECTW1SC</span><h2>O panorama da operação,<br/>em uma única visão.</h2><p>Informações organizadas para decisões rápidas, com origem rastreável e separação entre quitação informada e comprovada.</p></div>
+    <div className="hero-highlight"><small>Retornos ativos vencidos</small><strong>{fmt(report.portfolio.overdue)}</strong><small>{fmt(report.portfolio.active)} acompanhamentos ativos</small></div>
+   </section>
    <div className="report-filters">
     <div><span>Período dos eventos</span><div className="report-segments">{periods.map(x=><button type="button" key={x.id} className={period===x.id?'active':''} aria-pressed={period===x.id} onClick={()=>setPeriod(x.id)}>{x.label}</button>)}</div></div>
     <div><span>Escopo das atividades</span><div className="report-segments"><button type="button" className={scope==='empresa'?'active':''} aria-pressed={scope==='empresa'} onClick={()=>setScope('empresa')}>Empresa</button><button type="button" className={scope==='meus'?'active':''} aria-pressed={scope==='meus'} onClick={()=>setScope('meus')}>Minhas</button></div></div>
@@ -165,6 +179,11 @@ export default function ReportPage(){
     </section>
    </div>
    <footer className="report-footer"><ShieldCheck size={15}/> Indicadores somente de eventos registrados. Quitação em planilha não equivale a comprovante. {updated&&<span>Consultado em {updated.toLocaleString('pt-BR')}</span>}</footer>
+   <div className={'report-pdf-print-host '+(pdfPreview?'is-preview':'')}>
+    {pdfPreview&&<div className="report-pdf-preview-bar"><strong>Prévia do relatório — quatro páginas A4</strong><button className="reference-outline" onClick={()=>setPdfPreview(false)}>Fechar prévia</button><button className="reference-primary" onClick={printReport}><Printer size={15}/> Salvar PDF</button></div>}
+    <ReportPrintDocument report={report} periodName={periodLabel[period]} scopeName={scope==='meus'?'Minhas atividades':'Empresa'}
+      generated={updated||new Date()} incomplete={Boolean(notice)} members={members}/>
+   </div>
   </main>
  </CrmShell>;
 }

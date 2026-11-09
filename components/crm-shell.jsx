@@ -1,14 +1,38 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
+import {getClient} from '../lib/supabase-client';
+import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
 
-const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3};
+const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3,'Configurações':Settings2};
 export default function CrmShell({active='Visão geral',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(false);
  const [theme,setTheme]=useState('vinho');
- const sidebarRef=useRef(null);
+ const [profile,setProfile]=useState({display_name:'',avatar_path:''});
+ const [avatarUrl,setAvatarUrl]=useState('');
+ useEffect(()=>{
+  const db=getClient();if(!db)return;
+  let alive=true;
+  let request=0;
+  async function refreshProfile(){
+   const current=++request;
+   const {data,error}=await db.auth.getUser();
+   if(!alive||current!==request||error||!data?.user)return;
+   const user=data.user,metadata=user.user_metadata||{};
+   setProfile({display_name:String(metadata.display_name||metadata.full_name||''),avatar_path:String(metadata.avatar_path||'')});
+   if(!ownerAvatarPath(user.id,metadata.avatar_path)){setAvatarUrl('');return}
+   const photo=await db.storage.from(PROFILE_BUCKET).createSignedUrl(metadata.avatar_path,3600);
+   if(alive&&current===request)setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
+  }
+  function scheduleRefresh(){window.setTimeout(refreshProfile,0)}
+  const {data:{subscription}}=db.auth.onAuthStateChange(()=>{scheduleRefresh()});
+  window.addEventListener('projectw1sc:profile-change',scheduleRefresh);
+  refreshProfile();
+  return()=>{alive=false;subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh)};
+ },[]);
+  const sidebarRef=useRef(null);
  useEffect(()=>{
   function applyStoredTheme(){
    let stored='vinho';
@@ -19,7 +43,8 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
   applyStoredTheme();
   const onStorage=e=>{if(e.key==='projectw1sc.crm-theme')applyStoredTheme()};
   window.addEventListener('storage',onStorage);
-  return()=>window.removeEventListener('storage',onStorage);
+  window.addEventListener('projectw1sc:theme-change',applyStoredTheme);
+  return()=>{window.removeEventListener('storage',onStorage);window.removeEventListener('projectw1sc:theme-change',applyStoredTheme)};
  },[]);
  function selectTheme(next){
   const id=resolveTheme(next);
@@ -65,7 +90,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <a key={item.key} href={item.path} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Tarefas','Minhas atividades','Relatórios'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Tarefas','Minhas atividades','Relatórios','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }}><Icon size={17} aria-hidden="true"/><span>{item.label}</span></a>;
@@ -73,7 +98,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
    </nav>
    <footer className="app-nav-footer">
     <div className="app-private"><span>Dados privados, rastreáveis e<br/>vinculados à origem.</span></div>
-    <small title={email} className="app-account-email"><Mail size={14}/>{email}</small>
+    <small className="app-account-email" title={email}><Mail size={14}/><span><strong className="app-profile-label">{profile.display_name||'Meu perfil'}</strong>{email}</span></small>
     <div className="app-account-actions">
      {onPassword?<button onClick={onPassword} type="button"><KeyRound size={14}/> Alterar senha</button>:<a href="/?senha=1"><KeyRound size={14}/> Alterar senha</a>}
      <button onClick={onSignOut} type="button"><LogOut size={14}/> Sair</button>
@@ -82,6 +107,6 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
   </aside>
   <div className="app-content"><div className="reference-top-tools">
    <label className="crm-theme-picker" title="Escolher tema"><Palette size={15}/><span>Seletor de tema</span><select aria-label="Escolher tema" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
-   <a href="/tarefas?fila=vencidos" aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</a><span className="reference-top-divider"/><span className="reference-top-avatar" title={email}>W</span></div>{children}</div>
+   <a href="/tarefas?fila=vencidos" aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</a><span className="reference-top-divider"/><a className="reference-top-avatar" href="/configuracoes" title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</a></div>{children}</div>
  </div>;
 }
