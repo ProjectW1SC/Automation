@@ -5,6 +5,7 @@ import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
 import {getClient} from '../../lib/supabase-client';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {formatProcessNumber,mergeEvents,normalizeDjen,buildDjenUrl} from '../../lib/processos-oficiais.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
@@ -12,16 +13,17 @@ const formatDate=x=>x&&!Number.isNaN(Date.parse(x))?new Date(x).toLocaleString('
 const sourceLabels={datajud:'DataJud',djen:'DJEN'};
 const twoYearsAgo=()=>{const d=new Date();d.setFullYear(d.getFullYear()-2);return d.toISOString().slice(0,10)};
 function ProcessLogin({db,onSession}){
+ const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
  const [pw,setPw]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  async function enter(e){
   e.preventDefault();setBusy(true);setError('');
-  try{const {session}=await signInWithPassword(db.auth,pw);setPw('');onSession(session)}
+  try{const {session}=await signInWithPassword(db.auth,pw,loginEmail);setPw('');onSession(session)}
   catch(x){setError(x.message||'Não foi possível entrar.')}
   finally{setBusy(false)}
  }
  return <ProfessionalAuth eyebrow="CONSULTAS PROCESSUAIS" title="Acesse processos" description="Consulte apenas os números CNJ registrados na sua carteira autorizada.">
   <form className="w1-auth-form" onSubmit={enter}>
-   <label className="w1-auth-label" htmlFor="process-user">Conta autorizada</label><input id="process-user" value={ADMIN_EMAIL} autoComplete="username" readOnly type="email"/>
+   <label className="w1-auth-label" htmlFor="process-user">Conta autorizada</label><input id="process-user" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} required autoComplete="username" type="email"/>
    <label className="w1-auth-label" htmlFor="process-pass">Senha de acesso</label><input id="process-pass" type="password" value={pw} minLength={8} required onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password"/>
    <button className="w1-auth-submit" disabled={busy}>{busy?'Verificando acesso...':'Entrar em processos'}</button>
   </form>{error&&<p className="w1-auth-feedback error" role="alert">{error}</p>}
@@ -40,6 +42,7 @@ const emptySource=()=>({state:'idle',items:[],checkedAt:null,notice:'',error:''}
 export default function ProcessosPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true);
+ const access=useCrmAccess(db,session?.user);
  const [saved,setSaved]=useState([]),[activityRecords,setActivityRecords]=useState([]),[clients,setClients]=useState([]);
  const [pageLoading,setPageLoading]=useState(false),[saving,setSaving]=useState(false),[notice,setNotice]=useState('');
  const [number,setNumber]=useState(''),[processType,setProcessType]=useState('comum'),[clientId,setClientId]=useState('');
@@ -54,19 +57,19 @@ export default function ProcessosPage(){
   return()=>{active=false;subscription.unsubscribe()}
  },[db]);
  const load=useCallback(async()=>{
-  if(!db||session?.user?.email?.toLowerCase()!==ADMIN_EMAIL)return;
+  if(!db||!access.allowed)return;
   setPageLoading(true);setNotice('');
   const [a,b,c]=await Promise.all([
-   db.from('crm_processes').select('id,process_number,process_type,client_id,created_at').eq('actor_id',session.user.id).order('created_at',{ascending:false}).limit(1000),
-   db.from('crm_completed_activities').select('id,process_number,process_type,client_id,performed_on').eq('actor_id',session.user.id).is('deleted_at',null).not('process_number','is',null).order('performed_on',{ascending:false}).limit(1000),
+   db.from('crm_processes').select('id,process_number,process_type,client_id,created_at').order('created_at',{ascending:false}).limit(1000),
+   db.from('crm_completed_activities').select('id,process_number,process_type,client_id,performed_on').is('deleted_at',null).not('process_number','is',null).order('performed_on',{ascending:false}).limit(1000),
    db.from('crm_clients').select('id,name,institution').order('name').limit(1000)
   ]);
   const errors=[a,b,c].filter(x=>x.error).map(x=>x.error.message);
   if(errors.length)setNotice('Não foi possível carregar todos os registros: '+errors.join(' · '));
   setSaved(a.error?[]:a.data||[]);setActivityRecords(b.error?[]:b.data||[]);setClients(c.error?[]:c.data||[]);
   setPageLoading(false);
- },[db,session?.user?.id]);
- useEffect(()=>{if(session?.user?.id)load();else{setSaved([]);setActivityRecords([])}},[session?.user?.id,load]);
+ },[db,session?.user?.id,access.allowed]);
+ useEffect(()=>{if(access.allowed)load();else{setSaved([]);setActivityRecords([])}},[session?.user?.id,load]);
  const clientById=useMemo(()=>new Map(clients.map(c=>[c.id,c])),[clients]);
  const records=useMemo(()=>{
   const map=new Map();
@@ -155,7 +158,8 @@ export default function ProcessosPage(){
  if(!db)return <main className="reference-auth">Supabase não configurado.</main>;
  if(authLoading)return <main className="reference-auth"><Loader2 size={20}/> Verificando sessão...</main>;
  if(!session)return <ProcessLogin db={db} onSession={setSession}/>;
- if(session.user.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth">Esta conta não tem acesso à carteira ProjectW1SC.</main>;
+ if(access.loading)return <main className="reference-auth">Validando permissão...</main>;
+ if(!access.allowed)return <main className="reference-auth">Esta conta não tem acesso à carteira ProjectW1SC.</main>;
  const q=records.length,types=records.filter(p=>p.type==='busca_apreensao').length;
  return <CrmShell active="Processos" email={session.user.email} onSignOut={()=>db.auth.signOut()}>
  <main className="reference-dashboard processes-dashboard">
