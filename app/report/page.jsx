@@ -4,6 +4,7 @@ import {Activity,AlertTriangle,BarChart3,BriefcaseBusiness,CalendarDays,CheckCir
 import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 import {buildReport,periodBounds,exportReportCsv} from '../../lib/report.mjs';
@@ -60,16 +61,17 @@ function exportAggregate(report){
  const a=document.createElement('a');a.href=url;a.download='projectw1sc-relatorio-operacional.csv';a.click();URL.revokeObjectURL(url);
 }
 function ReportLogin({db,onLogged}){
+ const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
  const [password,setPassword]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  async function login(e){
   e.preventDefault();setBusy(true);setError('');
-  try{const {session}=await signInWithPassword(db.auth,password);setPassword('');onLogged(session)}
+  try{const {session}=await signInWithPassword(db.auth,password,loginEmail);setPassword('');onLogged(session)}
   catch(e){setError(e.message||'Não foi possível entrar.')}
   finally{setBusy(false)}
  }
  return <ProfessionalAuth eyebrow="INTELIGÊNCIA OPERACIONAL" title="Acesse relatórios" description="Indicadores, resultados e atividades organizados em um ambiente protegido.">
   <form className="w1-auth-form" onSubmit={login}>
-   <label className="w1-auth-label" htmlFor="report-user">Conta autorizada</label><input id="report-user" readOnly type="email" autoComplete="username" value={ADMIN_EMAIL}/>
+   <label className="w1-auth-label" htmlFor="report-user">Conta autorizada</label><input id="report-user" required type="email" autoComplete="username" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/>
    <label className="w1-auth-label" htmlFor="report-pass">Senha de acesso</label><input id="report-pass" type="password" required minLength={8} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/>
    <button disabled={busy} className="w1-auth-submit">{busy?'Verificando acesso...':'Entrar nos relatórios'}</button>
   </form>{error&&<p role="alert" className="w1-auth-feedback error">{error}</p>}
@@ -79,6 +81,7 @@ function ReportLogin({db,onLogged}){
 export default function ReportPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[loading,setLoading]=useState(false);
+ const access=useCrmAccess(db,session?.user);
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[notice,setNotice]=useState(''),[pdfPreview,setPdfPreview]=useState(false);
  const [clients,setClients]=useState([]),[audit,setAudit]=useState([]),[manual,setManual]=useState([]),[priorityAudit,setPriorityAudit]=useState([]),[priorityManual,setPriorityManual]=useState([]),[updated,setUpdated]=useState(null);
  const today=todayBrazil();
@@ -90,7 +93,7 @@ export default function ReportPage(){
   return()=>{alive=false;subscription.unsubscribe()}
  },[db]);
  const load=useCallback(async()=>{
-  if(!db||session?.user?.email?.toLowerCase()!==ADMIN_EMAIL)return;
+  if(!db||!access.allowed)return;
   setLoading(true);setNotice('');
   const bounds=periodBounds(period,today);
   // Previous UTC day avoids omitting events around the Sao Paulo midnight boundary.
@@ -117,8 +120,8 @@ export default function ReportPage(){
   const truncated=[c,a,m,noteResult,workResult].some(x=>(x?.data?.length||0)>=1000);
   setNotice([...errors.map(x=>'Falha: '+x[0]),...moreErrors.map(x=>'Falha: '+x[0]),...(truncated?['Consulta limitada a mil registros em pelo menos uma fonte; verifique registros adicionais no CRM.']:[])].join(' · '));
   setUpdated(new Date());setLoading(false);
- },[db,period,session?.user?.id,today]);
- useEffect(()=>{if(session?.user?.email?.toLowerCase()===ADMIN_EMAIL)load();else{setClients([]);setAudit([]);setManual([])}},[session?.user?.id,load]);
+ },[db,period,session?.user?.id,today,access.allowed]);
+ useEffect(()=>{if(access.allowed)load();else{setClients([]);setAudit([]);setManual([])}},[session?.user?.id,load]);
  const report=useMemo(()=>buildReport({clients,audit,manual,period,scope,actorId:session?.user?.id,today}),[clients,audit,manual,period,scope,session?.user?.id,today]);
  const priorityDigestRows=useMemo(()=>priorityDigest({clients,audit:priorityAudit,manual:priorityManual,today,scope,actorId:session?.user?.id}),[clients,priorityAudit,priorityManual,today,scope,session?.user?.id]);
  function printReport(){
@@ -144,7 +147,8 @@ export default function ReportPage(){
  if(!db)return <main className="reference-auth"><p>CRM em configuração. A conexão com o Supabase não está disponível.</p></main>;
  if(authLoading)return <main className="reference-auth"><Loader2 size={23}/> Verificando acesso...</main>;
  if(!session)return <ReportLogin db={db} onLogged={setSession}/>;
- if(session.user.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth"><p>Conta sem autorização para este relatório.</p><button onClick={()=>db.auth.signOut()}>Sair</button></main>;
+ if(access.loading)return <main className="reference-auth">Validando permissão...</main>;
+ if(!access.allowed)return <main className="reference-auth"><p>Conta sem autorização para este relatório.</p><button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  return <CrmShell active="Relatórios" email={session.user.email||''} overdueCount={report.portfolio.overdue} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard report-dashboard" data-projectw1sc-report="operational">
    <header className="reference-header report-header">
