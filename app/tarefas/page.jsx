@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,AlertTriangle,ArrowLeft,ArrowUpRight,BadgeCheck,CalendarDays,CheckCircle2,ChevronRight,ClipboardCheck,Clock3,FileClock,Filter,Flag,History,Inbox,ListChecks,Loader2,Pencil,NotebookPen,Phone,Plus,RefreshCcw,Search,Send,ShieldCheck,UserRound,Users,X} from 'lucide-react';
 import {getClient} from '../../lib/supabase-client';
 import CrmShell from '../../components/crm-shell';
+import ProfessionalAuth from '../../components/professional-auth';
 import EfferdKpi from '../../components/efferd-kpi';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {ATTENDANCE_CHANNELS,ATTENDANCE_OUTCOMES,dueDate,filterTaskQueue,queueCounts,taskStatus,todayBrazil,validateAttendance,validateCriticidade,validateNote,validISO} from '../../lib/tarefas.mjs';
@@ -44,19 +45,15 @@ function TaskLogin({db,onLogged}){
   catch(err){setError(err.message||'Não foi possível entrar.')}
   finally{setLoading(false)}
  }
- return <main className="task-auth-wrap"><div className="task-auth">
-   <div className="task-logo">W<span>1</span>SC <small>CRM</small></div>
-   <div className="task-kicker">ACESSO RESTRITO</div>
-   <h1>Central de tarefas</h1>
-   <p>Entre para visualizar os vencidos, organizar prioridades e registrar atendimentos.</p>
-   <form onSubmit={login} className="task-auth-form">
-    <label>E-mail<input readOnly type="email" value={ADMIN_EMAIL}/></label>
-    <label>Senha<input required minLength={8} type={show?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha do CRM"/></label>
-    <label className="task-check"><input type="checkbox" checked={show} onChange={e=>setShow(e.target.checked)}/> Mostrar senha</label>
-    <button className="task-button task-button-primary" disabled={loading}>{loading?<Loader2 size={17} className="task-spin"/>:<ShieldCheck size={17}/>} Entrar nas tarefas</button>
-    {error&&<p className="task-error" role="alert">{error}</p>}
-   </form><a href="/" className="task-auth-back"><ArrowLeft size={15}/> Voltar ao CRM e recuperar senha</a>
- </div></main>;
+ return <ProfessionalAuth eyebrow="FILA OPERACIONAL" title="Central de tarefas" description="Acesse suas prioridades, registre atendimentos e acompanhe os próximos retornos.">
+  <form className="w1-auth-form" onSubmit={login}>
+   <label className="w1-auth-label" htmlFor="task-user">Conta autorizada</label><input id="task-user" type="email" value={ADMIN_EMAIL} autoComplete="username" readOnly/>
+   <label className="w1-auth-label" htmlFor="task-password">Senha de acesso</label>
+   <div className="w1-auth-password-wrap"><input id="task-password" required minLength={8} type={show?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Digite sua senha"/><button type="button" onClick={()=>setShow(v=>!v)} aria-label={show?'Ocultar senha':'Mostrar senha'} aria-pressed={show}>{show?'Ocultar':'Mostrar'}</button></div>
+   <button className="w1-auth-submit" disabled={loading}>{loading?'Verificando acesso...':'Entrar nas tarefas'}</button>
+  </form>{error&&<p className="w1-auth-feedback error" role="alert">{error}</p>}
+  <a className="w1-auth-back" href="/">Voltar ao CRM ou recuperar senha</a>
+ </ProfessionalAuth>;
 }
 export default function TarefasPage(){
  const db=useMemo(()=>getClient(),[]);
