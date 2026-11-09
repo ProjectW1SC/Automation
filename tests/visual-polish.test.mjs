@@ -27,7 +27,8 @@ test('overview and tasks use single shared motion system and semantic real-time 
  assert.match(app,/\.\/motion-system\.css/);
  assert.match(shell,/aria-label="Navegação principal"/);
  assert.match(tasks,/aria-live="polite"/);
- assert.match(tasks,/className="task-list"/);
+ assert.match(tasks,/sales-workspace/);
+ assert.match(read("app/sales-workspace.css"),/sales-contact-card/);
 });
 test('no decorative continuous animation on task cards or fake performance metrics',()=>{
  const css=read('app/motion-system.css');
