@@ -6,6 +6,7 @@ import {getClient} from '../../lib/supabase-client';
 import {ADMIN_EMAIL,changePassword} from '../../lib/login.mjs';
 import {CRM_THEMES,resolveTheme} from '../../lib/crm-themes.mjs';
 import {PROFILE_BUCKET,validateProfileName,validateAvatarFile,avatarPathFor,validatePasswordChange,ownerAvatarPath} from '../../lib/profile-settings.mjs';
+import {APP_COLORS,APPEARANCE_BUCKET,appearanceDefaults,validateAppearance,validateImageFile,appearancePathFor,applyAppearanceToDocument} from '../../lib/appearance-settings.mjs';
 
 const labelForTheme=id=>CRM_THEMES.find(x=>x.id===id)?.label||'Vinho clássico';
 export default function SettingsPage(){
@@ -14,10 +15,12 @@ export default function SettingsPage(){
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
  const [theme,setTheme]=useState('vinho'),[saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
+ const [colors,setColors]=useState(()=>appearanceDefaults(CRM_THEMES[0]));
+ const [backgroundFile,setBackgroundFile]=useState(null),[backgroundPreview,setBackgroundPreview]=useState(''),[backgroundUrl,setBackgroundUrl]=useState(''),[removeBackground,setRemoveBackground]=useState(false);
  const user=session?.user;
  useEffect(()=>{
   let saved='vinho';try{saved=localStorage.getItem('projectw1sc.crm-theme')||'vinho'}catch{}
-  setTheme(resolveTheme(saved));
+  const selected=resolveTheme(saved);setTheme(selected);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)));
   if(!db){setLoading(false);return}
   let active=true;
   const {data:{subscription}}=db.auth.onAuthStateChange((_,s)=>{if(active){setSession(s);setLoading(false)}});
@@ -27,6 +30,9 @@ export default function SettingsPage(){
  useEffect(()=>{
   if(!user)return;
   setDisplayName(String(user.user_metadata?.display_name||user.user_metadata?.full_name||''));
+  const t=CRM_THEMES.find(x=>x.id===resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'vinho'));
+  try{setColors(validateAppearance(user.user_metadata?.crm_colors||{},t))}
+  catch{setColors(appearanceDefaults(t))}
   const path=user.user_metadata?.avatar_path;
   if(!ownerAvatarPath(user.id,path)){setAvatarUrl('');return}
   let active=true;
@@ -40,12 +46,75 @@ export default function SettingsPage(){
   const url=URL.createObjectURL(photo);setPhotoPreview(url);
   return()=>URL.revokeObjectURL(url);
  },[photo]);
- function setChosenTheme(value){
+ useEffect(()=>{
+  const path=String(user?.user_metadata?.crm_background_path||'');
+  if(!user?.id||!path.startsWith(user.id+'/background-')||!db){setBackgroundUrl('');return}
+  let active=true;
+  db.storage.from(APPEARANCE_BUCKET).createSignedUrl(path,3600).then(({data,error})=>{
+   if(active)setBackgroundUrl(error?'':data?.signedUrl||'');
+  });return()=>{active=false};
+ },[db,user?.id,user?.user_metadata?.crm_background_path]);
+ useEffect(()=>{
+  if(!backgroundFile){setBackgroundPreview('');return}
+  const url=URL.createObjectURL(backgroundFile);setBackgroundPreview(url);
+  return()=>URL.revokeObjectURL(url);
+ },[backgroundFile]);
+ function changeColor(field,value){
+  const changed={...colors,[field]:value};
+  setColors(changed);
+  const palette=CRM_THEMES.find(t=>t.id===theme)||CRM_THEMES[0];
+  try{const validated=validateAppearance(changed,palette);applyAppearanceToDocument(document.documentElement,palette,validated,removeBackground?'':backgroundUrl);setError('')}
+  catch(err){setError(err.message)}
+ }
+ function chooseBackground(e){
+  const image=e.target.files?.[0];e.target.value='';
+  if(!image)return;
+  try{validateImageFile(image,'background');setBackgroundFile(image);setRemoveBackground(false);setError('')}
+  catch(err){setError(err.message)}
+ }
+ async function saveAppearance(e){
+  e.preventDefault();if(!db||saving||!user)return;
+  const palette=CRM_THEMES.find(t=>t.id===theme)||CRM_THEMES[0];
+  let valid;
+  try{valid=validateAppearance(colors,palette);if(backgroundFile)validateImageFile(backgroundFile,'background')}
+  catch(err){setError(err.message);return}
+  setSaving('appearance');setError('');setMessage('');
+  const oldPath=String(user.user_metadata?.crm_background_path||'');
+  let newPath=null;
+  try{
+   if(backgroundFile){
+    newPath=appearancePathFor(user.id,'background',backgroundFile.type,crypto.randomUUID());
+    const upload=await db.storage.from(APPEARANCE_BUCKET).upload(newPath,backgroundFile,{contentType:backgroundFile.type,cacheControl:'3600',upsert:false});
+    if(upload.error)throw Error('Não foi possível salvar o fundo: '+upload.error.message);
+   }
+   const target=removeBackground?null:newPath||oldPath||null;
+   const updated=await db.auth.updateUser({data:{crm_colors:valid,crm_background_path:target}});
+   if(updated.error)throw Error('Não foi possível salvar a aparência: '+updated.error.message);
+   if(oldPath&&(removeBackground||newPath)&&oldPath.startsWith(user.id+'/'))await db.storage.from(APPEARANCE_BUCKET).remove([oldPath]);
+   let nextUrl=removeBackground?'':backgroundUrl;
+   if(newPath){
+    const {data,error}=await db.storage.from(APPEARANCE_BUCKET).createSignedUrl(newPath,3600);
+    nextUrl=error?'':data?.signedUrl||'';
+   }
+   setBackgroundUrl(nextUrl);setBackgroundFile(null);setRemoveBackground(false);
+   setSession(previous=>({...previous,user:updated.data?.user||user}));
+   applyAppearanceToDocument(document.documentElement,palette,valid,nextUrl);
+   window.dispatchEvent(new Event('projectw1sc:appearance-change'));
+   setMessage('Aparência salva. Cores e fundo serão utilizados nas demais abas.');
+  }catch(err){
+   if(newPath)await db.storage.from(APPEARANCE_BUCKET).remove([newPath]).catch(()=>{});
+   setError(err.message||'Não foi possível salvar as preferências.');
+  }finally{setSaving('')}
+ }
+  function setChosenTheme(value){
   const next=resolveTheme(value);setTheme(next);
+  const palette=CRM_THEMES.find(t=>t.id===next);
+  const defaults=appearanceDefaults(palette);setColors(defaults);
   document.documentElement.dataset.crmTheme=next;
   try{localStorage.setItem('projectw1sc.crm-theme',next)}catch{}
   window.dispatchEvent(new Event('projectw1sc:theme-change'));
-  setMessage('Tema '+labelForTheme(next)+' aplicado ao CRM.');setError('');
+  applyAppearanceToDocument(document.documentElement,palette,defaults,backgroundUrl);
+  setMessage('Tema '+labelForTheme(next)+' aplicado. Salve a aparência para guardar suas cores.');setError('');
  }
  function selectPhoto(e){
   const f=e.target.files?.[0]||null;
