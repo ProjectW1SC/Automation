@@ -55,3 +55,15 @@ Visual modernizado com CSS próprio, **sem copiar ou redistribuir** templates/co
 O design original `app/motion-system.css` mantém vinho/marfim e a navegação única da ProjectW1SC. A animação aparece somente quando há interação ou carregamento: realce da aba ativa, entrada breve da página e das primeiras linhas, hover/foco, formulário/modal, estado de loading. Não usa imagens pesadas, vídeos, dependências extras de animação nem rede externa. Inclui `prefers-reduced-motion: reduce`, foco visível e atalhos de teclado (setas/Home/End) nas abas de fila. Contadores continuam exibindo valores reais, não simulações.
 
 Validação: `npm test`, `npm run build` e verificação da implantação da Vercel. O visual no navegador autenticado deve ser conferido com dados reais antes de considerar encerrada a revisão de UX.
+
+## Conciliação de finalizados e reabertura — 09/11/2026
+
+O CRM agora apresenta **Finalizados** no lugar de **Revisar**. A página só contém acompanhamentos com `workflow_status='finalizado'`, permite buscar, consultar histórico e **Reabrir** após informar um motivo. Os links antigos `/?aba=revisar` e `/revisar` apontam para Finalizados.
+
+**Cruzamento privado por CPF/CNPJ:** Google Sheets `QUITAÇÃO - KAWAN 2025` versus cópia Google Sheets autorizada do Excel `Estatistica Quitacao 2025`. Na leitura: 43 documentos distintos em VENCIDOS, 80 em FINALIZADOS, 28 em QUITADOS; 5 aparecem simultaneamente em VENCIDOS e QUITADOS. A aba Excel Quitados tem 29 documentos com status explicitamente `Quitado`, nenhum deles coincidindo com VENCIDOS da planilha principal. Outros estados (`Aproximado`, abas de risco, `QUITAÇÃO IRREVERSIVEL`) **não** confirmam pagamento.
+
+**Banco Project One:** 90 acompanhamentos existentes foram classificados como finalizados com registros de auditoria. O número de datas atrasadas na fila ativa caiu de 113 para 52; 61 datas antigas pertenciam a registros encerrados. Não houve alteração automática de `evidence_status` ou comprovação financeira.
+
+Migrações `004` e `005` preservam a decisão manual de **Reabrir** (`workflow_override='ativo'`) e classificam futuras importações apenas quando a origem explicitamente sinaliza finalização/quitação. **Reabrir** é uma decisão operacional, não uma reversão da quitação. A importação massiva de novas pessoas fora do banco depende de um canal autorizado para dados pessoais; não inserir CPFs em repositórios públicos.
+
+A antiga tabela de documentos sem CPF/CNPJ não aparece mais em Finalizados; esses registros permanecem na base privada para eventual reconciliação separada.
