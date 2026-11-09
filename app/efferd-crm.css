@@ -50,6 +50,7 @@ html[data-crm-theme] .efferd-kpi.tone-ok .efferd-kpi-icon{background:var(--ui-su
 html[data-crm-theme] .efferd-kpi.tone-warn .efferd-kpi-icon{background:var(--ui-warning-bg)!important;color:var(--ui-warning-ink)!important}
 html[data-crm-theme] .efferd-kpi .efferd-kpi-value{color:var(--ui-ink)!important}
 html[data-crm-theme] .efferd-kpi .efferd-kpi-label,html[data-crm-theme] .efferd-kpi .efferd-kpi-hint{color:var(--ui-muted)!important}
+@media(min-width:1340px){.efferd-task-metrics,.efferd-activities-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:1180px){.efferd-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){.efferd-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.efferd-kpi{padding:12px 10px;min-height:115px}.efferd-kpi-grid{gap:8px}.efferd-kpi-value{font-size:25px}.efferd-kpi-label{font-size:9px!important}.efferd-kpi-icon{width:30px;height:30px}}
