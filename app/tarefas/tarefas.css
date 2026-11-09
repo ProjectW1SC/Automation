@@ -125,7 +125,7 @@
 .task-form-hint{display:flex;gap:9px;align-items:center;flex-wrap:wrap;color:#917c83;font-size:11px}
 .task-form-hint button{border:0;background:#f2e8eb;color:#653b4b;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:800}
 .task-form-hint>svg{color:#8b6975}
-.task-warning{display:flex;align-items:start;gap:9px;background:#fff6e8;color:#906930;border:1px solid #f1e0c1;padding:11px 13px;border-radius:9px;font-size:11px;margin:0;line-height:1.5}
+.task-warning{display:flex;align-items:flex-start;gap:9px;background:#fff6e8;color:#906930;border:1px solid #f1e0c1;padding:11px 13px;border-radius:9px;font-size:11px;margin:0;line-height:1.5}
 .task-warning svg{flex-shrink:0}
 .task-modal-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:4px;border-top:1px solid #f2ecee;padding-top:17px}
 .task-history{list-style:none;padding:0;margin:2px 0 0;display:grid;gap:15px}
