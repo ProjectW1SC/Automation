@@ -19,7 +19,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <a key={item.key} href={item.path} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} onClick={e=>{
-       if(onNavigate&&item.label!=='Tarefas'&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Tarefas','Minhas atividades'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);
        }
       }}><Icon size={17} aria-hidden="true"/><span>{item.label}</span></a>;
