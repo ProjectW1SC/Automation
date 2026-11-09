@@ -10,5 +10,6 @@ import './sales-workspace.css';
 import './visual-overrides.css';
 import './anime-themes.css';
 import './anime-immersive.css';
+import './anime-header-banners.css';
 export const metadata={title:'ProjectW1SC • CRM',description:'Intermediação de quitações e negociações'};
 export default function RootLayout({children}){return <html lang="pt-BR"><body>{children}</body></html>}
