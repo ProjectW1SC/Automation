@@ -4,6 +4,7 @@ import {Camera,Check,ChevronLeft,Eye,EyeOff,Image as ImageIcon,KeyRound,LockKeyh
 import CrmShell from '../../components/crm-shell';
 import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
+import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,changePassword} from '../../lib/login.mjs';
 import {CRM_THEMES,resolveTheme} from '../../lib/crm-themes.mjs';
 import {PROFILE_BUCKET,validateProfileName,validateAvatarFile,avatarPathFor,validatePasswordChange,ownerAvatarPath} from '../../lib/profile-settings.mjs';
@@ -13,6 +14,7 @@ const labelForTheme=id=>CRM_THEMES.find(x=>x.id===id)?.label||'Vinho clássico';
 export default function SettingsPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[loading,setLoading]=useState(true);
+ const access=useCrmAccess(db,session?.user);
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
  const [theme,setTheme]=useState('vinho'),[saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
@@ -175,7 +177,8 @@ export default function SettingsPage(){
  if(!db)return <main className="reference-auth">Configuração do Supabase indisponível.</main>;
  if(loading)return <main className="reference-auth">Verificando sua sessão...</main>;
  if(!session)return <ProfessionalAuth eyebrow="PREFERÊNCIAS DA CONTA" title="Acesse configurações" description="Para alterar seu perfil e as preferências do CRM, faça login primeiro."><a className="w1-auth-submit" href="/">Ir para a tela de acesso</a></ProfessionalAuth>;
- if(user?.email?.toLowerCase()!==ADMIN_EMAIL)return <main className="reference-auth">Conta não autorizada. <button onClick={()=>db.auth.signOut()}>Sair</button></main>;
+ if(access.loading)return <main className="reference-auth">Validando permissão...</main>;
+ if(!access.allowed)return <main className="reference-auth">Conta não autorizada. <button onClick={()=>db.auth.signOut()}>Sair</button></main>;
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
