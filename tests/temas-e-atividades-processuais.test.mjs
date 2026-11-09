@@ -56,7 +56,7 @@ test('tema aparece no shell e nos estilos globais com opcao de movimento reduzid
 test('atividades com numero e tipo, edicao e exclusao na mesma pagina e verificadas por dono',()=>{
  const ui=file('app/minhas-atividades/page.jsx');
  assert.match(ui,/Número do processo/);
- assert.match(ui,/Busca e apreensão/);
+ assert.match(file('lib/minhas-atividades.mjs'),/Busca e apreensão/);
  assert.match(ui,/Editar/);
  assert.match(ui,/Excluir/);
  assert.match(ui,/deleted_at/);
