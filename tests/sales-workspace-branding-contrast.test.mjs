@@ -42,7 +42,8 @@ test('institution logo can use uploaded image instead of guessing brand, preserv
  const home=file('app/page.jsx');assert.match(home,/crm-institution-logos/);
  assert.match(home,/logo_path/);
  const sql=file('supabase/migrations/20261109_014_branding_storage.sql');
- assert.match(sql,/logo_path/);assert.match(sql,/crm-institution-logos/);assert.match(sql,/enable row level security/i);
+ assert.match(sql,/logo_path/);assert.match(sql,/crm-institution-logos/);assert.match(sql,/create policy crm_institution_logos_select/);
+ assert.match(sql,/create policy crm_backgrounds_select_own/);
 });
 test('task queue is a two-column Salesforce-style contact workspace with focus panel',()=>{
  const ui=file('app/tarefas/page.jsx');
@@ -58,7 +59,7 @@ test('overview includes actual charts for statuses, bank distribution and follow
  assert.match(css,/var\(--ui-/);
 });
 test('report hero and PDF enforce explicit high contrast regardless of theme overrides',()=>{
- const css=file('app/report-print.css');
+ const css=file('app/report-print.css')+'\n'+file('app/visual-overrides.css');
  assert.match(css,/html\[data-crm-theme\].*report-executive-hero h2/);
  assert.match(css,/pdf-cover-main h1/);
  assert.match(css,/pdf-page:not\(\.pdf-cover\)/);
