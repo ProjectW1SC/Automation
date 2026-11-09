@@ -118,6 +118,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
      {onPassword?<button onClick={onPassword} type="button"><KeyRound size={14}/> Alterar senha</button>:<a href="/?senha=1"><KeyRound size={14}/> Alterar senha</a>}
      <button onClick={onSignOut} type="button"><LogOut size={14}/> Sair</button>
     </div>
+    <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 W1 Capital · Todos os direitos reservados</small>
    </footer>
   </aside>
   <div className="app-content"><div className="reference-top-tools">
