@@ -17,4 +17,4 @@ test('Integracoes indicam o estado real do WA.Auto',()=>{
  assert.match(s,/wa\.connected/);
 });
 
-test('QR de imagem pronto do Baileys não é recodificado como texto',()=>{const ui=read('components/wa-auto-inbox.jsx');assert.match(ui,/data:image\\/);assert.match(ui,/setQrImage\(String\(connection\.qr\)\)/);assert.match(ui,/4000/);});
+test('QR pronto do Baileys não é recodificado como texto',()=>{const ui=file('components/wa-auto-inbox.jsx');assert.ok(ui.includes('data:image'));assert.ok(ui.includes('setQrImage(String(connection.qr))'));assert.match(ui,/4000/);});
