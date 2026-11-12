@@ -1,3 +1,5 @@
+
+import {buildDjenUrl} from '../lib/processos-oficiais.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,mergeEvents,onlyExactProcess} from '../lib/processos-oficiais.mjs';
