@@ -168,6 +168,9 @@ html[data-crm-theme="blackhole"] .reference-top-avatar{color:#edf8ff!important}
 .w1-auth-screen[data-office-login="infinitum-reference"] .office-forgot{color:#a5e5ff!important}
 @page{size:210mm 297mm;margin:20mm 18mm}
 @media print{
+ body *{visibility:hidden!important}
+ .office-document-preview,.office-document-preview *{visibility:visible!important}
+ .office-document-preview{position:absolute!important;top:0;left:0;right:0;margin:0!important;background:#fff!important}
  html,body{background:#fff!important;color:#000!important}
  .app-sidebar,.reference-top-tools,.office-ai-rail,.office-ai-bottom,.office-document-controls{display:none!important}
  .office-document-preview{box-shadow:none!important;padding:0!important;width:100%!important;min-height:0!important;color:#000!important}

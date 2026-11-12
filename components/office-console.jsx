@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
@@ -32,7 +33,7 @@ function OfficeUI({area,db,session}){
  const [client,setClient]=useState(emptyClient()),[caseForm,setCaseForm]=useState(emptyCase()),[deadlineForm,setDeadlineForm]=useState(emptyDeadline());
  const [editClientId,setEditClientId]=useState(null),[editCaseId,setEditCaseId]=useState(null),[editDeadlineId,setEditDeadlineId]=useState(null);
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
- const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false);
+ const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const need=LOADED[area]||LOADED.dashboard;
@@ -112,7 +113,8 @@ function OfficeUI({area,db,session}){
   const a=document.createElement('a');a.href=u;a.download=filename.replace(/[^a-z0-9._-]/gi,'_');a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)
  };
  async function generateDocument(e){
-  e.preventDefault();const caseRecord=cases.find(x=>x.id===selectedCase);if(!caseRecord){setNotice('Escolha um processo.');return}
+  e.preventDefault();const caseRecord=selectedCase?cases.find(x=>x.id===selectedCase):null;
+   if(selectedCase&&!caseRecord){setNotice('Processo informado não consta da carteira atual.');return}
   setBusy(true);setNotice('');
   try{
    const client=clients.find(x=>x.id===caseRecord.client_id);
@@ -259,15 +261,18 @@ function OfficeUI({area,db,session}){
    </section></>}
   {area==='documents'&&<><div className="office-panel-grid"><section className="inf-panel"><h2>Gerar peça ou petição</h2>
    <form className="office-form-col" onSubmit={generateDocument}>
-    <label>Processo<select required value={selectedCase} onChange={e=>setSelectedCase(e.target.value)}><option value="">Selecione o processo</option>{cases.map(c=><option key={c.id} value={c.id}>{c.process_number||'Sem CNJ'} · {c.title}</option>)}</select></label>
+    <label>Processo (opcional)<select value={selectedCase} onChange={e=>setSelectedCase(e.target.value)}><option value="">Peça avulsa — sem processo cadastrado</option>{cases.map(c=><option key={c.id} value={c.id}>{c.process_number||'Sem CNJ'} · {c.title}</option>)}</select></label>
     <label>Tipo de peça<select value={docKind} onChange={e=>setDocKind(e.target.value)}>{OFFICE_DOC_TYPES.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
     <label>Fatos e instruções do advogado<textarea value={docInstructions} onChange={e=>setDocInstructions(e.target.value)} maxLength={1500} placeholder="Informe fatos que constam dos autos, objetivo, fase e pontos a conferir."/></label>
     <label className="office-hint" style={{display:'flex',alignItems:'center',gap:7}}><input style={{width:'auto'}} type="checkbox" checked={useAi} onChange={e=>setUseAi(e.target.checked)}/> Autorizar envio do contexto processual ao modelo externo configurado para gerar minuta com IA</label>
-    <button className="inf-btn primary" disabled={busy||!selectedCase}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
+    <button className="inf-btn primary" disabled={busy}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
     <Source>Sem API de IA configurada, o sistema gera estrutura editável com lacunas explícitas. Nenhuma fundamentação ou documento inexistente será inventado. Não há peticionamento automático.</Source>
    </form></section>
-   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button></div>
+   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar office-document-controls"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button>
+      <button type="button" className="inf-btn" onClick={()=>setShowPreview(x=>!x)}>{showPreview?'Ocultar folha A4':'Visualizar folha A4'}</button>
+      <button type="button" className="inf-btn primary" onClick={()=>{setShowPreview(true);window.setTimeout(()=>window.print(),0)}}>Imprimir / Salvar PDF</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
+    {showPreview&&<div className="office-document-preview" role="document" aria-label="Prévia A4 da petição">{docResult.body}</div>}
     <Source>Edite o texto e clique em Salvar revisão. Advogado responsável deve conferir antes de aprovar ou protocolar.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
    <section className="inf-panel"><h2>Peças registradas</h2><div className="office-records">{documents.map(x=><article className="office-record" key={x.id}><strong>{x.title}</strong><p>{x.kind} · {x.status} · {dateLabel(x.created_at)}</p><div className="office-action-row">
      <button className="inf-btn" onClick={()=>setDocResult({id:x.id,body:x.body,title:x.title})}>Abrir minuta</button>
