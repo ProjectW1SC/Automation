@@ -1,14 +1,20 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
 import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
 import {APPEARANCE_BUCKET,applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
-const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3,'Configurações':Settings2,'Processos':Gavel,'Audiências':CalendarDays,'Veredito':Scale,'Leads':Target,'Superagente':Bot,'Gerador de processos':Radar};
-export default function CrmShell({active='Visão geral',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
+const icons={
+ 'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,
+ 'Prazos':Clock3,'Audiências':CalendarDays,'Peças e petições':FileText,
+ 'WhatsApp':MessageSquare,'Leads':Target,'Gerador de processos':Radar,
+ 'Superagente':Bot,'Mini Agentes':UserRoundCheck,'Relatórios':BarChart3,
+ 'Configurações':Settings2
+};
+export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(false);
  const [theme,setTheme]=useState('infinitum');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
@@ -99,7 +105,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     }}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
-    <a className="app-brand-link" href="/" aria-label="ProjectW1SC — Ir à visão geral" title="Ir à visão geral">
+    <a className="app-brand-link" href="/" aria-label="ProjectW1SC — Painel jurídico" title="Ir ao painel jurídico">
      <img className="app-brand-compact" src="/branding/projectw1sc-symbol.svg" alt="" width="54" height="58"/>
      <img className="app-brand-full" src="/branding/projectw1sc-wordmark.svg" alt="" width="202" height="65"/>
     </a>
@@ -108,12 +114,12 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     {onPassword?<button type="button" onClick={onPassword} aria-label="Alterar senha"><KeyRound size={16}/></button>:<a href="/?senha=1" aria-label="Alterar senha"><KeyRound size={16}/></a>}
     <button type="button" onClick={onSignOut} aria-label="Sair da conta"><LogOut size={16}/></button>
    </div>
-   <div className="app-section-name">ÁREA DE TRABALHO</div>
+   <div className="app-section-name">ESCRITÓRIO JURÍDICO</div>
    <nav aria-label="Navegação principal" className="app-nav">
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <a key={item.key} href={item.path} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Tarefas','Minhas atividades','Relatórios','Configurações','Processos','Leads','Superagente','Gerador de processos','Audiências','Veredito'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Clientes','Processos','Prazos','Audiências','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }}><Icon size={17} aria-hidden="true"/><span>{item.label}</span></a>;
@@ -131,6 +137,6 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
   </aside>
   <div className="app-content"><div className="reference-top-tools">
    <label className="crm-theme-picker" title="Escolher tema"><Palette size={15}/><span>Seletor de tema</span><select aria-label="Escolher tema" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
-   <a href="/tarefas?fila=vencidos" aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</a><span className="reference-top-divider"/><a className="reference-top-avatar" href="/configuracoes" title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</a></div>{children}</div>
+   <a href="/prazos?status=vencidos" aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</a><span className="reference-top-divider"/><a className="reference-top-avatar" href="/configuracoes" title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</a></div>{children}</div>
  </div>;
 }
