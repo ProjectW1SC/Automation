@@ -1,5 +1,6 @@
 import {officeAuth,officeJson,safeOfficeError} from '../../../../lib/office-server.mjs';
 import {OFFICE_DOC_TYPES,makePetitionSkeleton} from '../../../../lib/office-core.mjs';
+import {configuredBlackholeProvider} from '../../../../lib/blackhole-chat.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=35;
 export async function POST(request){
  try{
@@ -9,10 +10,9 @@ export async function POST(request){
   if(!OFFICE_DOC_TYPES.some(x=>x.id===p?.kind))throw Object.assign(Error('Tipo de minuta inválido.'),{status:400});
   if(typeof p?.instructions!=='string'||p.instructions.length>1500)throw Object.assign(Error('Instruções inválidas.'),{status:400});
   if(typeof p?.caseId!=='string'||!/^[0-9a-f-]{36}$/i.test(p.caseId))throw Object.assign(Error('Selecione um processo válido.'),{status:400});
-  const key=process.env.LEGAL_AI_API_KEY,base=process.env.LEGAL_AI_BASE_URL,model=process.env.LEGAL_AI_MODEL;
-  if(!key||!base||!model)throw Object.assign(Error('IA jurídica remota ainda não configurada. Desative a opção para criar minuta estruturada sem custo de API.'),{status:503});
-  const endpoint=new URL(base);if(endpoint.protocol!=='https:'||!endpoint.pathname.endsWith('/chat/completions'))
-   throw Object.assign(Error('Endpoint legal de IA deve ser HTTPS /chat/completions.'),{status:503});
+  const provider=configuredBlackholeProvider(process.env);
+  if(!provider)throw Object.assign(Error('Nenhum modelo de IA está configurado no servidor. A minuta estruturada local permanece disponível.'),{status:503});
+  const {key,model}=provider,endpoint=new URL(provider.endpoint);
   const ca=await db.from('office_cases').select('*').eq('id',p.caseId).maybeSingle();
   if(ca.error||!ca.data)throw Object.assign(Error('Processo ausente ou não autorizado.'),{status:403});
   const cl=ca.data.client_id?await db.from('office_clients').select('id,name').eq('id',ca.data.client_id).maybeSingle():{data:null,error:null};
