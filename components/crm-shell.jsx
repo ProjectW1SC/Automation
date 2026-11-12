@@ -27,7 +27,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  useEffect(()=>{
   const db=getClient();if(!db)return;
   let alive=true;
-  let request=0;
+  let request=0,previousPhotoUrl='',previousBackgroundUrl='',refreshTimer=null;
   async function refreshProfile(){
    const current=++request;
    const {data,error}=await db.auth.getUser();
@@ -43,23 +43,20 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request)return;
    const [photoUrl,backgroundUrl]=await Promise.all([photo?.ok?photo.blob().then(URL.createObjectURL):Promise.resolve(''),background?.ok?background.blob().then(URL.createObjectURL):Promise.resolve('')]);
    if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
-   setAvatarUrl(photoUrl);
-   const colors=metadata.crm_colors&&typeof metadata.crm_colors==='object'?metadata.crm_colors:{};
-   appearanceRef.current={colors,backgroundUrl};
-   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'blackhole');
-   try{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),colors,appearanceRef.current.backgroundUrl)}
-   catch{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),{},appearanceRef.current.backgroundUrl)}
+   if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);
+   previousPhotoUrl=photoUrl;previousBackgroundUrl=backgroundUrl;setAvatarUrl(photoUrl);
+   appearanceRef.current={colors:{},backgroundUrl:''};
+   applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id==='blackhole'),{},'');
   }
-  function scheduleRefresh(){window.setTimeout(refreshProfile,0)}
+  function scheduleRefresh(){if(refreshTimer)window.clearTimeout(refreshTimer);refreshTimer=window.setTimeout(refreshProfile,0)}
   const {data:{subscription}}=db.auth.onAuthStateChange(()=>{scheduleRefresh()});
   window.addEventListener('projectw1sc:profile-change',scheduleRefresh);
   window.addEventListener('projectw1sc:appearance-change',scheduleRefresh);
   refreshProfile();
-  return()=>{alive=false;subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh);window.removeEventListener('projectw1sc:appearance-change',scheduleRefresh)};
+  return()=>{alive=false;if(refreshTimer)window.clearTimeout(refreshTimer);if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh);window.removeEventListener('projectw1sc:appearance-change',scheduleRefresh)};
  },[]);
   const sidebarRef=useRef(null);
- useEffect(()=>{
-  // BLACKHOLE fixo: não herdar a skin antiga do ProjectW1SC/Infinitum do localStorage.
+ // BLACKHOLE fixo: não herdar a skin antiga do ProjectW1SC/Infinitum do localStorage.
  useEffect(()=>{
   document.documentElement.dataset.crmTheme='blackhole';
   const current=CRM_THEMES.find(t=>t.id==='blackhole');
@@ -103,9 +100,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     onMouseEnter={()=>{}}
     onMouseLeave={()=>{}}
     onFocusCapture={()=>{}}
-    onBlurCapture={event=>{
-     if(!event.currentTarget.contains(event.relatedTarget)){}
-    }}>
+    onBlurCapture={()=>{}}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
     <Link className="app-brand-link" href="/" aria-label="BLACKHOLE — Painel jurídico" title="Ir ao painel jurídico" prefetch={false}>
