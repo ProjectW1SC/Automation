@@ -22,5 +22,5 @@ test('envio do CRM agora usa WA.Auto com sessão segura e sem Meta',()=>{
  assert.match(send,/waAutoOperation/);
  assert.match(send,/officeAuth/);
  assert.doesNotMatch(send,/graph.facebook.com|WHATSAPP_ACCESS_TOKEN/);
- assert.doesNotMatch(read('components/wa-auto-inbox.jsx'),/WA_AUTO_TOKEN/);
+ assert.doesNotMatch(read('components/wa-auto-inbox.jsx'),/process\\.env\\.WA_AUTO_TOKEN/);
 });

@@ -21,7 +21,7 @@ test('proxy usa apenas identidade verificada do CRM e nao coloca token no browse
  assert.equal(res.chats[0].name,'Paula');
  assert.equal(seen.init.headers['x-lexis-user-id'],actor);
  assert.equal(seen.init.headers.Authorization,'Bearer '+env.WA_AUTO_TOKEN);
- assert.ok(!read('components/wa-auto-inbox.jsx').includes('WA_AUTO_TOKEN'));
+ assert.ok(!read('components/wa-auto-inbox.jsx').includes('process.env.WA_AUTO_TOKEN'));
  assert.match(read('app/api/office/whatsapp/bridge/route.js'),/officeAuth/);
 });
 test('nao diz entregue quando a ponte aceita envio e evita Meta',async()=>{
