@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';const c=readFileSync(new URL('../components/crm-shell.jsx',import.meta.url),'utf8');
+test('mobile Mais exposes all CRM areas, theme switch and logout',()=>{assert.match(c,/crm-mobile-more-links/);assert.match(c,/CRM_AREAS\.map/);assert.match(c,/crm-more-signout/);assert.match(c,/setMobileMenuOpen/);});

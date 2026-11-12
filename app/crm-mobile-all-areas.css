@@ -1,0 +1,11 @@
+html[data-crm-theme] .crm-mobile-dock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;color:var(--ui-ink,#222);font-size:9px;font-weight:650;border-radius:9px}
+html[data-crm-theme] .crm-mobile-more{position:fixed;left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));z-index:149;display:flex;flex-direction:column;gap:12px;max-height:min(70dvh,650px);overflow:auto;padding:18px;background:var(--ui-surface,#fff);border-top:1px solid var(--ui-border,#ddd);border-radius:14px 14px 0 0;box-shadow:0 -12px 30px #00000025;color:var(--ui-ink,#222)}
+html[data-crm-theme] .crm-mobile-more header{display:flex;justify-content:space-between;align-items:center;font:600 20px Georgia,serif}
+html[data-crm-theme] .crm-mobile-more header button{display:grid;place-items:center;border:0;background:var(--ui-tint,#f5f2ee);color:var(--ui-ink,#222);width:32px;height:32px;border-radius:7px}
+html[data-crm-theme] .crm-mobile-more-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+html[data-crm-theme] .crm-mobile-more-links a{display:flex;align-items:center;gap:8px;min-height:43px;padding:10px;border:1px solid var(--ui-border,#ddd);border-radius:8px;color:var(--ui-ink,#222);font-size:11px;font-weight:700}
+html[data-crm-theme] .crm-mobile-more-links a:hover{background:var(--ui-tint,#f4f0e9)}
+html[data-crm-theme] .crm-mobile-more>label{display:grid;gap:5px;font-size:11px;color:var(--ui-muted,#777)}
+html[data-crm-theme] .crm-mobile-more select{width:100%;min-height:40px;padding:8px;border:1px solid var(--ui-border,#ddd);background:var(--ui-surface,#fff);color:var(--ui-ink,#222);border-radius:8px}
+html[data-crm-theme] .crm-more-signout{display:flex;justify-content:center;align-items:center;gap:7px;background:var(--ui-accent,#191919);color:var(--ui-accent-ink,#fff);border:0;border-radius:8px;min-height:43px;font-size:12px;font-weight:700}
+@media(min-width:841px){html[data-crm-theme] .crm-mobile-more{display:none!important}}

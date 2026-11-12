@@ -30,6 +30,7 @@ import './crm-responsive-themes.css';
 import './crm-judicial-history.css';
 import './crm-case-client-link.css';
 import './legal-stationery.css';
+import './crm-mobile-all-areas.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'INFINITUM • CRM Jurídico W1',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
 export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
