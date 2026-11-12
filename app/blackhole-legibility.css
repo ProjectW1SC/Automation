@@ -125,3 +125,37 @@ html[data-crm-theme="blackhole"] .blackhole-native-integration p{font-size:11px;
 html[data-crm-theme="blackhole"] .blackhole-native-integration small{font-size:10px;color:#4d5c70}
 html[data-crm-theme="blackhole"] .blackhole-native-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#f0f2f5;color:#222f44}
 html[data-crm-theme="blackhole"] .blackhole-native-integrations .inf-panel p{color:#565e69;font-size:12px;line-height:1.7}
+
+/* WhatsApp QR real: sem animações pesadas nem vazamento de chave no DOM. */
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-panel{
+ border-color:#cbd5e1!important;background:#fbfcfe!important
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-panel .office-toolbar{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-panel .office-toolbar p{
+ max-width:670px;color:#5b6470!important;font-size:11px;line-height:1.55;margin:4px 0 0;
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-body{
+ display:flex;gap:22px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-actions{
+ display:flex;flex-wrap:wrap;gap:9px;flex:1;align-items:center;
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-actions>p{
+ flex-basis:100%;font-size:11px;line-height:1.6;color:#515a67!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-image{
+ display:grid;place-items:center;gap:6px;padding:12px;border:1px solid #d7dfe9;
+ border-radius:11px;background:white
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-image img{
+ display:block;width:240px;height:240px;max-width:min(100%,240px);object-fit:contain
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-image small,
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-send small{
+ font-size:10px;color:#6b7280!important
+}
+html[data-crm-theme="blackhole"] .blackhole-wa-qr-send{
+ margin:15px 0 0;padding:15px;border-radius:10px;border:1px solid #d7dfe9;background:#fff
+}

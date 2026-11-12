@@ -24,8 +24,9 @@ async function callWorker(path,method='GET',body=null){
 }
 export async function GET(request){
  try{
-  await officeAuth(request);
+  const {user}=await officeAuth(request);
   const d=await callWorker('/api/status');
+  if(d.owner_id&&d.owner_id!==user.id)throw Object.assign(Error('Aparelho vinculado a outra conta. Solicite administração da conexão.'),{status:403});
   if(d.qr&&!/^data:image\/png;base64,[A-Za-z0-9+/=]{100,260000}$/.test(d.qr))d.qr=null;
   return officeJson({ok:true,configured:true,provider:'Baileys (não oficial)',status:d.status,connected:d.connected===true,qr:d.qr||null,phone:d.phone||null,error:d.error||null});
  }catch(e){return safeOfficeError(e)}

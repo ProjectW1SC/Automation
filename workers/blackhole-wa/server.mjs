@@ -161,7 +161,7 @@ const server=http.createServer(async(req,res)=>{
   const route=new URL(req.url||'/',"http://localhost").pathname;
   if(route==='/health'&&req.method==='GET')return reply(res,200,{ok:true,service:'BLACKHOLE QR',healthy:true});
   if(!authorized(req))return reply(res,401,{ok:false,error:'Não autorizado'});
-  if(route==='/api/status'&&req.method==='GET')return reply(res,200,{ok:true,status,connected:ready,qr:status==='qr'?qrData:null,phone:ready?phone:null,error:error||null,provider:'Baileys (não oficial)'});
+  if(route==='/api/status'&&req.method==='GET')return reply(res,200,{ok:true,status,connected:ready,qr:status==='qr'?qrData:null,phone:ready?phone:null,owner_id:ownerId,error:error||null,provider:'Baileys (não oficial)'});
   if(route==='/api/connect'&&req.method==='POST'){
    const b=await readBody(req),requested=String(b.owner_id||'');
    if(!/^[0-9a-f-]{36}$/i.test(requested))return reply(res,400,{ok:false,error:'Operador inválido'});
@@ -173,6 +173,7 @@ const server=http.createServer(async(req,res)=>{
   if(route==='/api/send'&&req.method==='POST'){
    const b=await readBody(req),to=digits(String(b.phone||'')+'@s.whatsapp.net'),message=String(b.text||'').trim();
    if(b.approved!==true)return reply(res,403,{ok:false,error:'Revisão manual obrigatória'});
+   if(!ownerId||b.owner_id!==ownerId)return reply(res,403,{ok:false,error:'Aparelho vinculado a outro operador'});
    if(!to||!message||message.length>1000)return reply(res,400,{ok:false,error:'Destino ou conteúdo inválido'});
    if(!ready||!current)return reply(res,503,{ok:false,error:'WhatsApp QR não conectado'});
    if(Date.now()-lastSend<3500)return reply(res,429,{ok:false,error:'Aguarde antes de outro envio'});
