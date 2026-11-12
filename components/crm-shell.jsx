@@ -1,16 +1,16 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
 import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
 import {APPEARANCE_BUCKET,applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
-const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3,'Configurações':Settings2,'Processos':Gavel,'Audiências':CalendarDays,'Veredito':Scale};
+const icons={'Visão geral':LayoutDashboard,'Tarefas':ClipboardList,'Clientes':Users,'Finalizados':CheckCircle2,'Instituições':Landmark,'Minhas atividades':NotebookPen,'Relatórios':BarChart3,'Configurações':Settings2,'Processos':Gavel,'Audiências':CalendarDays,'Veredito':Scale,'Leads':Target,'Superagente':Bot,'Gerador de processos':Radar};
 export default function CrmShell({active='Visão geral',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(false);
- const [theme,setTheme]=useState('vinho');
+ const [theme,setTheme]=useState('infinitum');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
  const [avatarUrl,setAvatarUrl]=useState('');
  const appearanceRef=useRef({colors:{},backgroundUrl:''});
@@ -34,7 +34,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
    setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
    const colors=metadata.crm_colors&&typeof metadata.crm_colors==='object'?metadata.crm_colors:{};
    appearanceRef.current={colors,backgroundUrl:background?.data?.signedUrl||''};
-   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'vinho');
+   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum');
    try{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),colors,appearanceRef.current.backgroundUrl)}
    catch{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),{},appearanceRef.current.backgroundUrl)}
   }
@@ -48,8 +48,14 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
   const sidebarRef=useRef(null);
  useEffect(()=>{
   function applyStoredTheme(){
-   let stored='vinho';
-   try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'vinho'}catch{}
+   // Na primeira visita desta refatoração, coloca a referência visual solicitada.
+   // O seletor de temas continua editável e suas escolhas posteriores são preservadas.
+   try{if(!window.localStorage.getItem('projectw1sc.infinitum-refactor-v1')){
+     window.localStorage.setItem('projectw1sc.crm-theme','infinitum');
+     window.localStorage.setItem('projectw1sc.infinitum-refactor-v1','1');
+   }}catch{}
+   let stored='infinitum';
+   try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
    const id=resolveTheme(stored);
    setTheme(id);document.documentElement.dataset.crmTheme=id;
    const t=CRM_THEMES.find(x=>x.id===id);try{applyAppearanceToDocument(document.documentElement,t,appearanceRef.current.colors,appearanceRef.current.backgroundUrl)}catch{applyAppearanceToDocument(document.documentElement,t,{},appearanceRef.current.backgroundUrl)}
@@ -107,7 +113,7 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <a key={item.key} href={item.path} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Tarefas','Minhas atividades','Relatórios','Configurações','Processos'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Tarefas','Minhas atividades','Relatórios','Configurações','Processos','Leads','Superagente','Gerador de processos','Audiências','Veredito'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }}><Icon size={17} aria-hidden="true"/><span>{item.label}</span></a>;
