@@ -77,7 +77,7 @@ function Inbox({db,session}){
   setBusy(true);setNotice('Solicitando conexão ao serviço de WhatsApp...');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
-   const r=await fetch('/api/office/whatsapp/bridge/status',{method:'POST',headers:{Authorization:'Bearer '+s.access_token}});
+   const r=await fetch('/api/office/whatsapp/bridge/connect',{method:'POST',headers:{Authorization:'Bearer '+s.access_token}});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Não foi possível iniciar a conexão.');
    setStatus(p);setQrOpen(true);setNotice('Aguardando o QR Code do WhatsApp.');
    await refreshStatus();
