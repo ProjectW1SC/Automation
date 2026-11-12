@@ -1,47 +1,23 @@
 'use client';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {Eye,EyeOff} from 'lucide-react';
 import CrmShell from './crm-shell';
 import ProfessionalAuth from './professional-auth';
-import {getClient} from '../lib/supabase-client';
-import {useCrmAccess} from '../lib/use-crm-access';
+import {useWorkspaceSession} from './workspace-session-provider';
 import {getRememberOfficeSession,setRememberOfficeSession} from '../lib/supabase-office-storage.mjs';
-import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 export default function SecuredWorkspace({active,children}){
- const db=useMemo(()=>getClient(),[]);
- const [session,setSession]=useState(null),[loading,setLoading]=useState(true),[authFault,setAuthFault]=useState('');
+ const {db,session,loading,authFault,access}=useWorkspaceSession();
  const [email,setEmail]=useState(''),[password,setPassword]=useState('');
  const [error,setError]=useState(''),[busy,setBusy]=useState(false);
  const [recovery,setRecovery]=useState(false),[newPassword,setNewPassword]=useState('');
  const [mode,setMode]=useState('login'),[showPassword,setShowPassword]=useState(false);
  const [remember,setRemember]=useState(true);
- const access=useCrmAccess(db,session?.user);
- useEffect(()=>{setRemember(getRememberOfficeSession())},[]);
  useEffect(()=>{
-  if(!db){setLoading(false);return}
-  let alive=true,subscription=null;
-  async function initialize(){
-   try{
-    // Aguarda o SDK terminar a recuperação do token ANTES de registrar o listener.
-    // Registrá-lo enquanto o cliente está inicializando pode travar o Web Lock.
-    const {data,error}=await withAuthDeadline(db.auth.getSession(),9000);
-    if(!alive)return;
-    if(error)throw error;
-    setSession(data?.session||null);setAuthFault('');setLoading(false);
-    const subscribed=db.auth.onAuthStateChange((event,s)=>{
-      if(!alive)return;
-      setSession(s);setAuthFault('');setLoading(false);
-      if(event==='PASSWORD_RECOVERY')setRecovery(true);
-    });
-    subscription=subscribed.data.subscription;
-    if(!alive)subscription.unsubscribe();
-   }catch(e){
-    if(alive){setAuthFault(e?.message||'A conexão demorou a responder.');setLoading(false)}
-   }
-  }
-  initialize();
-  return()=>{alive=false;subscription?.unsubscribe()}
- },[db]);
+  try{if(window.sessionStorage.getItem('blackhole-password-recovery')==='1'){
+   setRecovery(true);window.sessionStorage.removeItem('blackhole-password-recovery');
+  }}catch{}
+ },[session]);
+ useEffect(()=>{setRemember(getRememberOfficeSession())},[]);
  function setModeTo(next){setMode(next);setError('');setShowPassword(false);setPassword('')}
  async function login(e){e.preventDefault();if(!db||busy)return;setBusy(true);setError('');
   setRememberOfficeSession(remember);

@@ -85,14 +85,15 @@ export async function GET(request){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
    }
-   const [localPause,globalPause]=await Promise.all([
+   const [localPause,globalPause,platformPause]=await Promise.all([
     db.from('office_official_backoff').select('status,retry_after')
      .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle(),
     db.from('office_official_backoff').select('status,retry_after')
-     .eq('actor_id',user.id).eq('process_number','*').eq('source',kind).maybeSingle()
+     .eq('actor_id',user.id).eq('process_number','*').eq('source',kind).maybeSingle(),
+    db.from('office_source_cooldowns').select('status,retry_after').eq('source',kind).maybeSingle()
    ]);
-   if(localPause.error||globalPause.error)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
-   const paused=[localPause.data,globalPause.data].find(entry=>officialBackoffActive(entry));
+   if(localPause.error||globalPause.error||platformPause.error)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
+   const paused=[localPause.data,globalPause.data,platformPause.data].find(entry=>officialBackoffActive(entry));
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
    let result;
@@ -100,13 +101,15 @@ export async function GET(request){
    catch(error){
     const duration=officialBackoffDuration(error?.status);
     if(duration){
-     const failedAt=new Date();
-     // O bloqueio é também global por fonte/usuário: outro CNJ não dispara nova
-     // requisição no mesmo IP da plataforma enquanto houver cooldown.
-     await db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
-      actor_id:user.id,process_number,source:kind,status:error.status,
-      failed_at:failedAt.toISOString(),retry_after:new Date(failedAt.getTime()+duration).toISOString()
-     })),{onConflict:'actor_id,process_number,source'});
+     const failedAt=new Date(),retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+     // Cooldown por usuário/processo e por fonte da infraestrutura, compartilhado com o agendador.
+     await Promise.all([
+      db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+       actor_id:user.id,process_number,source:kind,status:error.status,
+       failed_at:failedAt.toISOString(),retry_after:retryAfter
+      })),{onConflict:'actor_id,process_number,source'}),
+      db.rpc('record_office_source_cooldown',{p_source:kind,p_status:error.status})
+     ]);
     }
     throw error;
    }

@@ -7,6 +7,7 @@ const STAGES=[{key:'entrada',name:'Entrada',hint:'Novas demandas'}, {key:'triage
 function Board({db,session}){
  const [cards,setCards]=useState([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [notice,setNotice]=useState(''),[dragged,setDragged]=useState(''),[filter,setFilter]=useState('');
+ const [priorityFilter,setPriorityFilter]=useState(''),[typeFilter,setTypeFilter]=useState(''),[stageFilter,setStageFilter]=useState(''),[dueFilter,setDueFilter]=useState(''),[responsibleFilter,setResponsibleFilter]=useState('');
  const [adding,setAdding]=useState(false),[form,setForm]=useState({title:'',description:'',stage:'entrada',priority:'normal',card_type:'tarefa',due_on:'',assigned_to:''});
  const load=useCallback(async()=>{setLoading(true);
   try{
@@ -16,7 +17,25 @@ function Board({db,session}){
   finally{setLoading(false)}
  },[db]);
  useEffect(()=>{load()},[load]);
- const columns=useMemo(()=>STAGES.map(stage=>({...stage,items:cards.filter(x=>x.stage===stage.key&&[x.title,x.description,x.assigned_to].some(z=>String(z||'').toLowerCase().includes(filter.toLowerCase())))})),[cards,filter]);
+ const today=useMemo(()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),[]);
+ const visible=useMemo(()=>cards.filter(x=>{
+  if(priorityFilter&&x.priority!==priorityFilter)return false;
+  if(typeFilter&&x.card_type!==typeFilter)return false;
+  if(responsibleFilter&&!String(x.assigned_to||'').toLowerCase().includes(responsibleFilter.toLowerCase()))return false;
+  if(stageFilter&&x.stage!==stageFilter)return false;
+  if(dueFilter){
+   const d=String(x.due_on||'');
+   if(dueFilter==='undated'&&d)return false;
+   if(dueFilter==='overdue'&&(!d||d>=today))return false;
+   if(dueFilter==='today'&&d!==today)return false;
+   if(dueFilter==='next7'){
+    const end=new Date(Date.parse(today+'T12:00:00Z')+7*86400000).toISOString().slice(0,10);
+    if(!d||d<today||d>end)return false;
+   }
+  }
+  return [x.title,x.description,x.assigned_to].some(z=>String(z||'').toLowerCase().includes(filter.toLowerCase()));
+ }),[cards,filter,priorityFilter,typeFilter,responsibleFilter,stageFilter,dueFilter,today]);
+ const columns=useMemo(()=>STAGES.filter(stage=>!stageFilter||stage.key===stageFilter).map(stage=>({...stage,items:visible.filter(x=>x.stage===stage.key)})),[visible,stageFilter]);
  async function add(e){e.preventDefault();setBusy(true);setNotice('');
   const row={title:form.title.trim(),description:form.description.trim(),stage:form.stage,priority:form.priority,card_type:form.card_type,
    due_on:form.due_on||null,assigned_to:form.assigned_to.trim()||null,owner_id:session.user.id};
@@ -40,8 +59,20 @@ function Board({db,session}){
    <div className="inf-actions"><button className="inf-btn" type="button" onClick={load} disabled={busy||loading}><RefreshCw size={15}/> Atualizar</button><button className="inf-btn primary" type="button" onClick={()=>setAdding(x=>!x)}><Plus size={15}/> Novo card</button></div>
   </header>
   {notice&&<p className="inf-note" role="status">{notice}</p>}
+  <div className="blackhole-kanban-toolbar" aria-label="Filtros do fluxo jurídico">
+   <label>Etapa<select aria-label="Filtrar por etapa" value={stageFilter} onChange={e=>setStageFilter(e.target.value)}><option value="">Todas</option>{STAGES.map(x=><option key={x.key} value={x.key}>{x.name}</option>)}</select></label>
+   <label>Prioridade<select aria-label="Filtrar por prioridade" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>
+    <option value="">Todas</option><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
+   <label>Tipo<select aria-label="Filtrar por tipo" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}>
+    <option value="">Todos</option>{['tarefa','processo','peca','lead','outro'].map(x=><option key={x} value={x}>{x}</option>)}</select></label>
+   <label>Prazo<select aria-label="Filtrar por prazo" value={dueFilter} onChange={e=>setDueFilter(e.target.value)}>
+    <option value="">Todos</option><option value="overdue">Vencidos</option><option value="today">Hoje</option><option value="next7">Próximos 7 dias</option><option value="undated">Sem data</option></select></label>
+   <label>Responsável<input type="search" aria-label="Filtrar por responsável" value={responsibleFilter} onChange={e=>setResponsibleFilter(e.target.value)} placeholder="Nome do responsável"/></label>
+   {(priorityFilter||typeFilter||stageFilter||dueFilter||responsibleFilter||filter)&&<button className="inf-btn" type="button"
+    onClick={()=>{setPriorityFilter('');setTypeFilter('');setStageFilter('');setDueFilter('');setResponsibleFilter('');setFilter('')}}>Limpar filtros</button>}
+  </div>
   <div className="office-workflow-tools"><input className="inf-search" aria-label="Filtrar tarefas" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Buscar tarefa, fase ou responsável"/>
-    <span className="office-hint">{cards.length} cartões registrados · Arraste ou use o botão Avançar</span></div>
+    <span className="office-hint">{visible.length} exibidos de {cards.length} cartões · Arraste ou use Avançar</span></div>
   {adding&&<section className="inf-panel"><h2>Novo card jurídico</h2><form className="office-form-col" onSubmit={add}>
    <div className="inf-fields"><label>Título<input required minLength={3} maxLength={220} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label>
     <label>Etapa<select value={form.stage} onChange={e=>setForm({...form,stage:e.target.value})}>{STAGES.map(s=><option key={s.key} value={s.key}>{s.name}</option>)}</select></label>
