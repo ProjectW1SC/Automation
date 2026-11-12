@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{buildDjenUrl}from'../lib/processos-oficiais.mjs';import{snapshotQueryKey}from'../lib/judicial-triage.mjs';const cnj='0001234-56.2024.8.26.0100';
+test('DJEN consulta uma pagina por vez e nao confunde cache de paginas diferentes',()=>{const one=buildDjenUrl(cnj,{page:1}),two=buildDjenUrl(cnj,{page:2});assert.match(one,/pagina=1/);assert.match(two,/pagina=2/);const a=snapshotQueryKey('djen',new URLSearchParams({pagina:'1'}));const b=snapshotQueryKey('djen',new URLSearchParams({pagina:'2'}));assert.notEqual(a,b)});
+test('pagina invalida nao chega ao CNJ',()=>{assert.throws(()=>buildDjenUrl(cnj,{page:101}),/Página/);assert.throws(()=>buildDjenUrl(cnj,{page:-1}),/Página/)});

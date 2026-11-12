@@ -137,7 +137,7 @@ function OfficeUI({area,db,session}){
   setConsulting(row.id+fonte);setCheckResult(null);setNotice('');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada');
-   const r=await fetch('/api/processos/consulta?'+new URLSearchParams({numero:row.process_number,fonte,...(period?.inicio?{inicio:period.inicio}:{}),...(period?.fim?{fim:period.fim}:{})}),{headers:{Authorization:'Bearer '+s.access_token}});
+   const r=await fetch('/api/processos/consulta?'+new URLSearchParams({numero:row.process_number,fonte,...(period?.inicio?{inicio:period.inicio}:{}),...(period?.fim?{fim:period.fim}:{}),...(period?.pagina?{pagina:String(period.pagina)}:{})}),{headers:{Authorization:'Bearer '+s.access_token}});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Fonte indisponível');
    setCheckResult({...p,number:row.process_number});setNotice((p.fromCache?'Cache oficial anterior consultado. ':'')+(p.notice||'Consulta concluída.'));
   }catch(e){setNotice('Consulta não confirmada: '+e.message)}finally{setConsulting('')}

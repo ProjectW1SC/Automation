@@ -37,8 +37,8 @@ async function datajud(number){
   notice:parsed.found?'Movimentações disponíveis no índice público do CNJ.':'CNJ não localizado no índice público do tribunal consultado.'};
 }
 async function djen(number,query){
- const start=query.get('inicio')||undefined,end=query.get('fim')||undefined;
- const url=buildDjenUrl(number,{start,end});
+ const start=query.get('inicio')||undefined,end=query.get('fim')||undefined,page=query.get('pagina')||1;
+ const url=buildDjenUrl(number,{start,end,page});
  const response=await fetchJson(url,{method:'GET',headers:{Accept:'application/json'}});
  let items=normalizeDjen(response,number);
  // Some CNJ nodes recognize the masked number only. Retry once on a valid empty list.
@@ -50,7 +50,7 @@ async function djen(number,query){
  return {ok:true,source:'DJEN',found:items.length>0,items,
   checkedAt:new Date().toISOString(),notice:items.length?
   'Publicações localizadas no Diário de Justiça Eletrônico Nacional.':'Nenhuma publicação encontrada para as datas consultadas no DJEN.',
-  limited:items.length>=100};
+  limited:items.length>=100,hasMore:items.length>=100,page:Number(page)};
 }
 export async function GET(request){
  try{
