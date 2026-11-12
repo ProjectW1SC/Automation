@@ -1,42 +1,27 @@
 'use client';
-import {useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useState} from 'react';
 import {CalendarDays,FileSearch,RefreshCw,ExternalLink,ShieldCheck} from 'lucide-react';
-import CrmShell from './crm-shell';
-import {getClient} from '../lib/supabase-client';
-import {useCrmAccess} from '../lib/use-crm-access';
+import SecuredWorkspace from './secured-workspace';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {hearingCandidates,verdictCandidates} from '../lib/judicial-triage.mjs';
 import {todayBrazil} from '../lib/tarefas.mjs';
-export default function JudicialIntelligence({mode='audiencias'}){
- const db=useMemo(()=>getClient(),[]);
- const [session,setSession]=useState(null),[loadingAuth,setLoadingAuth]=useState(true);
- const access=useCrmAccess(db,session?.user);
+function JudicialView({mode,db}){
  const [snapshots,setSnapshots]=useState([]),[loading,setLoading]=useState(false),[error,setError]=useState('');
- useEffect(()=>{
-  if(!db){setLoadingAuth(false);return}
-  let alive=true;
-  const {data:{subscription}}=db.auth.onAuthStateChange((_,s)=>{if(alive){setSession(s);setLoadingAuth(false)}});
-  db.auth.getSession().then(({data})=>{if(alive){setSession(data.session);setLoadingAuth(false)}}).catch(()=>setLoadingAuth(false));
-  return()=>{alive=false;subscription.unsubscribe()};
- },[db]);
- async function load(){
-  if(!db||!access.allowed)return;
+ const load=useCallback(async()=>{
   setLoading(true);setError('');
-  const {data,error:failure}=await db.from('crm_judicial_snapshots').select('process_number,source,checked_at,payload')
-   .order('checked_at',{ascending:false}).limit(500);
-  if(failure){setError('Não foi possível carregar as consultas registradas: '+failure.message);setSnapshots([])}
-  else setSnapshots(data||[]);
-  setLoading(false);
- }
- useEffect(()=>{if(access.allowed)load()},[access.allowed,session?.user?.id]);
+  try{
+   const {data,error:failure}=await withAuthDeadline(db.from('crm_judicial_snapshots')
+    .select('process_number,source,checked_at,payload').order('checked_at',{ascending:false}).limit(500),12000);
+   if(failure)throw failure;
+   setSnapshots(data||[]);
+  }catch(e){setError('Não foi possível carregar consultas: '+e.message);setSnapshots([])}
+  finally{setLoading(false)}
+ },[db]);
+ useEffect(()=>{load()},[load]);
  const isHearing=mode==='audiencias';
  const rows=useMemo(()=>isHearing?hearingCandidates(snapshots,todayBrazil()):verdictCandidates(snapshots),[snapshots,isHearing]);
- if(!db)return <main className="reference-auth">Supabase não configurado.</main>;
- if(loadingAuth||access.loading)return <main className="reference-auth">Verificando acesso...</main>;
- if(!session)return <main className="reference-auth"><p>Entre na sua conta para acessar as informações judiciais.</p><a href="/">Ir para o login</a></main>;
- if(!access.allowed)return <main className="reference-auth">Esta conta não tem permissão para consultar a carteira.</main>;
- return <CrmShell active={isHearing?'Audiências':'Veredito'} email={session.user.email} onSignOut={()=>db.auth.signOut()}>
-  <main className="reference-dashboard processes-dashboard">
-   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · TRIAGEM DOCUMENTAL</div>
+ return <main className="reference-dashboard processes-dashboard">
+   <header className="reference-header"><div><div className="reference-overline">BLACKHOLE / HERMES · TRIAGEM DOCUMENTAL</div>
     <h1>{isHearing?'Audiências':'Veredito'}</h1>
     <p>{isHearing?'Possíveis audiências futuras localizadas no teor das consultas oficiais já realizadas.':
      'Indícios de sentença ou julgamento identificados nas consultas oficiais. Conferir sempre o inteiro teor.'}</p></div>
@@ -67,6 +52,8 @@ export default function JudicialIntelligence({mode='audiencias'}){
       </article>)}
      </div>}
    </section>
-  </main>
- </CrmShell>;
+  </main>;
+}
+export default function JudicialIntelligence({mode='audiencias'}){
+ return <SecuredWorkspace active={mode==='audiencias'?'Audiências':'Veredito'}>{({db})=><JudicialView db={db} mode={mode}/>}</SecuredWorkspace>;
 }

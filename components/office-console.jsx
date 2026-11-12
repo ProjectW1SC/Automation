@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
+import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
@@ -238,7 +239,7 @@ function OfficeUI({area,db,session}){
      <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
    </section></>}
-  {['deadlines','audiencias'].includes(area)&&<><div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
+  {['deadlines','audiencias'].includes(area)&&<>{area==='audiencias'&&<BlackholeOfficialHearings db={db}/>}<div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editDeadlineId?'Editar prazo ou audiência':'Novo prazo, audiência ou retorno'}</h2><form onSubmit={createDeadline}><div className="inf-fields">
      <label>Descrição<input required minLength={3} value={deadlineForm.title} onChange={e=>setDeadlineForm({...deadlineForm,title:e.target.value})}/></label>
      <label>Data<input required type="date" value={deadlineForm.due_on} onChange={e=>setDeadlineForm({...deadlineForm,due_on:e.target.value})}/></label>
