@@ -73,3 +73,5 @@ test('Process registry has private RLS and no anonymous access',()=>{
  assert.match(sql,/with check/i);
  assert.match(sql,/authenticated/i);
 });
+
+test('DJEN usa no máximo 50 itens por página para não simular resultado vazio',()=>{const url=buildDjenUrl('1001218-36.2026.5.02.0040');assert.equal(new URL(url).searchParams.get('itensPorPagina'),'50');});

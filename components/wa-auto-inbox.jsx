@@ -100,7 +100,7 @@ export default function WaAutoInbox({db,userId}){
   loadArchiveChats().catch(e=>{if(alive)setArchiveWarning(e.message)});
   reloadStatus().then(s=>{if(alive&&s.connected){reloadChats().catch(e=>{if(alive)setError(e.message)});}})
    .catch(e=>{if(alive)setError(e.message)});
-  const id=window.setInterval(()=>{if(document.visibilityState==='visible')reloadStatus().catch(()=>setStatus(old=>old?{...old,connected:false}:old))},15000);
+  const id=window.setInterval(()=>{if(document.visibilityState==='visible')reloadStatus().catch(()=>setStatus(old=>old?{...old,connected:false}:old))},4000);
   return()=>{alive=false;window.clearInterval(id)};
  },[reloadStatus,reloadChats,loadArchiveChats]);
  useEffect(()=>{
@@ -132,6 +132,7 @@ export default function WaAutoInbox({db,userId}){
  useEffect(()=>{
   let active=true;
   if(!connection.qr){setQrImage('');return}
+  if(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(String(connection.qr))){setQrImage(String(connection.qr));return}
   import('qrcode').then(q=>q.default.toDataURL(String(connection.qr),{width:235,margin:1,errorCorrectionLevel:'M'})).then(url=>{if(active)setQrImage(url)}).catch(()=>{if(active)setQrImage('')});
   return()=>{active=false};
  },[connection.qr]);
@@ -188,7 +189,7 @@ export default function WaAutoInbox({db,userId}){
   {(!status?.configured||showConnect||!connected)&&<section className="wa-connection">
     <div className="wa-connection-title"><div className="wa-device-icon">{connected?<Wifi size={21}/>:<WifiOff size={21}/>}</div><div><strong>WA.Auto · Conexão individual</strong><p>{status?.configured?tiny(connection.message)||'Conexão segura com o serviço persistente.':'O CRM ainda não possui o token de integração WA.Auto no ambiente Vercel.'}</p></div></div>
     {!status?.configured?<div className="wa-help">Configure <code>WA_AUTO_URL</code> e <code>WA_AUTO_TOKEN</code> no servidor Vercel deste CRM. Não cole tokens na página. A sessão será vinculada ao usuário autenticado.</div>:<div className="wa-connect-content">
-     {qrImage&&connection.status!=='ready'&&<div className="wa-qr"><img src={qrImage} alt="QR Code para vincular WhatsApp" width={235} height={235}/><small>WhatsApp → Aparelhos conectados → Conectar aparelho</small></div>}
+     {qrImage&&connection.status!=='ready'&&<div className="wa-qr"><img src={qrImage} alt="QR Code para vincular WhatsApp" width={235} height={235}/><small>Abra o WhatsApp no celular → Aparelhos conectados → Conectar aparelho. QR vincula somente sua sessão.</small></div>}
      {connection.pairingCode&&<div className="wa-pair-code">Código de pareamento: <strong>{connection.pairingCode}</strong></div>}
      <div className="wa-connect-actions">
       {!connected&&<button type="button" className="wa-button" disabled={!!busy} onClick={()=>action('connect')}><Smartphone size={16}/> {busy==='connect'?'Conectando...':'Conectar por QR'}</button>}
