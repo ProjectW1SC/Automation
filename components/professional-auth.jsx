@@ -9,13 +9,13 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
   <div className="w1-auth-frame">
    <section className="w1-auth-hero" aria-label="Inteligência jurídica ProjectW1SC">
     <div className="w1-auth-hero-top">
-     <span className="w1-auth-hero-kicker">PROJECTW1SC · CRM JURÍDICO</span>
-     <h2>Seu escritório, em um só lugar.<br/><em>Inteligência para cada decisão.</em></h2>
+     <span className="w1-auth-hero-kicker">∞ INFINITUM | CRM JURÍDICO</span>
+     <h2>Gestão jurídica<br/>com método, inteligência e<br/><em>alta performance.</em></h2>
     </div>
     <div className="w1-auth-hero-footer">
-     <p>Uma operação organizada. Tudo à vista.</p>
+     <p>Organize processos, clientes, prazos, compromissos e sua operação jurídica em um só lugar.</p>
      <div className="w1-auth-hero-tags" aria-label="Funcionalidades integradas">
-      {['Processos','WhatsApp','Análises','Prazos','Atividades','IA'].map(label=><span key={label}>{label}</span>)}
+      {['Processos','Clientes','Agenda','Relatórios'].map(label=><span key={label}>{label}</span>)}
      </div>
     </div>
    </section>

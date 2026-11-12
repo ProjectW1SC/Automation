@@ -69,8 +69,8 @@ export default function SecuredWorkspace({active,children}){
  if(loading||access.loading)return <main className="reference-auth">Verificando sessão e permissões do escritório...</main>;
  if(!session&&mode!=='recover'&&!recovery){
   const registration=mode==='signup';
-  return <ProfessionalAuth title={registration?'Criar minha conta':'Bem-vindo de volta'} eyebrow="GESTÃO JURÍDICA" signupMode={registration}
-   description={registration?'Cadastre-se e aguarde autorização do administrador do escritório.':'Entre na sua conta para continuar.'}
+  return <ProfessionalAuth title={registration?'Crie sua conta':'Acesse sua conta'} eyebrow="ACESSO À PLATAFORMA" signupMode={registration}
+   description={registration?'Cadastre-se e aguarde autorização do administrador do escritório.':'Entre no CRM e gerencie sua operação jurídica com segurança.'}
    onSignup={()=>setModeTo(registration?'login':'signup')}>
    <form className="office-login-form" onSubmit={registration?signup:login}>
     <label htmlFor="office-login-email">Email</label>

@@ -16,7 +16,7 @@ const icons={
  'Integrações':PlugZap,'Configurações':Settings2
 };
 export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
- const [sidebarExpanded,setSidebarExpanded]=useState(false);
+ const [sidebarExpanded,setSidebarExpanded]=useState(true);
  const [navSearch,setNavSearch]=useState('');
  const navSearchRef=useRef(null);
  const matches=navSearch.trim()?CRM_AREAS.filter(x=>x.label.toLocaleLowerCase('pt-BR').includes(navSearch.trim().toLocaleLowerCase('pt-BR'))).slice(0,6):[];
@@ -76,7 +76,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  }
  useEffect(()=>{
   function onPointerDown(event){
-   if(!sidebarRef.current?.contains(event.target))setSidebarExpanded(false);
+   if(window.innerWidth<880&&!sidebarRef.current?.contains(event.target))setSidebarExpanded(false);
   }
   function onKeyDown(event){
    if(event.key==='Escape')setSidebarExpanded(false);
@@ -102,10 +102,10 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  return <div className={'app-shell blackhole-studio-shell '+(sidebarExpanded?'sidebar-expanded':'sidebar-collapsed')}>
   <aside ref={sidebarRef} className="app-sidebar"
     onMouseEnter={()=>setSidebarExpanded(true)}
-    onMouseLeave={shrinkIfUnfocused}
+    onMouseLeave={()=>{if(window.innerWidth<880)shrinkIfUnfocused()}}
     onFocusCapture={()=>setSidebarExpanded(true)}
     onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSidebarExpanded(false)}}>
-   <div className="app-identity">
+   <div className="app-identity"><Link href="/" className="pr-brand" aria-label="INFINITUM — Painel jurídico"><span className="pr-brand-symbol" aria-hidden="true">∞</span><strong className="pr-brand-name">INFINITUM</strong><small className="pr-brand-sub">CRM | JURÍDICO</small></Link>
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
     <Link className="app-brand-link" href="/" aria-label="BLACKHOLE — Painel jurídico" title="Ir ao painel jurídico" prefetch={false}>
      <img className="app-brand-compact" src="/branding/blackhole-symbol.svg" alt="" width="54" height="58"/>
@@ -116,7 +116,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     {onPassword?<button type="button" onClick={onPassword} aria-label="Alterar senha"><KeyRound size={16}/></button>:<a href="/?senha=1" aria-label="Alterar senha"><KeyRound size={16}/></a>}
     <button type="button" onClick={onSignOut} aria-label="Sair da conta"><LogOut size={16}/></button>
    </div>
-   <div className="app-section-name">ESCRITÓRIO JURÍDICO</div>
+   <div className="app-section-name">ESPAÇO DE TRABALHO</div>
    <nav aria-label="Navegação principal" className="app-nav">
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
