@@ -260,3 +260,15 @@ html[data-crm-theme] .crm-theme-picker{margin-inline:2px}
  html[data-crm-theme] .w1-auth-panel{min-height:530px;padding:25px!important}
  html[data-crm-theme] .crm-theme-picker span{display:none}
 }
+
+html[data-crm-theme] .blackhole-reference-gallery .gallery-title{display:flex;align-items:center;gap:12px;margin-bottom:15px}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-title h2{margin:0 0 4px;color:var(--ui-ink)!important;font-size:15px}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-title p{margin:0;color:var(--ui-muted)!important;font-size:12px}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:var(--ui-tint);color:var(--ui-tint-ink);flex:none}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-board{display:block;width:100%;max-width:760px;height:auto;object-fit:contain;margin:0 auto;border:1px solid var(--ui-border);border-radius:11px;background:var(--ui-surface)}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-principles>div{background:var(--ui-surface);color:var(--ui-ink);border:1px solid var(--ui-border);border-radius:12px;padding:15px}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-principles svg{color:var(--ui-accent)}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-principles strong{display:block;color:var(--ui-ink);font-size:13px;margin:8px 0}
+html[data-crm-theme] .blackhole-reference-gallery .gallery-principles p{color:var(--ui-muted);font-size:11px;line-height:1.55;margin:0}
+@media(max-width:760px){html[data-crm-theme] .blackhole-reference-gallery .gallery-principles{grid-template-columns:1fr}}
