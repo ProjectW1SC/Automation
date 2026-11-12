@@ -219,6 +219,7 @@ function OfficeUI({area,db,session}){
     <div className="office-records" style={{marginTop:15}}>{cases.filter(x=>match([x.title,x.process_number,x.subject,x.lawyer,getClientName(x.client_id)])).slice(0,250).map(x=><article key={x.id} className="office-record">
       <span className="inf-badge">{x.status}</span><strong>{x.title}</strong><p>{x.process_number||'Sem CNJ'} · {x.tribunal||'Tribunal não informado'}</p><small>{getClientName(x.client_id)} · {x.lawyer||'Sem advogado designado'}</small>
       <div className="office-action-row"><button className="inf-btn" onClick={()=>startEditCase(x)}>Editar cadastro</button>
+       <button className="inf-btn primary" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'auto')}>Consultar oficiais (com fallback)</button>
        <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'datajud')}>DataJud</button>
        <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'djen')}>DJEN</button>
        <Link className="inf-btn" href={'/pecas?case='+encodeURIComponent(x.id)}><FileText size={14}/> Criar petição</Link>
