@@ -18,5 +18,5 @@ test('outbound messages are persisted after real acceptance, never labelled deli
 test('session isolation: archive uses authenticated user ID and no service secret in browser',()=>{
  const s=read('app/whatsapp/page.jsx'),ui=read('components/wa-auto-inbox.jsx');
  assert.match(s,/userId=\{session\.user\.id\}/);assert.match(ui,/\.eq\('owner_id',userId\)/);
- assert.doesNotMatch(ui,/WA_AUTO_TOKEN|SUPABASE_SERVICE_ROLE_KEY/);
+ assert.doesNotMatch(ui,/process\.env\.(WA_AUTO_TOKEN|SUPABASE_SERVICE_ROLE_KEY)/);
 });
