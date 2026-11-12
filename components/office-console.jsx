@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
+import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
@@ -39,6 +39,7 @@ function OfficeUI({area,db,session}){
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
+ const [agentSearch,setAgentSearch]=useState(''),[agentFilter,setAgentFilter]=useState('todos');
  const need=LOADED[area]||LOADED.dashboard;
  const load=useCallback(async()=>{
   setLoading(true);
@@ -295,13 +296,45 @@ function OfficeUI({area,db,session}){
       <Source>Envio exige conexão oficial, mensagem recebida nas últimas 24 horas e clique humano. Fora da janela, somente templates aprovados — não implementados aqui.</Source>
      </>:<div className="office-list-empty">Selecione uma conversa para responder.</div>}</section></div>
   </>}
-  {area==='agents'&&<><BlackholeHermesAgent db={db} session={session}/><div className="inf-panel"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
+  {area==='agents'&&<>
+   <div className="blackhole-agents-header">
+    <div><small>BLACKHOLE / ESTÚDIO DE AGENTES</small><h2>Agentes de IA e automação</h2>
+     <p>Especialistas para receber demandas, organizar processos, revisar evidências e preparar atendimentos. Cada card indica sua capacidade real.</p></div>
+    <div className="inf-actions"><Link className="inf-btn" href="/superagente">Abrir Superagente</Link>
+      <Link className="inf-btn primary" href="/scanner">Executar scanner Hermes</Link></div>
+   </div>
+   <div className="blackhole-agent-section-title"><strong>Comece rápido</strong><small>Áreas do escritório · ações disponíveis agora</small></div>
+   <div className="blackhole-agent-templates">
+    <Link className="blackhole-agent-template" href="/leads"><span className="blackhole-template-icon"><BriefcaseBusiness size={18}/></span>
+      <strong>Comercial</strong><p>Qualifique contatos da carteira, revise a origem e acompanhe o funil de leads.</p><small>Abrir leads →</small></Link>
+    <Link className="blackhole-agent-template" href="/whatsapp"><span className="blackhole-template-icon"><Headset size={18}/></span>
+      <strong>Suporte</strong><p>Prepare respostas e acompanhe atendimentos com verificação antes de enviar.</p><small>Abrir WhatsApp →</small></Link>
+    <a className="blackhole-agent-template" href="#mini-triagem"><span className="blackhole-template-icon"><Bot size={18}/></span>
+      <strong>Triagem</strong><p>Priorize pendências, retornos e demandas sem inventar movimentações.</p><small>Executar mini agente →</small></a>
+    <Link className="blackhole-agent-template" href="/pecas"><span className="blackhole-template-icon"><Scale size={18}/></span>
+      <strong>Causas</strong><p>Organize o caso e produza uma minuta jurídica para revisão profissional.</p><small>Abrir peças →</small></Link>
+   </div>
+   <div className="blackhole-agent-section-title"><strong>Agentes do escritório</strong><small>{OFFICE_AGENTS.length} especialidades · execução sob controle do operador</small></div>
+   <div className="blackhole-agent-search"><input className="inf-search" type="search" value={agentSearch} onChange={e=>setAgentSearch(e.target.value)}
+    placeholder="Pesquisar agentes por nome, tarefa ou especialidade..." aria-label="Pesquisar agentes"/>
+    <label><Filter size={13}/> Mostrar <select aria-label="Filtrar agentes" value={agentFilter} onChange={e=>setAgentFilter(e.target.value)}>
+     <option value="todos">Todos</option><option value="oficial">Consulta oficial</option><option value="deterministico">Motor local</option><option value="modelo-opcional">IA opcional</option>
+    </select></label>
+   </div>
+   <div className="office-agent-grid">{OFFICE_AGENTS.filter(x=>
+    (agentFilter==='todos'||x.mode===agentFilter)&&
+    [x.name,x.role,x.mode].some(v=>String(v||'').toLowerCase().includes(agentSearch.toLowerCase()))
+   ).map(x=><article className="office-agent-card" key={x.id}>
+    <span className="inf-badge">{x.mode==='oficial'?'Fonte pública':x.mode==='deterministico'?'Motor local':'Modelo opcional'}</span>
+    <strong style={{marginTop:9}}>{x.name}</strong><p>{x.role}</p>
+    <Link className="inf-btn" href={x.id==='mini'?'/agentes#mini-triagem':x.id==='hermes'?'/scanner':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link>
+   </article>)}</div>
+   <BlackholeHermesAgent db={db} session={session}/>
+   <div className="inf-panel" id="mini-triagem"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
     <div className="office-action-row"><button className="inf-btn primary" onClick={runMini} disabled={busy}><Bot size={14}/> Executar triagem</button></div>
     {miniResult&&<div className="inf-note"><strong>{miniResult.asOf} · {miniResult.actions.length} ações sugeridas</strong><div className="office-records">{miniResult.actions.map((x,i)=><article key={x.kind+x.id+i} className="office-record">{x.kind} · {x.title} · {dateLabel(x.date)}</article>)}</div>
      <small>{miniResult.notes.join(' ')}</small></div>}
    </div>
-   <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><article className="office-agent-card" key={x.id}><span className="inf-badge">{x.mode}</span><strong style={{marginTop:9}}>{x.name}</strong><p>{x.role}</p>
-    <Link className="inf-btn" href={x.id==='mini'?'/agentes':x.id==='hermes'?'/scanner':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link></article>)}</div>
    <section className="inf-panel" style={{marginTop:15}}><h2>Execuções registradas</h2>{runs.slice(0,15).map(r=><article className="office-record" key={r.id}><strong>{r.agent} · {r.task}</strong><small>{dateLabel(r.created_at)} · {r.status} · {r.external_actions} ações externas</small></article>)}
     {!runs.length&&<div className="office-list-empty">Ainda não há execuções registradas.</div>}</section>
   </>}
