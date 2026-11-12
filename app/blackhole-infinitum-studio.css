@@ -284,3 +284,36 @@ html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-header{backg
 @media(prefers-reduced-motion:reduce){
  html[data-crm-theme="blackhole"] .blackhole-studio-shell *{scroll-behavior:auto!important;transition:none!important}
 }
+
+/* Login bipartido do Infinitum: painel de marca e formulário limpo. */
+.w1-auth-screen[data-office-login="infinitum-reference"]{
+ background:#fff!important;color:#171717!important;padding:15px!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ gap:clamp(24px,4vw,72px)!important;background:#fff!important;
+ min-height:calc(100dvh - 30px)!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+ background:radial-gradient(ellipse at 52% 43%,#1c2637,#05070c 72%)!important;border-radius:20px!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero:before{
+ background:url('/branding/blackhole-symbol.svg') center 48% / min(110%,820px) auto no-repeat!important;
+ opacity:1!important;animation:none!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+ background:#fff!important;color:#171717!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{color:#171717!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{color:#777!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form label{color:#171717!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form input:not([type="checkbox"]){
+ background:#fff!important;color:#171717!important;border-color:#ddd!important;color-scheme:light!important;
+}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary{
+ background:#171717!important;color:#fff!important;border-color:#171717!important;
+}
+@media(max-width:700px){
+ .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{grid-template-columns:1fr!important;gap:0!important}
+ .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{min-height:190px!important}
+}
