@@ -6,8 +6,8 @@ const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('brand assets are included in the repository as actual images',()=>{
  assert.ok(existsSync(new URL('../public/branding/blackhole-symbol.svg',import.meta.url)));
  assert.ok(existsSync(new URL('../public/branding/blackhole-logo.svg',import.meta.url)));
- assert.match(file('public/branding/blackhole-symbol.svg'),/data:image\/webp;base64,/);
- assert.match(file('public/branding/blackhole-logo.svg'),/data:image\/webp;base64,/);
+ assert.ok(file('public/branding/blackhole-symbol.svg').includes('<ellipse'));
+ assert.ok(file('public/branding/blackhole-logo.svg').includes('<ellipse'));
 });
 
 test('sidebar uses compact and extended brand marks, not old text lockup',()=>{

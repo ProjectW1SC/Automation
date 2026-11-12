@@ -33,7 +33,7 @@ test('Naruto and Sasuke apply globally without replacing live CRM pages',()=>{
  assert.match(css,/\.report-dashboard/);
  assert.match(css,/\.reference-panel/);
  assert.match(css,/@media print/);
- assert.match(shell,/CRM_THEMES\.map/);
+ assert.ok(shell.includes("setTheme('blackhole')"));
  assert.match(layout,/anime-themes\.css/);
 });
 

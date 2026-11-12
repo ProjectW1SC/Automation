@@ -1,412 +1,319 @@
-/*
- BLACKHOLE Studio · reconstrução independente do layout observado nas capturas/vídeo.
- Rail de 56px, área de trabalho ampla, barra superior compacta, cartões, filtros
- e Kanban densos. Sem imagens ou loops animados por frame: leve em computadores fracos.
-*/
+/* BLACKHOLE · estrutura visual nativa inspirada nas telas reais do Infinitum. */
 html[data-crm-theme="blackhole"]{
- --studio-bg:#07080d;--studio-rail:#070911;--studio-elevated:#111620;--studio-card:#111722;
- --studio-card-alt:#151c29;--studio-line:#2a3547;--studio-text:#f0f4fa;--studio-soft:#a9b7c9;
- --studio-bright:#d9e9f7;--studio-accent:#9fdafa;--studio-pink:#e4a4d5;
- font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+ color-scheme:light!important;--studio-bg:#fff;--studio-rail:#fff;--studio-card:#fff;
+ --studio-line:#e7e7e7;--studio-text:#171717;--studio-soft:#777;
+ background:#fff!important;color:#171717!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
 }
+html[data-crm-theme="blackhole"] body{background:#fff!important;color:#171717!important}
 html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell{
- display:block!important;min-height:100dvh;position:relative;isolation:isolate;
- background:#07080d!important;color:var(--studio-text);
+ display:block!important;min-height:100dvh;background:#fff!important;color:#171717!important;
 }
 html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar{
- position:fixed!important;top:0!important;left:0!important;bottom:0!important;
- width:56px!important;min-width:56px!important;max-width:none!important;
- height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
- flex:none!important;padding:11px 6px 9px!important;z-index:100!important;
- background:var(--studio-rail)!important;border-right:1px solid #293243!important;
+ position:fixed!important;inset:0 auto 0 0!important;width:56px!important;min-width:56px!important;
+ height:100dvh!important;z-index:100!important;display:flex!important;flex-direction:column!important;
+ padding:10px 7px!important;background:#fff!important;border-right:1px solid #e8e8e8!important;
  box-shadow:none!important;overflow-x:hidden!important;overflow-y:auto!important;
- scrollbar-width:none;overscroll-behavior:contain;
  transition:width .16s ease,box-shadow .16s ease!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar::-webkit-scrollbar{width:0}
 html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{
- width:242px!important;box-shadow:10px 0 55px rgba(0,0,0,.46)!important;
+ width:246px!important;box-shadow:10px 0 30px #1112!important;
 }
 html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-content{
- margin-left:56px!important;width:calc(100% - 56px)!important;min-height:100dvh;
- background:radial-gradient(ellipse 75% 340px at 94% 0%,#25355239,transparent 75%),#07080d!important;
+ margin-left:56px!important;width:calc(100% - 56px)!important;min-height:100dvh!important;
+ background:#fff!important;color:#171717!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-identity{
- height:79px!important;min-height:79px!important;padding:3px 0 10px!important;
- margin:0!important;display:flex;flex-direction:column;align-items:center;
- justify-content:flex-start;gap:6px;
+ flex:none!important;height:49px!important;min-height:49px!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;gap:0!important;padding:0!important;margin:0 0 10px!important;
+ border:0!important;background:#fff!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar-toggle{
- display:grid!important;place-items:center;flex:none;width:39px;height:25px!important;
- border:0!important;color:#8eabc3!important;background:transparent!important;outline-offset:2px;
+ display:grid!important;place-items:center!important;width:38px!important;height:34px!important;
+ border:0!important;background:#fff!important;color:#555!important;border-radius:8px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-brand-link{
- display:grid!important;place-items:center!important;width:44px!important;min-height:42px!important;
- max-width:none!important;padding:0!important;margin:0!important;border:0!important;
- background:transparent!important;box-shadow:none!important;overflow:hidden;
+ width:39px!important;height:39px!important;min-height:39px!important;display:grid!important;
+ place-items:center!important;padding:2px!important;margin:0!important;background:#fff!important;
+ border:0!important;box-shadow:none!important;border-radius:9px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-brand-compact{
- display:block!important;width:42px!important;height:32px!important;max-width:42px!important;
- object-fit:cover!important;padding:0!important;filter:drop-shadow(0 0 8px #a4d6fa4b);
+ display:block!important;width:36px!important;height:29px!important;object-fit:contain!important;
+ filter:none!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-brand-full{display:none!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-brand-link{
- width:220px!important;height:58px;max-width:220px!important;min-height:58px!important;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-identity{
+ justify-content:flex-start!important;padding-left:3px!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-brand-full{
- display:block!important;width:204px!important;max-width:204px!important;height:auto;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-brand-link{
+ width:205px!important;justify-content:flex-start!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-brand-compact{display:none!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-section-name{
- opacity:0;visibility:hidden;height:0;overflow:hidden;padding:0!important;margin:0!important;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-brand-full{
+ display:block!important;width:190px!important;height:auto!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-section-name{
- opacity:1;visibility:visible;height:auto;padding:10px 12px 9px!important;
- font-size:10px;color:#91a5c1!important;letter-spacing:.12em;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-section-name{
+ display:none!important;opacity:0!important;height:0!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav{
  display:flex!important;flex-direction:column!important;gap:3px!important;
- margin:0!important;padding:0!important;overflow:visible!important;
+ padding:0!important;margin:0!important;flex:1!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link{
- display:flex!important;align-items:center!important;justify-content:flex-start!important;
- flex:none!important;width:42px!important;height:39px!important;min-height:39px!important;
- padding:9px 12px!important;margin:0!important;border-radius:8px!important;
- border:1px solid transparent!important;background:transparent!important;
- box-shadow:none!important;white-space:nowrap!important;
- font:600 12px/1.2 Inter,system-ui,sans-serif;
+ width:40px!important;height:39px!important;min-height:39px!important;flex:none!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;
+ margin:0 auto!important;padding:0!important;border:0!important;border-radius:8px!important;
+ background:transparent!important;color:#5d626b!important;box-shadow:none!important;
+ transition:background .12s ease,color .12s ease!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link svg{
- flex:none!important;width:17px!important;height:17px!important;color:#98abc1!important;
+ width:17px!important;height:17px!important;color:inherit!important;flex:none!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link span{
- opacity:0;visibility:hidden;width:0;overflow:hidden;
+ display:none!important;opacity:0!important;width:0!important;overflow:hidden!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-nav-link{
- width:100%!important;max-width:228px!important;gap:12px!important;padding:9px 12px!important;
+ width:100%!important;max-width:230px!important;justify-content:flex-start!important;
+ padding:0 11px!important;margin:0!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-nav-link span{
- opacity:1;visibility:visible;width:auto;overflow:visible;
+ display:inline!important;opacity:1!important;width:auto!important;font-size:12px!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link:hover{
- background:#1b2535!important;border-color:#39465e!important;
-}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link:hover{background:#f3f3f3!important;color:#171717!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link.active,
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link[aria-current="page"]{
- background:#27364b!important;border:1px solid #536c8b!important;
- box-shadow:inset 2px 0 #98defc!important;color:#fff!important;
+ background:#efefef!important;color:#111!important;border:0!important;box-shadow:none!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-footer{
- display:none!important;
-}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-footer{display:none!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell.sidebar-expanded .app-nav-footer{
- display:grid!important;margin-top:20px!important;padding:18px 10px 12px!important;
- gap:12px!important;border-color:#27354c!important;font-size:11px;
+ display:block!important;margin-top:12px!important;padding:12px 6px!important;
+ border-top:1px solid #eee!important;color:#777!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-mobile-account{display:none!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-tools{
- position:sticky!important;top:0!important;z-index:54!important;height:59px!important;
- min-height:59px!important;width:100%!important;display:flex!important;
- align-items:center!important;justify-content:space-between!important;
- gap:18px!important;padding:0 22px!important;background:#0c1019f2!important;
- border-bottom:1px solid #2a3445!important;backdrop-filter:none!important;
+ position:sticky!important;top:0!important;z-index:55!important;width:100%!important;
+ height:58px!important;min-height:58px!important;display:flex!important;align-items:center!important;
+ justify-content:space-between!important;gap:15px!important;padding:0 23px!important;
+ background:#fff!important;border-bottom:1px solid #ededed!important;backdrop-filter:none!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb{
- display:flex;align-items:center;gap:10px;min-width:0;flex:1;
- font-size:12px;color:#9aacbf;
+ display:flex!important;align-items:center!important;gap:9px!important;flex:1!important;
+ min-width:0!important;font-size:11px!important;color:#858585!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb img{
- flex:none;width:31px;height:22px;object-fit:contain;border-radius:5px;
-}
+html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb img{width:27px!important;height:22px!important;object-fit:contain}
 html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb a{
- font-size:11px!important;letter-spacing:.11em;font-weight:800;color:#bfe6fa!important;
+ color:#555!important;font-size:10px!important;letter-spacing:.08em!important;font-weight:700!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-shell-crumb-sep{color:#63768e}
 html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb strong{
- font-weight:650;font-size:12px;color:#eef6ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ color:#171717!important;font-size:12px!important;font-weight:650!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-shell-tools{display:flex;align-items:center;gap:14px;min-width:0;flex:none}
+html[data-crm-theme="blackhole"] .blackhole-shell-tools{display:flex!important;align-items:center!important;gap:13px!important}
 html[data-crm-theme="blackhole"] .blackhole-shell-search{
- height:35px;position:relative;display:flex;align-items:center;gap:8px;min-width:0;
- border:1px solid #334154;border-radius:9px;padding:0 10px;background:#151c29;color:#94a9c2;
+ height:34px!important;display:flex!important;align-items:center!important;gap:8px!important;
+ padding:0 10px!important;border:1px solid #e7e7e7!important;border-radius:8px!important;
+ background:#fff!important;color:#777!important;position:relative!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-shell-search input{
- border:0!important;outline:0!important;box-shadow:none!important;
- background:transparent!important;color:#f1f6ff!important;font-size:12px!important;
- width:clamp(125px,15vw,245px);height:32px;min-height:0!important;padding:0!important;
+ width:clamp(110px,15vw,220px)!important;height:30px!important;min-height:0!important;
+ padding:0!important;border:0!important;outline:0!important;background:transparent!important;
+ color:#222!important;font-size:11px!important;box-shadow:none!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-shell-search kbd{
- display:inline-flex;align-items:center;gap:4px;flex:none;border:1px solid #42516a;
- border-radius:5px;padding:3px 5px;font-size:10px;color:#9aacbf;
+ display:inline-flex!important;align-items:center!important;gap:3px!important;
+ border:1px solid #eee!important;border-radius:4px!important;padding:2px 4px!important;
+ color:#888!important;font-size:9px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-shell-search-results{
- position:absolute;top:calc(100% + 7px);right:0;min-width:280px;max-width:85vw;
- display:grid;gap:2px;z-index:160;padding:7px;border:1px solid #384963;
- border-radius:12px;background:#111927;box-shadow:0 15px 35px #0008;
+ position:absolute!important;top:calc(100% + 7px)!important;right:0!important;z-index:150!important;
+ min-width:250px!important;display:grid!important;gap:3px!important;padding:7px!important;
+ background:#fff!important;border:1px solid #e6e6e6!important;border-radius:10px!important;
+ box-shadow:0 10px 28px #0001!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-shell-search-results>a,
 html[data-crm-theme="blackhole"] .blackhole-shell-search-results>span{
- display:block;padding:11px;border-radius:7px;color:#e6effc!important;font-size:12px;
+ display:block!important;padding:10px!important;border-radius:6px!important;color:#333!important;font-size:12px!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-shell-search-results>a:hover{background:#293a54}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .crm-theme-picker{
- display:flex!important;align-items:center!important;gap:6px!important;
- background:transparent!important;border:0!important;color:#9eb1c6!important;
+html[data-crm-theme="blackhole"] .blackhole-shell-search-results>a:hover{background:#f5f5f5!important}
+html[data-crm-theme="blackhole"] .bh-theme-identity{
+ display:inline-flex!important;align-items:center!important;gap:6px!important;
+ color:#202020!important;font-size:10px!important;font-weight:750!important;letter-spacing:.07em!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .crm-theme-picker>span{display:none!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .crm-theme-picker select{
- border:0!important;border-radius:6px!important;background:#171e2c!important;
- width:116px!important;height:32px!important;min-height:32px!important;padding:0 6px!important;
- font-size:11px!important;color:#cfdded!important;
-}
+html[data-crm-theme="blackhole"] .bh-theme-identity img{width:26px!important;height:18px!important;object-fit:contain}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-alert,
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-avatar{
- display:grid!important;place-items:center!important;flex:none!important;
- height:33px!important;width:33px!important;border-radius:50%!important;
- color:#c6d6ea!important;background:#192334!important;font-size:12px!important;
+ display:grid!important;place-items:center!important;width:32px!important;height:32px!important;
+ flex:none!important;border-radius:50%!important;background:#f4f4f4!important;color:#444!important;
+ font-size:11px!important;border:0!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-avatar img{
+ width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-divider{display:none!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-studio{
- padding:24px clamp(18px,2.4vw,37px) 42px!important;max-width:none!important;
- min-height:calc(100dvh - 59px)!important;
+ width:100%!important;max-width:none!important;min-height:calc(100dvh - 58px)!important;
+ padding:27px clamp(20px,2.2vw,36px) 45px!important;background:#fff!important;color:#171717!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading{
- align-items:center!important;margin-bottom:24px!important;
+ display:flex!important;align-items:flex-start!important;justify-content:space-between!important;
+ gap:18px!important;margin:0 0 25px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading small{
- font-size:10px!important;font-weight:650!important;letter-spacing:.07em!important;color:#8ba0bc!important;
+ color:#929292!important;font-size:10px!important;letter-spacing:.08em!important;font-weight:650!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading h1{
- font-size:clamp(22px,2vw,29px)!important;font-weight:750!important;
- letter-spacing:-.035em!important;margin:6px 0 5px!important;
+ color:#171717!important;font-size:24px!important;line-height:1.2!important;
+ font-weight:720!important;letter-spacing:-.035em!important;margin:7px 0 6px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading p{
- font-size:12px!important;line-height:1.55!important;color:#a5b6cc!important;
+ color:#777!important;font-size:11px!important;line-height:1.5!important;margin:0!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-grid{gap:12px!important;margin-bottom:18px!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-grid{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important;margin:0 0 13px!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-record,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-card{
+ background:#fff!important;color:#171717!important;border:1px solid #e7e7e7!important;
+ border-radius:9px!important;box-shadow:0 1px 2px #00000008!important;
+}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat{
- border-radius:12px!important;padding:16px 18px!important;min-height:96px!important;
+ min-height:82px!important;padding:13px 15px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat strong{
- font-weight:750!important;font-size:27px!important;letter-spacing:-.04em!important;
+ color:#161616!important;font-size:23px!important;font-weight:750!important;letter-spacing:-.035em!important;
 }
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat span,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat small{color:#777!important;font-size:10px!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel{
- border-radius:13px!important;padding:19px 20px!important;margin-bottom:14px!important;
+ padding:16px!important;margin:0 0 13px!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel h2{font-size:15px!important;font-weight:740!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel h2{
+ color:#171717!important;font-size:13px!important;font-weight:720!important;margin-bottom:10px!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-btn{
+ border:1px solid #e5e5e5!important;background:#fff!important;color:#252525!important;
+ border-radius:7px!important;font-size:11px!important;padding:7px 10px!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-btn.primary{
+ background:#161616!important;color:#fff!important;border-color:#161616!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell input,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell select,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell textarea{
+ background:#fff!important;color:#242424!important;border:1px solid #dedede!important;
+ border-radius:6px!important;font-size:11px!important;
+}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-record{
- border-radius:9px!important;padding:13px 14px!important;content-visibility:auto;
+ padding:12px!important;margin-bottom:7px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-record p,
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-card p{
- font-size:12px!important;line-height:1.5!important;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-card p{color:#777!important;font-size:11px!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-grid{
+ display:grid!important;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))!important;gap:11px!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-integration-cards{
- display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:12px!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-integration-card{
- min-height:145px!important;padding:17px!important;border-radius:12px!important;
-}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-card{padding:15px!important;min-height:145px!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-columns{
- grid-template-columns:repeat(5,minmax(225px,1fr))!important;gap:10px!important;
- padding:5px 0 20px!important;overscroll-behavior-inline:contain;
+ display:grid!important;grid-template-columns:repeat(5,minmax(215px,1fr))!important;
+ gap:13px!important;overflow-x:auto!important;padding:8px 2px 18px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column{
- border-radius:11px!important;padding:9px!important;min-height:calc(100dvh - 290px);
- background:#0d141f!important;
+ min-height:calc(100dvh - 260px)!important;padding:8px!important;
+ border:0!important;border-radius:0!important;border-top:3px solid #d9d9d9!important;background:#fff!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-head{
- border-top:3px solid #526980;padding:10px 9px 12px!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column:nth-child(1) .office-kanban-head{border-top-color:#e971af}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column:nth-child(2) .office-kanban-head{border-top-color:#65abd0}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column:nth-child(3) .office-kanban-head{border-top-color:#7f9ad6}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column:nth-child(4) .office-kanban-head{border-top-color:#d9b26c}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-column:nth-child(5) .office-kanban-head{border-top-color:#61bea9}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-card{
- border-radius:10px!important;padding:12px!important;box-shadow:0 3px 10px #0002!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-workflow-tools{
- justify-content:flex-start!important;gap:12px!important;margin:10px 0 18px!important;
+ background:#fff!important;border:1px solid #e5e5e5!important;border-radius:8px!important;
+ box-shadow:0 1px 3px #00000008!important;padding:10px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar{
- display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:9px 0 14px;
- border-bottom:1px solid #2c3647;margin-bottom:12px;
+ display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:wrap!important;
+ padding:9px 0!important;border-bottom:1px solid #eee!important;margin-bottom:12px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar label{
- display:flex;align-items:center;gap:7px;color:#aebdd1;font-size:11px;
- border:1px solid #344155;background:#111a28;padding:6px 9px;border-radius:8px;
+ display:flex!important;align-items:center!important;gap:6px!important;
+ padding:5px 8px!important;border:1px solid #eee!important;border-radius:6px!important;
+ color:#666!important;font-size:10px!important;background:#fff!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar select{
- width:auto;max-width:135px;min-height:26px!important;padding:2px 5px!important;
- background:#1c293b!important;border:0!important;font-size:11px!important;
+html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar select,
+html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar input{
+ width:auto!important;min-height:25px!important;height:25px!important;border:0!important;
+ padding:2px 4px!important;font-size:10px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-agent-templates{
- display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
- margin:10px 0 23px;
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:11px!important;margin:10px 0 25px!important;
 }
 html[data-crm-theme="blackhole"] .blackhole-agent-template{
- position:relative;display:flex;flex-direction:column;gap:8px;min-height:148px;
- border:1px solid #36465c;background:linear-gradient(155deg,#152032,#0f1724);
- padding:18px;border-radius:13px;text-decoration:none;
- transition:border-color .14s ease,transform .14s ease;
+ min-height:145px!important;display:flex!important;flex-direction:column!important;gap:8px!important;
+ padding:15px!important;border:1px solid #e5e5e5!important;border-radius:10px!important;
+ background:#fff!important;text-decoration:none!important;box-shadow:0 1px 2px #00000008!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-agent-template:hover{
- border-color:#80b8d6;transform:translateY(-2px);
-}
+html[data-crm-theme="blackhole"] .blackhole-agent-template:hover{border-color:#b9b9b9!important;transform:translateY(-1px)}
 html[data-crm-theme="blackhole"] .blackhole-agent-template .blackhole-template-icon{
- display:grid;place-items:center;width:34px;height:34px;border-radius:10px;
- background:#254357;color:#a6e4fd;
+ display:grid!important;place-items:center!important;width:31px!important;height:31px!important;
+ border-radius:8px!important;background:#e8f2fa!important;color:#2878a6!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-agent-template:nth-child(2) .blackhole-template-icon{background:#1a473e;color:#98eac5}
-html[data-crm-theme="blackhole"] .blackhole-agent-template:nth-child(3) .blackhole-template-icon{background:#4d3722;color:#ffcb8b}
-html[data-crm-theme="blackhole"] .blackhole-agent-template:nth-child(4) .blackhole-template-icon{background:#4b2742;color:#f8b5e1}
-html[data-crm-theme="blackhole"] .blackhole-agent-template strong{font-size:13px;color:#eef6ff}
-html[data-crm-theme="blackhole"] .blackhole-agent-template p{font-size:11px;color:#b0c0d5!important;line-height:1.55;margin:0}
-html[data-crm-theme="blackhole"] .blackhole-agent-template small{font-size:10px;color:#94b8d3}
-html[data-crm-theme="blackhole"] .blackhole-agent-search{
- display:flex;gap:10px;align-items:center;margin:14px 0 18px;
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-search input{width:100%;min-width:0}
-html[data-crm-theme="blackhole"] .blackhole-agent-search select{width:160px}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-grid{
- grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-agent-card{
- min-height:155px;padding:16px;border-radius:12px;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-console{
- height:calc(100dvh - 59px)!important;min-height:0;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-rail{
- width:54px!important;flex-basis:54px!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-rail.expanded{
- width:215px!important;flex-basis:215px!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-main{min-width:0}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-content{
- padding:30px clamp(16px,3vw,45px)!important;
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-composer{
- border-radius:15px!important;
-}
+html[data-crm-theme="blackhole"] .blackhole-agent-template strong{font-size:12px!important;color:#171717!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-template p{font-size:10px!important;line-height:1.45!important;color:#777!important;margin:0!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-template small{font-size:10px!important;color:#666!important;margin-top:auto!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title{display:flex!important;align-items:baseline!important;justify-content:space-between!important;margin:20px 0 10px!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title strong{font-size:13px!important;color:#222!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title small{font-size:10px!important;color:#888!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-search{display:flex!important;align-items:center!important;gap:10px!important;margin:12px 0!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-search input{flex:1!important;height:34px!important;padding:0 10px!important}
+html[data-crm-theme="blackhole"] .blackhole-agent-search label{font-size:10px!important;color:#666!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-console{height:calc(100dvh - 58px)!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-rail{background:#fff!important;border-right:1px solid #eee!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-main,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-content{background:#fff!important;color:#171717!important}
 html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-orbit{
- background:radial-gradient(circle at center,#05070a 22%,#516fa3 24%,#242a3c 31%,#0d1524 43%,transparent 70%)!important;
- border:1px solid #48617f;
+ background:radial-gradient(circle at center,#05070b 24%,#73839a 26%,#dce3ea 31%,#fff 54%,transparent 70%)!important;
+ border:1px solid #ddd!important;
 }
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-orbit svg{color:#b8e7f8!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-header{min-height:57px!important;padding:10px 20px!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-content .office-ai-message-body{line-height:1.65!important;font-size:13px!important}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-action-cards button{
- min-height:96px!important;padding:17px 10px!important;border-radius:12px!important;
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-orbit svg{color:#fff!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-header{background:#fff!important;border-bottom:1px solid #eee!important}
+@media(max-width:900px){
+ html[data-crm-theme="blackhole"] .blackhole-agent-templates{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
-/* Repete as proporções do login de dois painéis da referência, com a marca BLACKHOLE. */
+@media(max-width:700px){
+ html[data-crm-theme="blackhole"] .blackhole-shell-search{display:none!important}
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-tools{padding:0 12px!important}
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-studio{padding:17px 12px 30px!important}
+ html[data-crm-theme="blackhole"] .blackhole-agent-templates{grid-template-columns:1fr!important}
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-columns{grid-template-columns:repeat(5,215px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell *{scroll-behavior:auto!important;transition:none!important}
+}
+
+/* Login bipartido do Infinitum: painel de marca e formulário limpo. */
 .w1-auth-screen[data-office-login="infinitum-reference"]{
- background:#fdfdfd!important;padding:15px!important;color:#17181a!important;
+ background:#fff!important;color:#171717!important;padding:15px!important;
 }
 .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
- gap:clamp(25px,4vw,75px)!important;background:#fdfdfd!important;
+ gap:clamp(24px,4vw,72px)!important;background:#fff!important;
  min-height:calc(100dvh - 30px)!important;
 }
 .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
- background:radial-gradient(ellipse at 53% 39%,#151519 0%,#050507 68%)!important;
- border-radius:23px!important;
+ background:radial-gradient(ellipse at 52% 43%,#1c2637,#05070c 72%)!important;border-radius:20px!important;
 }
 .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero:before{
- background:url('/branding/blackhole-symbol.svg') center 47% / min(110%,900px) auto no-repeat!important;
- opacity:.90!important;transform:none!important;animation:none!important;
+ background:url('/branding/blackhole-symbol.svg') center 48% / min(110%,820px) auto no-repeat!important;
+ opacity:1!important;animation:none!important;
 }
 .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
- background:#fdfdfd!important;color:#17181a!important;padding-top:8px!important;
+ background:#fff!important;color:#171717!important;
 }
-.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{
- color:#121316!important;font-family:Inter,system-ui,sans-serif!important;
-}
-.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{color:#81858a!important}
-.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form label{color:#16171a!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{color:#171717!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{color:#777!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form label{color:#171717!important}
 .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form input:not([type="checkbox"]){
- color:#1b1c21!important;background:#fff!important;border-color:#d5d7dd!important;color-scheme:light!important;
+ background:#fff!important;color:#171717!important;border-color:#ddd!important;color-scheme:light!important;
 }
 .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary{
- background:#0f1117!important;color:#fff!important;border:1px solid #0f1117!important;
-}
-.w1-auth-screen[data-office-login="infinitum-reference"] .office-google-btn{
- background:#fff!important;color:#202327!important;border-color:#d3d6dd!important;
-}
-.w1-auth-screen[data-office-login="infinitum-reference"] .office-auth-switch button,
-.w1-auth-screen[data-office-login="infinitum-reference"] .office-forgot{color:#1f2731!important}
-@media(min-width:781px) and (max-height:740px){
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav-link{height:35px!important;min-height:35px!important;padding:7px 12px!important}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-identity{height:70px!important;min-height:70px!important}
-}
-@media(max-width:980px){
- html[data-crm-theme="blackhole"] .blackhole-agent-templates{grid-template-columns:repeat(2,minmax(0,1fr))}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .reference-top-tools{padding:0 12px!important;gap:8px!important}
- html[data-crm-theme="blackhole"] .blackhole-shell-search kbd{display:none}
+ background:#171717!important;color:#fff!important;border-color:#171717!important;
 }
 @media(max-width:700px){
- html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar{width:52px!important;min-width:52px!important;max-width:52px!important;padding:10px 5px!important}
- html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{width:232px!important;max-width:232px!important}
- html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-content{margin-left:52px!important;width:calc(100% - 52px)!important}
- html[data-crm-theme="blackhole"] .blackhole-shell-search{display:none}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .crm-theme-picker select{width:85px!important}
- html[data-crm-theme="blackhole"] .blackhole-shell-breadcrumb img{display:none}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-nav{flex-direction:column!important}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-studio{padding:17px 12px 28px!important}
- html[data-crm-theme="blackhole"] .blackhole-agent-templates{grid-template-columns:1fr!important}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-kanban-columns{grid-template-columns:repeat(5,225px)!important}
  .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{grid-template-columns:1fr!important;gap:0!important}
- .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{min-height:210px!important}
-}
-@media(prefers-reduced-motion:reduce){
- html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar,
- html[data-crm-theme="blackhole"] .blackhole-agent-template{transition:none!important;transform:none!important}
-}
-
-/* Estúdio de agentes: hierarquia do vídeo de referência, sem cartões genéricos gigantes. */
-html[data-crm-theme="blackhole"] .blackhole-agents-header{
- display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
- margin:8px 0 29px;flex-wrap:wrap;padding:2px 0 0;
-}
-html[data-crm-theme="blackhole"] .blackhole-agents-header>div:first-child{min-width:min(100%,420px);flex:1}
-html[data-crm-theme="blackhole"] .blackhole-agents-header small{
- color:#94acc6;letter-spacing:.10em;font-size:10px;font-weight:700
-}
-html[data-crm-theme="blackhole"] .blackhole-agents-header h2{
- font-size:26px!important;line-height:1.25;letter-spacing:-.035em;
- margin:7px 0 5px;color:#f4f8ff;font-weight:750
-}
-html[data-crm-theme="blackhole"] .blackhole-agents-header p{
- font-size:12px;line-height:1.6;color:#b4c3d5!important;max-width:660px;margin:0
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-section-title{
- display:flex;align-items:baseline;justify-content:space-between;gap:12px;
- margin:20px 0 11px;
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-section-title strong{
- font-size:13px;font-weight:750;color:#e5effb
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-section-title small{
- font-size:11px;color:#8ca1bd
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-search label{
- display:flex;align-items:center;gap:7px;border:1px solid #344357;
- background:#131c2c;padding:5px 8px;border-radius:9px;color:#becde0;font-size:11px
-}
-html[data-crm-theme="blackhole"] .blackhole-agent-search select{
- border:0!important;min-height:31px!important;background:#1a2a3c!important;
- max-width:140px!important;font-size:11px!important;padding:5px!important
-}
-html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar input{
- max-width:150px;min-height:28px!important;height:28px!important;padding:5px 7px!important;
- border:0!important;background:#1a2839!important;font-size:11px!important
-}
-html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-rail-brand .office-ai-infinity{
- color:#e5f5ff!important;text-shadow:0 0 15px #8dc4f055
-}
-@media(max-width:900px){
- html[data-crm-theme="blackhole"] .blackhole-agents-header h2{font-size:23px!important}
+ .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{min-height:190px!important}
 }
