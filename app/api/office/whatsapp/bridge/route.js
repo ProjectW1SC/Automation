@@ -4,11 +4,13 @@ export const runtime='nodejs';export const dynamic='force-dynamic';export const 
 export async function GET(request){
  try{const {user}=await officeAuth(request);const q=new URL(request.url).searchParams;
  const action=q.get('action')||'status';
- return officeJson(await waAutoOperation(action,user.id,{q:q.get('q'),jid:q.get('jid'),onlyGroups:q.get('onlyGroups'),limit:q.get('limit')}));
+ const jwt=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
+ return officeJson(await waAutoOperation(action,user.id,{q:q.get('q'),jid:q.get('jid'),onlyGroups:q.get('onlyGroups'),limit:q.get('limit')},process.env,fetch,jwt));
  }catch(e){return safeOfficeError(e)}
 }
 export async function POST(request){
  try{const {user}=await officeAuth(request);const data=await request.json();
- return officeJson(await waAutoOperation(String(data?.action||''),user.id,data));
+ const jwt=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
+ return officeJson(await waAutoOperation(String(data?.action||''),user.id,data,process.env,fetch,jwt));
  }catch(e){return safeOfficeError(e)}
 }

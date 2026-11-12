@@ -30,3 +30,20 @@ test('nao diz entregue quando a ponte aceita envio e evita Meta',async()=>{
  assert.equal(count,1);assert.equal(response.accepted,true);assert.equal(response.delivered,false);
  assert.doesNotMatch(read('app/api/office/whatsapp/send/route.js'),/graph.facebook.com|WHATSAPP_ACCESS_TOKEN/);
 });
+
+test('authenticated Supabase JWT works without WA_AUTO_TOKEN and never trusts browser identity',async()=>{
+ const env={WA_AUTO_URL:'https://wa-auto-cloud.onrender.com',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_example'};
+ let init;
+ const r=await waAutoOperation('status',actor,{},env,async(_,args)=>{init=args;return {ok:true,status:200,text:async()=>JSON.stringify({ok:true,connection:{status:'ready'}})}},'signed-jwt-demo');
+ assert.equal(r.connected,true);assert.equal(init.headers.Authorization,'Bearer signed-jwt-demo');
+ assert.equal(init.headers['x-wa-crm-publishable-key'],env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+ assert.ok(!('x-wa-integration-token' in init.headers));
+ await assert.rejects(waAutoOperation('status',actor,{},env,async()=>{throw Error('should not call')}),/Sessão do CRM ausente/);
+});
+test('all CRM WhatsApp routes forward the validated caller JWT to the WA.Auto proxy',()=>{
+ for(const p of ['app/api/office/whatsapp/bridge/route.js','app/api/office/whatsapp/send/route.js','app/api/office/whatsapp/status/route.js']){
+  const route=read(p);
+  assert.match(route,/officeAuth\(request\)/);
+  assert.match(route,/process\.env,fetch,jwt/);
+ }
+});
