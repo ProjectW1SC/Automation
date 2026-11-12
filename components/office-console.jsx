@@ -7,6 +7,7 @@ import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
+import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
@@ -38,6 +39,7 @@ function OfficeUI({area,db,session}){
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
+ const [webPhone,setWebPhone]=useState(''),[webText,setWebText]=useState('');
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const [agentSearch,setAgentSearch]=useState(''),[agentFilter,setAgentFilter]=useState('todos');
  const need=LOADED[area]||LOADED.dashboard;
@@ -297,8 +299,24 @@ function OfficeUI({area,db,session}){
      <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
     {!documents.length&&<div className="office-list-empty">Nenhuma peça cadastrada.</div>}</div></section>
   </>}
-  {area==='whatsapp'&&<><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
-   <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'A conexão oficial WhatsApp Cloud API ainda não está completa. Configure as credenciais privadas da Meta na Vercel e o webhook assinado. Não é possível enviar antes disso.'} O agente apenas prepara rascunhos.</Source>
+  {area==='whatsapp'&&<><section className="inf-panel" aria-label="WhatsApp Web gratuito">
+    <h2>WhatsApp Web · atendimento sem API oficial</h2>
+    <p>Abra uma conversa com seu aparelho já vinculado. Você confirma o destinatário e clica em Enviar no próprio WhatsApp; abrir a conversa não registra nem confirma atendimento.</p>
+    <form className="office-form-col" onSubmit={e=>{e.preventDefault();try{
+      const url=blackholeWhatsAppWebUrl(webPhone,webText);
+      const opened=window.open(url,'_blank','noopener,noreferrer');
+      setNotice(opened?'WhatsApp Web aberto. Confira o número e confirme o envio no WhatsApp. Nenhuma mensagem foi registrada automaticamente.':'O navegador pode ter bloqueado a nova aba; permita pop-ups para abrir o WhatsApp Web.');
+    }catch(err){setNotice(err.message)}}}>
+     <div className="inf-fields">
+      <label>Escolher cliente cadastrado<select value="" onChange={e=>{const x=clients.find(c=>c.id===e.target.value);if(x?.phone)setWebPhone(x.phone)}}>
+       <option value="">Selecionar da carteira (opcional)</option>{clients.filter(c=>c.phone).map(c=><option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}</select></label>
+      <label>DDD + telefone<input type="tel" required value={webPhone} placeholder="(11) 99999-1234" onChange={e=>setWebPhone(e.target.value)}/></label>
+      <label style={{gridColumn:'1/-1'}}>Mensagem (opcional)<textarea rows={3} maxLength={3000} value={webText} onChange={e=>setWebText(e.target.value)} placeholder="Digite a mensagem para revisão no WhatsApp Web..."/></label>
+     </div>
+     <div className="inf-row-end"><button className="inf-btn primary" type="submit">Abrir conversa no WhatsApp Web</button></div>
+    </form>
+   </section><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
+   <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'O envio e recebimento automáticos por QR dependem de um serviço persistente Baileys/WA.Auto vinculado. Enquanto isso, o WhatsApp Web manual acima funciona sem API.'} O agente apenas prepara rascunhos.</Source>
    <div className="office-panel-grid"><section className="inf-panel"><h2>Conversas recebidas</h2><div className="office-records">{threads.map(m=><button key={m.phone} type="button" className="office-record" style={{textAlign:'left',cursor:'pointer'}} onClick={()=>{setSelectedPhone(m.phone);setReply('')}}><strong>{m.display_name||m.phone}</strong><p>{m.phone} · {dateLabel(m.received_at)}</p><small>{safeText(m.body,130)}</small></button>)}
     {!threads.length&&<div className="office-list-empty">Nenhuma mensagem recebida pelo webhook oficial.</div>}</div></section>
     <section className="inf-panel"><h2>Atendimento {selectedPhone||''}</h2>{selectedPhone?<><div className="office-whatsapp-messages">{currentThread.map(m=><div key={m.id} className={'office-bubble '+m.direction}><small className="office-hint">{m.direction==='inbound'?'Cliente':'Escritório'} · {dateLabel(m.received_at)}</small><div>{m.body}</div></div>)}</div>
