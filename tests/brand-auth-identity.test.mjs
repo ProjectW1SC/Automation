@@ -4,16 +4,16 @@ import {readFileSync,existsSync} from 'node:fs';
 const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('brand assets are included in the repository as actual images',()=>{
- assert.ok(existsSync(new URL('../public/branding/projectw1sc-symbol.svg',import.meta.url)));
- assert.ok(existsSync(new URL('../public/branding/projectw1sc-wordmark.svg',import.meta.url)));
- assert.match(file('public/branding/projectw1sc-symbol.svg'),/data:image\/webp;base64,/);
- assert.match(file('public/branding/projectw1sc-wordmark.svg'),/data:image\/webp;base64,/);
+ assert.ok(existsSync(new URL('../public/branding/blackhole-symbol.svg',import.meta.url)));
+ assert.ok(existsSync(new URL('../public/branding/blackhole-logo.svg',import.meta.url)));
+ assert.match(file('public/branding/blackhole-symbol.svg'),/data:image\/webp;base64,/);
+ assert.match(file('public/branding/blackhole-logo.svg'),/data:image\/webp;base64,/);
 });
 
 test('sidebar uses compact and extended brand marks, not old text lockup',()=>{
  const shell=file('components/crm-shell.jsx');
- assert.match(shell,/projectw1sc-symbol\.svg/);
- assert.match(shell,/projectw1sc-wordmark\.svg/);
+ assert.match(shell,/blackhole-symbol\.svg/);
+ assert.match(shell,/blackhole-logo\.svg/);
  assert.match(shell,/app-brand-compact/);
  assert.match(shell,/app-brand-full/);
 });

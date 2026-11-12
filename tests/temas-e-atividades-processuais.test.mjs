@@ -32,7 +32,7 @@ test('editar mantem os mesmos campos validos e nao altera autor, origem ou data 
 test('todos os temas possuem contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
  assert.ok(CRM_THEMES.length>=5);
  assert.ok(new Set(CRM_THEMES.map(x=>x.id)).size===CRM_THEMES.length);
- assert.equal(resolveTheme('tema-inexistente'),'vinho');
+ assert.equal(resolveTheme('tema-inexistente'),'blackhole');
  for(const theme of CRM_THEMES){
   for(const [text,bg] of [['ink','surface'],['muted','surface'],['accentInk','accent'],['navInk','nav'],['tintInk','tint'],['dangerInk','dangerBg'],['successInk','successBg'],['warningInk','warningBg']]){
    assert.ok(contrastRatio(theme[text],theme[bg])>=4.5,theme.id+': '+text+'/'+bg+' has '+contrastRatio(theme[text],theme[bg]).toFixed(2));
