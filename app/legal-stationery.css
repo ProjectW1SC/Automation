@@ -1,0 +1,39 @@
+/* Papel jurídico A4 com prévia real e impressão em PDF pelo navegador. */
+html[data-crm-theme] .legal-stationery-workspace{width:100%;min-width:0}
+html[data-crm-theme] .legal-design-controls{padding:18px;margin-top:18px;border:1px solid var(--ui-border,#e0dbd5);background:var(--ui-surface,#fff);border-radius:12px;color:var(--ui-ink,#25211e)}
+html[data-crm-theme] .legal-design-controls header{display:flex;gap:10px;align-items:flex-start;margin-bottom:15px}
+html[data-crm-theme] .legal-design-controls header h3{margin:0;font:500 19px Georgia,serif;color:var(--ui-ink,#222)}
+html[data-crm-theme] .legal-design-controls header p{font-size:11px;color:var(--ui-muted,#777);margin:3px 0}
+html[data-crm-theme] .legal-design-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html[data-crm-theme] .legal-design-grid label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:650;color:var(--ui-ink,#222)}
+html[data-crm-theme] .legal-design-grid :is(input,select){width:100%;min-height:40px;border:1px solid var(--ui-border,#ddd);border-radius:8px;padding:8px 10px;background:var(--ui-surface,#fff);color:var(--ui-ink,#222)}
+html[data-crm-theme] .legal-design-grid input[type=color]{padding:4px;cursor:pointer}
+html[data-crm-theme] .legal-upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+html[data-crm-theme] .legal-upload-row>span{font-size:10px;color:var(--ui-muted,#777)}
+html[data-crm-theme] .legal-upload-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--ui-border,#ddd);border-radius:8px;background:var(--ui-tint,#f5f1eb);font-size:11px;font-weight:700;cursor:pointer;color:var(--ui-tint-ink,#333)}
+html[data-crm-theme] .legal-upload-btn input{display:none}
+html[data-crm-theme] .legal-upload-error{color:#9b2b2b}
+html[data-crm-theme] .legal-paper.office-document-preview{display:block!important;position:relative!important;width:min(100%,210mm)!important;min-height:297mm!important;margin:22px auto!important;padding:20mm 19mm 22mm!important;background:#fff!important;color:#1b1b1b!important;border:1px solid #dedbd5!important;box-shadow:0 8px 30px #0000001b!important;border-radius:0!important;overflow:visible!important;white-space:normal!important;page-break-after:auto}
+html[data-crm-theme] .legal-letterhead{display:flex;align-items:center;gap:14px;justify-content:space-between;min-height:64px;color:var(--legal-ink,#5b2639)}
+html[data-crm-theme] .legal-logo{width:70px;max-height:70px;object-fit:contain;flex:none}
+html[data-crm-theme] .legal-letterhead-copy{display:flex;flex:1;flex-direction:column;gap:5px}
+html[data-crm-theme] .legal-letterhead-copy strong{font-family:Georgia,serif;font-size:18pt;color:var(--legal-ink);font-weight:600;line-height:1.15}
+html[data-crm-theme] .legal-letterhead-copy small{font-size:8pt;color:#555;letter-spacing:.04em}
+html[data-crm-theme] .legal-scales{color:var(--legal-ink);flex:none}
+html[data-crm-theme] .legal-letter-rule{height:3px;background:var(--legal-ink);margin:14px 0 23px}
+html[data-crm-theme] .legal-paper-body{font-family:var(--legal-font,Georgia),serif;font-size:var(--legal-size,12pt);line-height:1.65;text-align:justify;white-space:pre-wrap;overflow-wrap:anywhere;color:#171717}
+html[data-crm-theme] .legal-signature{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:Georgia,serif;margin:45px 10px 35px;color:#181818;font-size:11pt;break-inside:avoid}
+html[data-crm-theme] .legal-signature-line{height:1px;background:#666;width:220px;max-width:80%;margin:0 auto 8px}
+html[data-crm-theme] .legal-signature span{font-size:10pt}
+html[data-crm-theme] .legal-signature small{font-family:Arial,sans-serif;font-size:7pt;color:#777;text-align:center}
+html[data-crm-theme] .legal-paper-footer{border-top:1px solid var(--legal-ink);font-family:Arial,sans-serif;font-size:7pt;color:#555;padding-top:12px;text-align:center}
+@page{size:A4;margin:17mm 18mm 18mm}
+@media print{
+ body *{visibility:hidden!important}
+ .legal-design-controls,.crm-mobile-dock,.crm-visible-signout{display:none!important}
+ .legal-paper.office-document-preview,.legal-paper.office-document-preview *{visibility:visible!important}
+ html[data-crm-theme] .legal-paper.office-document-preview{position:absolute!important;top:0!important;left:0!important;right:0!important;width:100%!important;min-height:auto!important;margin:0!important;padding:0!important;box-shadow:none!important;border:0!important;page-break-before:auto!important}
+ .legal-paper-body{font-size:var(--legal-size,12pt)!important;line-height:1.65!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .legal-letter-rule,.legal-paper-footer{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+@media(max-width:670px){html[data-crm-theme] .legal-design-grid{grid-template-columns:1fr}html[data-crm-theme] .legal-paper.office-document-preview{min-height:0!important;padding:13mm 10mm!important}html[data-crm-theme] .legal-letterhead-copy strong{font-size:14pt}html[data-crm-theme] .legal-paper-body{font-size:11pt}}

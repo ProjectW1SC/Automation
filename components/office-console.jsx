@@ -3,6 +3,8 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import LegalStationery from './legal-stationery';
+import {runBlackholeQwen} from '../lib/blackhole-local-llm.mjs';
 import PrestigeDashboard from './prestige-dashboard';
 import {PrestigeClients,PrestigeCases} from './prestige-office-lists';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
@@ -40,6 +42,7 @@ function OfficeUI({area,db,session}){
  const [editClientId,setEditClientId]=useState(null),[editCaseId,setEditCaseId]=useState(null),[editDeadlineId,setEditDeadlineId]=useState(null);
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
+ const [qwenPetitionConsent,setQwenPetitionConsent]=useState(false),[qwenPetitionResult,setQwenPetitionResult]=useState(''),[qwenPetitionStatus,setQwenPetitionStatus]=useState('');
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [webPhone,setWebPhone]=useState(''),[webText,setWebText]=useState('');
  const [showManualWeb,setShowManualWeb]=useState(false);
@@ -138,6 +141,12 @@ function OfficeUI({area,db,session}){
    const p=await r.json();if(!p.ok)throw Error(p.error||'Fonte indisponível');
    setCheckResult({...p,number:row.process_number});setNotice((p.fromCache?'Cache oficial anterior consultado. ':'')+(p.notice||'Consulta concluída.'));
   }catch(e){setNotice('Consulta não confirmada: '+e.message)}finally{setConsulting('')}
+ }
+ async function askQwenPetition(){
+  if(!docResult?.body)return;setQwenPetitionResult('');setQwenPetitionStatus('Preparando Qwen local...');
+  try{const answer=await runBlackholeQwen('Revise APENAS a clareza e a redação deste trecho de petição. Não invente fatos, artigos ou jurisprudência. Produza até duas sugestões curtas. TRECHO: '+docResult.body.slice(0,950),[],progress=>setQwenPetitionStatus(progress.message||('Qwen: '+(progress.progress||0)+'%')),{consent:qwenPetitionConsent});
+   setQwenPetitionResult(answer.reply);setQwenPetitionStatus('Sugestão local recebida. Use somente após revisão do advogado.');
+  }catch(e){setQwenPetitionStatus('Qwen indisponível neste aparelho: '+e.message)}
  }
  async function saveEditedDocument(){if(!docResult?.id)return;setBusy(true);const r=await db.from('office_documents').update({body:docResult.body,status:'revisao',updated_at:new Date().toISOString()}).eq('id',docResult.id);setBusy(false);setNotice(r.error?'Minuta não salva: '+r.error.message:'Minuta atualizada e encaminhada para revisão.');if(!r.error)await load();}
  const download=(body,filename)=>{
@@ -285,7 +294,12 @@ function OfficeUI({area,db,session}){
       <button type="button" className="inf-btn" onClick={()=>setShowPreview(x=>!x)}>{showPreview?'Ocultar folha A4':'Visualizar folha A4'}</button>
       <button type="button" className="inf-btn primary" onClick={()=>{setShowPreview(true);window.setTimeout(()=>window.print(),0)}}>Imprimir / Salvar PDF</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
-    {showPreview&&<div className="office-document-preview" role="document" aria-label="Prévia A4 da petição">{docResult.body}</div>}
+     <section className="legal-qwen-panel"><label><input type="checkbox" checked={qwenPetitionConsent} onChange={e=>setQwenPetitionConsent(e.target.checked)}/> Autorizo baixar e executar o Qwen 0.5B local para sugerir ajustes de redação.</label>
+      <button type="button" className="inf-btn" disabled={busy||!qwenPetitionConsent} onClick={askQwenPetition}>Revisar trecho com Qwen 0.5B</button>
+      {qwenPetitionStatus&&<p role="status">{qwenPetitionStatus}</p>}
+      {qwenPetitionResult&&<div className="legal-qwen-answer"><strong>Sugestão — não aplicada à minuta</strong><p>{qwenPetitionResult}</p><button type="button" onClick={()=>setDocResult(old=>({...old,body:old.body+'\n\n[SUGESTÃO QWEN — REVISAR ANTES DE USAR]\n'+qwenPetitionResult}))}>Inserir sugestão no editor</button></div>}
+     </section>
+    {showPreview&&<LegalStationery body={docResult.body} title={docResult.title}/>}
     <Source>Edite o texto e clique em Salvar revisão. Advogado responsável deve conferir antes de aprovar ou protocolar.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
    <section className="inf-panel"><h2>Peças registradas</h2><div className="office-records">{documents.map(x=><article className="office-record" key={x.id}><strong>{x.title}</strong><p>{x.kind} · {x.status} · {dateLabel(x.created_at)}</p><div className="office-action-row">
      <button className="inf-btn" onClick={()=>setDocResult({id:x.id,body:x.body,title:x.title})}>Abrir minuta</button>
