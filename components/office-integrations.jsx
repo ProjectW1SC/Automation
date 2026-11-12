@@ -3,13 +3,14 @@ import {useEffect,useState,useCallback} from 'react';
 import Link from 'next/link';
 import {PlugZap,RefreshCw,ExternalLink,ShieldCheck,Workflow,MessageSquare,CalendarDays,ChartNoAxesCombined,Bot,CodeXml,FileCheck2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import {createIcsEvent} from '../lib/blackhole-free-integrations.mjs';
 const SERVICES=[
  {name:'WhatsApp',icon:MessageSquare,subtitle:'Cloud API oficial',route:'/whatsapp'},
  {name:'Asaas',icon:ChartNoAxesCombined,subtitle:'Financeiro e cobranças',route:'/configuracoes'},
  {name:'Agenda',icon:CalendarDays,subtitle:'Audiências e compromissos',route:'/audiencias'},
  {name:'Meta',icon:PlugZap,subtitle:'Captação e campanhas',route:'/leads'},
  {name:'IA jurídica',icon:Bot,subtitle:'Provedores configuráveis',route:'/pecas'},
- {name:'API pública',icon:CodeXml,subtitle:'Infinitum REST documentado',route:'#api'}
+ {name:'Infinitum (opcional)',icon:CodeXml,subtitle:'Conector externo de leitura',route:'#api'}
 ];
 const asRows=obj=>{
  if(Array.isArray(obj))return obj;
@@ -21,6 +22,7 @@ function Body({db}){
  const [state,setState]=useState({configured:false}),[whatsapp,setWhatsapp]=useState({configured:false});
  const [organizations,setOrganizations]=useState([]),[pops,setPops]=useState([]),[phases,setPhases]=useState([]),[cards,setCards]=useState([]);
  const [org,setOrg]=useState(''),[pop,setPop]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [event,setEvent]=useState({title:'',date:'',description:''});
  const query=useCallback(async(resource,params={})=>{
   const {data:{session}}=await db.auth.getSession();
   if(!session?.access_token)throw Error('Sessão expirada.');
@@ -52,17 +54,38 @@ function Body({db}){
   }catch(e){setNotice(e.message)}finally{setBusy(false)}
  }
  return <main className="inf-studio">
-  <header className="inf-heading"><div><small>CONEXÕES · AUTORIZADAS · SOMENTE LEITURA</small><h1>Integrações</h1>
-    <p>Central de ferramentas externas. A API pública Infinitum só pode ser consultada com um token válido de sua organização, guardado no servidor.</p></div>
+  <header className="inf-heading"><div><small>BLACKHOLE · FERRAMENTAS E CONECTORES</small><h1>Integrações</h1>
+    <p>Use alternativas gratuitas onde for possível. Serviços opcionais exigem credenciais próprias e nunca são exibidos como conectados sem verificação.</p></div>
    <Link href="/agentes" className="inf-btn"><Bot size={15}/> Agentes do escritório</Link>
   </header>
-  <div className="office-integration-cards">{SERVICES.map(s=>{const Icon=s.icon;const active=s.name==='API pública'?state.configured:s.name==='WhatsApp'?whatsapp.configured:false;
+  <div className="office-integration-cards">{SERVICES.map(s=>{const Icon=s.icon;const active=s.name==='Infinitum (opcional)'?state.configured:s.name==='WhatsApp'?whatsapp.configured:false;
    return <Link href={s.route} key={s.name} className="office-integration-card">
     <div className="office-integration-icon"><Icon size={23}/></div><strong>{s.name}</strong><p>{s.subtitle}</p><small className={active?'configured':'pending'}>{active?'Configurado':'Requer configuração'}</small>
    </Link>
   })}</div>
+  <section className="inf-panel"><h2>Alternativas gratuitas</h2>
+   <p>Estas opções não precisam de uma API paga. Ações externas permanecem manuais; os links abaixo abrem serviços ou documentação públicos.</p>
+   <div className="office-integration-cards">
+    <a className="office-integration-card" href="https://wa.me/?text=Ol%C3%A1" target="_blank" rel="noopener noreferrer"><strong>WhatsApp sem API</strong><p>Conversas manuais por wa.me ou WhatsApp Web. Sem leitura/automação oculta.</p><small className="configured">Abrir conversa grátis</small></a>
+    <a className="office-integration-card" href="https://github.com/wechaty/wechaty" target="_blank" rel="noopener noreferrer"><strong>Wechaty / WA.AUTO</strong><p>Alternativa técnica de automação que exige serviço persistente próprio; ainda não conectada, não adequada a Vercel Functions.</p><small className="pending">Estudar integração gratuita</small></a>
+    <a className="office-integration-card" href="https://openrouter.ai/collections/free-models" target="_blank" rel="noopener noreferrer"><strong>OpenRouter — IA gratuita</strong><p>Modelos gratuitos sob limites de requisições. Uma chave de API é necessária para respostas generativas.</p><small className="configured">Ver modelos gratuitos</small></a>
+    <a className="office-integration-card" href="/gerador-processos"><strong>Consultas e carteira</strong><p>Cadastro de CNJ mesmo quando DJEN bloqueia. DataJud por número e conferência em portal oficial.</p><small className="configured">Usar sem custo de API</small></a>
+    <a className="office-integration-card" href="https://docs.google.com/spreadsheets/" target="_blank" rel="noopener noreferrer"><strong>Financeiro em planilha</strong><p>Alternativa de controle manual a integrações de cobrança pagas. Sem emissão de PIX ou boleto pelo CRM.</p><small className="configured">Abrir planilhas</small></a>
+    <a className="office-integration-card" href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer"><strong>Conteúdo orgânico Meta</strong><p>Publicações manuais e ferramentas da sua conta, sem prometer conexão de campanhas.</p><small className="configured">Abrir Meta Business</small></a>
+   </div>
+   <div className="office-free-calendar">
+    <h2>Agenda gratuita · Exportar calendário (.ics)</h2>
+    <p>Gera um compromisso de dia inteiro que você pode importar no Google Calendar, Outlook ou outra agenda. Não confirma automaticamente audiência judicial.</p>
+    <form onSubmit={e=>{e.preventDefault();try{const content=createIcsEvent({...event,uid:'bh-'+Date.now()});const blob=new Blob([content],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='blackhole-compromisso.ics';a.click();window.setTimeout(()=>URL.revokeObjectURL(url),1500);setNotice('Arquivo ICS gerado. Importe na sua agenda.')}catch(err){setNotice(err.message)}}}>
+     <div className="inf-fields"><label>Compromisso<input required minLength={2} value={event.title} onChange={e=>setEvent({...event,title:e.target.value})} placeholder="Revisão, audiência a confirmar..."/></label>
+       <label>Data<input type="date" required value={event.date} onChange={e=>setEvent({...event,date:e.target.value})}/></label>
+       <label>Observações<input value={event.description} maxLength={300} onChange={e=>setEvent({...event,description:e.target.value})}/></label></div>
+     <div className="inf-row-end"><button className="inf-btn primary" type="submit">Baixar evento .ics</button></div>
+    </form>
+   </div>
+  </section>
   <section className="inf-panel" id="api">
-   <div className="office-toolbar"><div><h2><CodeXml size={17}/> API pública Infinitum</h2><p>Organizações, procedimentos (POP), fases e cards. Integração REST documentada, não acesso ao backend privado.</p></div>
+   <div className="office-toolbar"><div><h2><CodeXml size={17}/> Conector opcional Infinitum</h2><p>Organizações, procedimentos (POP), fases e cards. Integração REST documentada, não acesso ao backend privado.</p></div>
     <a href="https://public.infinitum.app.br/swagger/index.html" rel="noopener noreferrer" target="_blank" className="inf-btn">Documentação pública <ExternalLink size={13}/></a>
    </div>
    {!state.configured?<div className="inf-note"><ShieldCheck size={14}/> Ainda não conectado. Gere ou renove um Public Token na conta da organização autorizada e cadastre-o como <code>INFINITUM_PUBLIC_TOKEN</code> nas variáveis privadas da Vercel. Nunca inclua token no URL nem no navegador.</div>:<>
