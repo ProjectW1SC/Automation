@@ -1,0 +1,262 @@
+/* Sistema semântico de contraste e layout: aplicado depois dos temas legados. */
+html[data-crm-theme="blackhole"]{
+ --ui-page:#070b13;--ui-surface:#101725;--ui-ink:#f4f7ff;--ui-muted:#c1ccdc;
+ --ui-accent:#8bdefd;--ui-accent-ink:#081321;--ui-nav:#070914;--ui-nav-ink:#e7f1ff;
+ --ui-border:#46536a;--ui-tint:#192b45;--ui-tint-ink:#e1f6ff;
+ --ui-warning-bg:#3c302a;--ui-warning-ink:#ffe4b2;--ui-success-bg:#173a34;--ui-success-ink:#c7ffeb;
+ --ui-danger-bg:#442435;--ui-danger-ink:#ffe0eb;--ui-neutral-bg:#1f2b3c;--ui-neutral-ink:#e4edfc;
+ color-scheme:dark;
+}
+html[data-crm-theme="infinitum"]{
+ --ui-page:#f7f8fa;--ui-surface:#ffffff;--ui-ink:#1c1917;--ui-muted:#57534e;
+ --ui-accent:#292524;--ui-accent-ink:#ffffff;--ui-nav:#ffffff;--ui-nav-ink:#44403c;
+ --ui-border:#dedbd8;--ui-tint:#f0eeeb;--ui-tint-ink:#292524;
+ --ui-warning-bg:#fff4e6;--ui-warning-ink:#78350f;--ui-success-bg:#e8f7ee;--ui-success-ink:#14532d;
+ --ui-danger-bg:#fff0f0;--ui-danger-ink:#991b1b;--ui-neutral-bg:#f0efed;--ui-neutral-ink:#44403c;
+ color-scheme:light;
+}
+html[data-crm-theme]{
+ --crm-page:var(--ui-page);--crm-surface:var(--ui-surface);--crm-ink:var(--ui-ink);
+ --crm-muted:var(--ui-muted);--crm-accent:var(--ui-accent);--crm-accent-ink:var(--ui-accent-ink);
+ --crm-border:var(--ui-border);--crm-tint:var(--ui-tint);--crm-tint-ink:var(--ui-tint-ink);
+ background:var(--ui-page)!important;color:var(--ui-ink)!important;
+}
+html[data-crm-theme] body,
+html[data-crm-theme] .app-shell,
+html[data-crm-theme] .app-content,
+html[data-crm-theme] .reference-dashboard,
+html[data-crm-theme] .task-main,
+html[data-crm-theme] .office-workflow-screen{
+ background:var(--ui-page)!important;color:var(--ui-ink)!important;
+}
+html[data-crm-theme] .app-sidebar{
+ background:var(--ui-nav)!important;color:var(--ui-nav-ink)!important;border-color:var(--ui-border)!important;
+ box-shadow:none!important;
+}
+html[data-crm-theme] .app-sidebar .app-section-name,
+html[data-crm-theme] .app-sidebar .app-private,
+html[data-crm-theme] .app-sidebar .app-copyright{color:var(--ui-muted)!important;opacity:1!important}
+html[data-crm-theme] .app-sidebar .app-nav-link{color:var(--ui-nav-ink)!important;opacity:1!important}
+html[data-crm-theme] .app-sidebar .app-nav-link:hover,
+html[data-crm-theme] .app-sidebar .app-nav-link.active{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .app-sidebar .app-sidebar-toggle,
+html[data-crm-theme] .app-sidebar .app-account-actions button,
+html[data-crm-theme] .app-sidebar .app-account-actions a{color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .reference-top-tools{
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important;
+}
+html[data-crm-theme] .blackhole-shell-breadcrumb,
+html[data-crm-theme] .blackhole-shell-breadcrumb strong,
+html[data-crm-theme] .blackhole-shell-breadcrumb a{color:var(--ui-ink)!important}
+html[data-crm-theme] .blackhole-shell-crumb-sep{color:var(--ui-muted)!important}
+html[data-crm-theme] .blackhole-shell-search{
+ background:var(--ui-surface)!important;border-color:var(--ui-border)!important;color:var(--ui-muted)!important;
+}
+html[data-crm-theme] .blackhole-shell-search input{background:transparent!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .blackhole-shell-search input::placeholder{color:var(--ui-muted)!important;opacity:1!important}
+html[data-crm-theme] .blackhole-shell-search-results{background:var(--ui-surface)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .blackhole-shell-search-results a,
+html[data-crm-theme] .blackhole-shell-search-results span{color:var(--ui-ink)!important}
+html[data-crm-theme] .reference-top-alert{color:var(--ui-muted)!important}
+html[data-crm-theme] .reference-top-avatar{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .crm-theme-picker{
+ display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--ui-border);
+ border-radius:9px;background:var(--ui-surface);color:var(--ui-muted);font-size:11px;
+}
+html[data-crm-theme] .crm-theme-picker select{
+ max-width:145px;border:0!important;background:transparent!important;color:var(--ui-ink)!important;
+ padding:3px 2px!important;font-size:11px!important;outline-offset:3px;
+}
+html[data-crm-theme] .inf-studio{
+ box-sizing:border-box;width:100%;max-width:1640px;margin:0 auto;min-height:calc(100dvh - 62px);
+ padding:28px clamp(18px,2.4vw,36px) 46px;background:var(--ui-page)!important;color:var(--ui-ink)!important;
+}
+html[data-crm-theme] .inf-studio *{box-sizing:border-box}
+html[data-crm-theme] .inf-heading{
+ display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
+ padding:2px 0 20px;margin:0 0 20px;border-bottom:1px solid var(--ui-border);
+}
+html[data-crm-theme] .inf-heading small,
+html[data-crm-theme] .inf-overline{color:var(--ui-muted)!important;font-size:10px;letter-spacing:.12em;font-weight:750}
+html[data-crm-theme] .inf-heading h1{
+ color:var(--ui-ink)!important;font-size:clamp(24px,2vw,30px);font-weight:780;letter-spacing:-.035em;
+ line-height:1.15;margin:6px 0 7px;text-shadow:none!important;
+}
+html[data-crm-theme] .inf-heading p{color:var(--ui-muted)!important;font-size:13px;line-height:1.6;max-width:780px;margin:0;opacity:1!important}
+html[data-crm-theme] .inf-toolbar,
+html[data-crm-theme] .office-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+html[data-crm-theme] .inf-toolbar h2,
+html[data-crm-theme] .office-toolbar h2,
+html[data-crm-theme] .inf-panel h2,
+html[data-crm-theme] .inf-panel h3{
+ color:var(--ui-ink)!important;font-size:15px;font-weight:740;letter-spacing:-.01em;text-shadow:none!important;
+}
+html[data-crm-theme] .inf-panel,
+html[data-crm-theme] .inf-stat,
+html[data-crm-theme] .reference-panel,
+html[data-crm-theme] .panel,
+html[data-crm-theme] .metric,
+html[data-crm-theme] .efferd-kpi,
+html[data-crm-theme] .office-record,
+html[data-crm-theme] .office-agent-card,
+html[data-crm-theme] .office-integration-card,
+html[data-crm-theme] .office-ai-model-choice,
+html[data-crm-theme] .blackhole-native-integration{
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;
+ border:1px solid var(--ui-border)!important;border-radius:13px!important;
+ box-shadow:0 2px 8px color-mix(in srgb,var(--ui-ink) 5%,transparent)!important;
+}
+html[data-crm-theme] .inf-panel{padding:19px!important;margin:0 0 16px}
+html[data-crm-theme] .inf-stat{padding:17px 18px!important}
+html[data-crm-theme] .inf-stat label,
+html[data-crm-theme] .inf-stat small,
+html[data-crm-theme] .reference-header p,
+html[data-crm-theme] .inf-panel>p,
+html[data-crm-theme] .office-record p,
+html[data-crm-theme] .office-record small,
+html[data-crm-theme] .office-agent-card p,
+html[data-crm-theme] .office-agent-card small,
+html[data-crm-theme] .office-hint,
+html[data-crm-theme] .office-source-text,
+html[data-crm-theme] .office-list-empty,
+html[data-crm-theme] .inf-empty{color:var(--ui-muted)!important;opacity:1!important}
+html[data-crm-theme] .inf-stat strong,
+html[data-crm-theme] .office-record strong,
+html[data-crm-theme] .office-agent-card strong,
+html[data-crm-theme] .efferd-kpi-value{color:var(--ui-ink)!important;opacity:1!important}
+html[data-crm-theme] .inf-grid,
+html[data-crm-theme] .inf-stats,
+html[data-crm-theme] .inf-stat-grid{gap:13px}
+html[data-crm-theme] .inf-btn,
+html[data-crm-theme] .reference-outline{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 13px;
+ border:1px solid var(--ui-border)!important;border-radius:9px!important;
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;font-weight:650;
+}
+html[data-crm-theme] .inf-btn.primary,
+html[data-crm-theme] .inf-btn[data-variant="primary"]{
+ background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important;border-color:var(--ui-accent)!important;
+}
+html[data-crm-theme] .inf-btn:hover,
+html[data-crm-theme] .reference-outline:hover{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] button:disabled,
+html[data-crm-theme] .inf-btn:disabled{opacity:.55;cursor:not-allowed}
+html[data-crm-theme] .inf-fields label,
+html[data-crm-theme] .office-form-col label,
+html[data-crm-theme] .office-login-form label{
+ color:var(--ui-ink)!important;font-weight:650;opacity:1!important;
+}
+html[data-crm-theme] input,
+html[data-crm-theme] select,
+html[data-crm-theme] textarea,
+html[data-crm-theme] .inf-search{
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;
+ border:1px solid var(--ui-border)!important;border-radius:9px!important;
+ caret-color:var(--ui-accent)!important;box-shadow:none!important;
+}
+html[data-crm-theme] input::placeholder,
+html[data-crm-theme] textarea::placeholder,
+html[data-crm-theme] .inf-search::placeholder{color:var(--ui-muted)!important;opacity:1!important}
+html[data-crm-theme] select option{background:var(--ui-surface)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] input:focus-visible,
+html[data-crm-theme] select:focus-visible,
+html[data-crm-theme] textarea:focus-visible,
+html[data-crm-theme] button:focus-visible,
+html[data-crm-theme] a:focus-visible{
+ outline:2px solid var(--ui-accent)!important;outline-offset:2px;
+}
+html[data-crm-theme] .inf-table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:10px}
+html[data-crm-theme] .inf-table th{
+ background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;
+ border-color:var(--ui-border)!important;text-shadow:none!important;opacity:1!important;
+}
+html[data-crm-theme] .inf-table td{
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important;
+}
+html[data-crm-theme] .inf-table tbody tr:hover td{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .office-records{gap:10px}
+html[data-crm-theme] .office-status-vencido{background:var(--ui-danger-bg)!important;color:var(--ui-danger-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-status-hoje{background:var(--ui-warning-bg)!important;color:var(--ui-warning-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-status-semana{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .inf-note,
+html[data-crm-theme] .office-list-empty{
+ background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;border:1px solid var(--ui-border)!important;
+ opacity:1!important;
+}
+html[data-crm-theme] .inf-note.error{background:var(--ui-danger-bg)!important;color:var(--ui-danger-ink)!important}
+html[data-crm-theme] .office-ai-console,
+html[data-crm-theme] .office-ai-main,
+html[data-crm-theme] .office-ai-content,
+html[data-crm-theme] .office-ai-bottom,
+html[data-crm-theme] .office-ai-header{
+ background:var(--ui-page)!important;color:var(--ui-ink)!important;
+}
+html[data-crm-theme] .office-ai-header{border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-ai-header strong,
+html[data-crm-theme] .office-ai-content h1,
+html[data-crm-theme] .office-ai-welcome h1{color:var(--ui-ink)!important;text-shadow:none!important;opacity:1!important}
+html[data-crm-theme] .office-ai-header small,
+html[data-crm-theme] .office-ai-content>p,
+html[data-crm-theme] .office-ai-welcome p,
+html[data-crm-theme] .office-ai-author,
+html[data-crm-theme] .office-ai-message-tools,
+html[data-crm-theme] .office-ai-disclaimer{color:var(--ui-muted)!important;opacity:1!important}
+html[data-crm-theme] .office-ai-message-body{color:var(--ui-ink)!important;opacity:1!important;filter:none!important;text-shadow:none!important}
+html[data-crm-theme] .office-ai-message.assistant .office-ai-message-body{background:var(--ui-surface)!important;border:1px solid var(--ui-border)!important}
+html[data-crm-theme] .office-ai-message.user .office-ai-message-body{background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important}
+html[data-crm-theme] .office-ai-composer{background:var(--ui-surface)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-ai-composer textarea{background:var(--ui-surface)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .office-ai-composer-foot span{color:var(--ui-muted)!important}
+html[data-crm-theme] .office-ai-composer-foot button{background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important}
+html[data-crm-theme] .office-ai-rail{background:var(--ui-nav)!important;color:var(--ui-nav-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-ai-rail button,
+html[data-crm-theme] .office-ai-rail a{color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .office-ai-rail button.selected,
+html[data-crm-theme] .office-ai-rail button:hover{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .w1-auth-screen{
+ min-height:100dvh;padding:clamp(14px,3vw,34px);background:#f2f4f7!important;color:#17191d!important;
+ display:grid;place-items:center;font-family:Inter,system-ui,sans-serif;
+}
+html[data-crm-theme] .w1-auth-frame{
+ display:grid;grid-template-columns:minmax(0,1.03fr) minmax(390px,.97fr);
+ width:min(1240px,100%);min-height:min(740px,calc(100dvh - 60px));border-radius:22px;
+ overflow:hidden;border:1px solid #e1e5eb;background:#fff;box-shadow:0 22px 75px #12182720;
+}
+html[data-crm-theme] .w1-auth-hero{
+ min-height:100%;padding:clamp(30px,4vw,58px)!important;border-radius:0;
+ background:radial-gradient(ellipse at 70% 10%,#39465d 0%,transparent 48%),linear-gradient(145deg,#172338,#0e1420 72%,#090e17)!important;color:#fff!important;
+}
+html[data-crm-theme] .w1-auth-hero-kicker{color:#d8e3f2!important;font-size:11px;letter-spacing:.14em;font-weight:750}
+html[data-crm-theme] .w1-auth-hero-top h2{color:#fff!important;font-size:clamp(32px,3.5vw,48px);line-height:1.1}
+html[data-crm-theme] .w1-auth-hero-top h2 em{color:#d8e5f5!important}
+html[data-crm-theme] .w1-auth-hero-footer p,
+html[data-crm-theme] .w1-auth-hero-tags span{color:#e2e8f0!important}
+html[data-crm-theme] .w1-auth-panel{
+ min-height:100%;padding:clamp(24px,4vw,48px)!important;background:#fff!important;color:#17191d!important;
+}
+html[data-crm-theme] .w1-auth-panel-top{color:#17191d!important}
+html[data-crm-theme] .w1-auth-panel-center{width:min(420px,100%)}
+html[data-crm-theme] .w1-auth-heading h1{color:#17191d!important;font-size:27px!important;font-weight:760!important}
+html[data-crm-theme] .w1-auth-heading p{color:#596273!important;opacity:1!important}
+html[data-crm-theme] .w1-auth-eyebrow{color:#596273!important}
+html[data-crm-theme] .w1-auth-create{color:#35435a!important}
+html[data-crm-theme] .w1-auth-panel-footer{color:#586273!important}
+html[data-crm-theme] .office-login-form>label,
+html[data-crm-theme] .office-login-label-row label{color:#252a33!important;font-size:12px;font-weight:700}
+html[data-crm-theme] .office-login-form input,
+html[data-crm-theme] .office-password-field input{height:46px;background:#fff!important;color:#17191d!important;border:1px solid #cbd2dc!important}
+html[data-crm-theme] .office-login-form input::placeholder{color:#737d8c!important;opacity:1!important}
+html[data-crm-theme] .office-login-form button[type="submit"],
+html[data-crm-theme] .w1-auth-panel .inf-btn.primary{background:#172338!important;color:#fff!important;border-color:#172338!important}
+html[data-crm-theme] .w1-auth-screen [role="alert"]{color:#8f1d2c!important;background:#fff1f2!important;border:1px solid #fecdd3!important;padding:10px 12px;border-radius:9px}
+html[data-crm-theme] .crm-theme-picker{margin-inline:2px}
+@media(max-width:960px){
+ html[data-crm-theme] .inf-studio{padding:20px 16px 34px}
+ html[data-crm-theme] .inf-panel{padding:15px!important}
+}
+@media(max-width:760px){
+ html[data-crm-theme] .w1-auth-frame{grid-template-columns:1fr;min-height:auto;width:min(560px,100%)}
+ html[data-crm-theme] .w1-auth-hero{min-height:230px!important;padding:25px!important}
+ html[data-crm-theme] .w1-auth-panel{min-height:530px;padding:25px!important}
+ html[data-crm-theme] .crm-theme-picker span{display:none}
+}
