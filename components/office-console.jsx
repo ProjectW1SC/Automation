@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import PrestigeDashboard from './prestige-dashboard';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
@@ -196,20 +197,7 @@ function OfficeUI({area,db,session}){
   </header>
   {notice&&<div className={'inf-note '+(/não |falha|recusou|erro|expirad|indisponível|bloqueou/i.test(notice)?'error':'')} role="status">{notice}</div>}
   {loading&&<div className="inf-note">Carregando registros autorizados...</div>}
-  {area==='dashboard'&&<><div className="inf-grid">
-    <Stat label="Clientes jurídicos" value={clients.length} href="/clientes"/><Stat label="Processos cadastrados" value={cases.length} href="/processos"/>
-    <Stat label="Prazos vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Prazos de hoje" value={mini.counts.today} href="/prazos?status=hoje"/>
-    <Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/><Stat label="Datas sem conferência" value={mini.counts.unverified} href="/prazos"/>
-    <Stat label="Leads" value={leads.length} href="/leads"/><Stat label="Mensagens recebidas" value={mini.counts.received} href="/whatsapp"/>
-   </div>
-   <div className="office-panel-grid"><section className="inf-panel"><h2>Pendências prioritárias</h2><div className="office-records">
-     {mini.actions.length?mini.actions.map((r,i)=><article className="office-record" key={r.kind+r.id+i}><span className={'office-badge '+(r.kind==='prazo_vencido'?'office-status-vencido':'office-status-hoje')}>{r.kind.replaceAll('_',' ')}</span><strong>{r.title}</strong><small>{dateLabel(r.date)}</small></article>):<div className="office-list-empty">Sem pendências encontradas nos registros carregados.</div>}
-    </div><div className="office-action-row"><Link className="inf-btn" href="/prazos">Abrir controle de prazos</Link></div></section>
-    <section className="inf-panel"><h2><Bot size={17}/> Mini Agent · triagem</h2><p>Prioriza prazos e audiências; não consulta automaticamente o tribunal nem substitui conferência judicial.</p>
-     <div className="inf-stat"><label>Agentes especializados cadastrados</label><strong>{OFFICE_AGENTS.length}</strong></div>
-     <div className="office-action-row"><Link className="inf-btn primary" href="/agentes">Executar Mini Agent</Link><Link className="inf-btn" href="/pecas">Gerar minuta</Link><Link className="inf-btn" href="/whatsapp">Atendimento WhatsApp</Link></div>
-    </section></div><Source>Iniciamos uma carteira jurídica limpa: os 206 registros financeiros legados não foram migrados e permanecem isolados no banco até eventual arquivamento definitivo.</Source>
-  </>}
+  {area==='dashboard'&&<PrestigeDashboard clients={clients} cases={cases} deadlines={deadlines} mini={mini} session={session}/>}
   {area==='clients'&&<><div className="inf-grid"><Stat label="Total na carteira jurídica" value={clients.length} href="/clientes"/><Stat label="Ativos" value={clients.filter(x=>x.status==='ativo').length} href="/clientes"/><Stat label="Com processo" value={new Set(cases.filter(x=>x.client_id).map(x=>x.client_id)).size} href="/processos"/><Stat label="Retornos cadastrados" value={clients.filter(x=>x.next_return).length} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editClientId?'Editar cliente jurídico':'Cadastrar cliente jurídico'}</h2><form className="office-form-col" onSubmit={createClient}>
     <div className="inf-fields"><label>Nome completo<input required minLength={2} value={client.name} onChange={e=>setClient({...client,name:e.target.value})}/></label>
