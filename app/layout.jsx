@@ -25,6 +25,7 @@ import './wa-auto-inbox.css';
 import './prestige-exact-reference.css';
 import './prestige-dashboard.css';
 import './prestige-office-lists.css';
+import './prestige-final-polish.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'INFINITUM • CRM Jurídico W1',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
 export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}

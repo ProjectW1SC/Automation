@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('relatorios, configuracoes e integracoes compartilham contraste branco prestigio',()=>{const css=read('app/prestige-final-polish.css');for(const sel of ['.report-dashboard','.settings-dashboard','.settings-theme-option','.blackhole-native-integration','.task-main','.office-ai-console'])assert.ok(css.includes(sel));});
+test('refino importado depois do Kanban, dashboard e sistema de temas',()=>{const x=read('app/layout.jsx');assert.ok(x.indexOf('prestige-final-polish.css')>x.indexOf('prestige-office-lists.css'));});
+test('refino nao cria telas artificiais nem oculta conteudos',()=>{const css=read('app/prestige-final-polish.css');assert.doesNotMatch(css,/position:\s*fixed;\s*inset:0|pointer-events:\s*none\s*!important/);});
