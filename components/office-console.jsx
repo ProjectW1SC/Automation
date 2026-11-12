@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
@@ -39,12 +40,13 @@ function OfficeUI({area,db,session}){
  const need=LOADED[area]||LOADED.dashboard;
  const load=useCallback(async()=>{
   setLoading(true);
-  const entries=await Promise.all(need.map(async key=>{
+  let entries;
+ try{entries=await withAuthDeadline(Promise.all(need.map(async key=>{
    const limit=key==='deadlines'?600:key==='messages'?350:key==='clients'||key==='cases'?500:200;
    const sort=key==='deadlines'?'due_on':key==='clients'?'name':key==='cases'?'updated_at':'created_at';
    const res=await db.from(TABLES[key]).select('*').order(sort,{ascending:key==='clients'||key==='deadlines'}).limit(limit);
    return {key,res}
-  }));
+  })),12000)}catch(e){setNotice('Falha ao carregar: '+e.message+' Atualize para tentar novamente.');setLoading(false);return}
   setData(old=>({...old,...Object.fromEntries(entries.map(({key,res})=>[key,res.data||[]]))}));
   const problems=entries.filter(({res})=>res.error);
   if(problems.length)setNotice('Não foi possível acessar: '+problems.map(x=>x.key+': '+x.res.error.message).join(' · '));
@@ -117,22 +119,23 @@ function OfficeUI({area,db,session}){
    if(selectedCase&&!caseRecord){setNotice('Processo informado não consta da carteira atual.');return}
   setBusy(true);setNotice('');
   try{
-   const client=clients.find(x=>x.id===caseRecord.client_id);
+   const client=caseRecord?clients.find(x=>x.id===caseRecord.client_id):null;
    let evidence=[];
-   if(caseRecord.process_number){
+   if(caseRecord?.process_number){
     const r=await db.from('crm_judicial_snapshots').select('source,checked_at,payload').eq('process_number',caseRecord.process_number).order('checked_at',{ascending:false}).limit(8);
     if(r.error)throw Error('Não foi possível conferir as fontes oficiais: '+r.error.message);
     evidence=(r.data||[]).map(x=>({source:x.source,checked_at:x.checked_at,summary:safeText(x.payload?.items?.[0]?.title||x.payload?.items?.[0]?.description,200)}));
    }
-   let draft=makePetitionSkeleton({kind:docKind,caseRecord,client,instructions:docInstructions,evidence}),modelUsed='estrutura-verificavel';
+   let draft=caseRecord?makePetitionSkeleton({kind:docKind,caseRecord,client,instructions:docInstructions,evidence}):makeStandalonePetition({kind:docKind,instructions:docInstructions}),modelUsed='estrutura-verificavel';
    if(useAi){
+    if(!caseRecord)throw Error('Selecione um processo para IA externa; a minuta avulsa funciona no modo gratuito sem IA.');
     const {data:{session:s}}=await db.auth.getSession();
     const r=await fetch('/api/office/ai',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
      body:JSON.stringify({caseId:caseRecord.id,kind:docKind,instructions:docInstructions,externalAiConsent:true})});
     const output=await r.json();if(!output.ok)throw Error(output.error||'IA indisponível');
     draft={...draft,body:output.content};modelUsed=output.model;
    }
-   const rec={case_id:caseRecord.id,client_id:caseRecord.client_id,title:draft.title,kind:docKind,body:draft.body,
+   const rec={owner_id:session.user.id,case_id:caseRecord?.id||null,client_id:caseRecord?.client_id||null,title:draft.title,kind:docKind,body:draft.body,
     evidence:draft.evidence,status:'rascunho',external_ai_consent:useAi,model_used:modelUsed};
    const result=await db.from('office_documents').insert(rec).select('id').single();
    if(result.error)throw result.error;

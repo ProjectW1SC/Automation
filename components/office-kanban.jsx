@@ -2,15 +2,18 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Plus,RefreshCw,GripVertical,ArrowRight,Scale,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 const STAGES=[{key:'entrada',name:'Entrada',hint:'Novas demandas'}, {key:'triagem',name:'Triagem',hint:'Conferência inicial'}, {key:'producao',name:'Produção',hint:'Trabalho jurídico'}, {key:'revisao',name:'Revisão',hint:'Aprovação humana'}, {key:'concluido',name:'Concluído',hint:'Atividade encerrada'}];
 function Board({db,session}){
  const [cards,setCards]=useState([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [notice,setNotice]=useState(''),[dragged,setDragged]=useState(''),[filter,setFilter]=useState('');
  const [adding,setAdding]=useState(false),[form,setForm]=useState({title:'',description:'',stage:'entrada',priority:'normal',card_type:'tarefa',due_on:'',assigned_to:''});
  const load=useCallback(async()=>{setLoading(true);
-  const {data,error}=await db.from('office_workflow_cards').select('*').order('updated_at',{ascending:false}).limit(500);
-  if(error)setNotice('Não foi possível acessar o fluxo: '+error.message);else setCards(data||[]);
-  setLoading(false);
+  try{
+   const {data,error}=await withAuthDeadline(db.from('office_workflow_cards').select('*').order('updated_at',{ascending:false}).limit(500),12000);
+   if(error)setNotice('Não foi possível acessar o fluxo: '+error.message);else setCards(data||[]);
+  }catch(e){setNotice('Fluxos indisponíveis: '+e.message+' Clique Atualizar para tentar novamente.')}
+  finally{setLoading(false)}
  },[db]);
  useEffect(()=>{load()},[load]);
  const columns=useMemo(()=>STAGES.map(stage=>({...stage,items:cards.filter(x=>x.stage===stage.key&&[x.title,x.description,x.assigned_to].some(z=>String(z||'').toLowerCase().includes(filter.toLowerCase())))})),[cards,filter]);

@@ -3,7 +3,7 @@ import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildSuperAgentReview,targetCNJ} from '../../../lib/superagent-core.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
-import {validateBlackholePrompt,offlineBlackholeReply,configuredBlackholeProvider,generativeBlackholeReply} from '../../../lib/blackhole-chat.mjs';
+import {validateBlackholePrompt,offlineBlackholeReply,configuredBlackholeProvider,generativeBlackholeReply,requiresPortfolio} from '../../../lib/blackhole-chat.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store,private'}});
 export async function POST(request){
@@ -31,6 +31,7 @@ export async function POST(request){
     return json({ok:true,reply:fallback,model:'regras-locais',isGenerativeModel:false,notice:'Modelo remoto não respondeu: '+e.message+' Foi usado o modo local, sem afirmar inferência generativa.'});
    }
   }
+  if(!requiresPortfolio(prompt))return json({ok:true,reply:offlineBlackholeReply(prompt),model:'regras-locais',isGenerativeModel:false,notice:'Resposta local. Nenhuma fonte judicial foi consultada.'});
   const number=targetCNJ(prompt),formatted=number?formatProcessNumber(number):null;
   let processQ=db.from('office_cases').select('id,process_number,title,subject,status,client_id').limit(formatted?5:250);
   if(formatted)processQ=processQ.eq('process_number',formatted);
