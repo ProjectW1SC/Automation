@@ -19,11 +19,11 @@ test('sidebar uses compact and extended brand marks, not old text lockup',()=>{
 });
 
 test('login and recovery retain the same authentication handlers with a shared professional layout',()=>{
- const home=file('app/page.jsx');
+ const home=file('components/secured-workspace.jsx');
  const auth=file('components/professional-auth.jsx');
- assert.match(home,/onSubmit=\{signIn\}/);
- assert.match(home,/onClick=\{recover\}/);
- assert.match(home,/onSubmit=\{saveRecoveredPassword\}/);
+ assert.match(home,/onSubmit=\{login\}/);
+ assert.match(home,/onSubmit=\{reset\}/);
+ assert.match(home,/onSubmit=\{updatePassword\}/);
  assert.match(home,/ProfessionalAuth/);
  assert.match(auth,/w1-auth-screen/);
  assert.match(file('app/layout.jsx'),/brand-auth\.css/);

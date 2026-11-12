@@ -2,33 +2,32 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {CRM_AREAS,crmAreaHref,areaFromQuery} from '../lib/crm-navigation.mjs';
-
-test('uma única navegação, com Tarefas como aba de primeiro nível',()=>{
- assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Processos','Gerador de processos','Leads','Superagente','Audiências','Veredito','Finalizados','Instituições','Minhas atividades','Relatórios','Configurações']);
- assert.equal(CRM_AREAS.filter(x=>x.label==='Tarefas').length,1);
- assert.equal(crmAreaHref('Tarefas'),'/tarefas');
- assert.equal(crmAreaHref('Clientes'),'/?aba=clientes');
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('a navegação principal é de um escritório jurídico e não de quitações',()=>{
+ const labels=CRM_AREAS.map(x=>x.label);
+ assert.deepEqual(labels,['Painel jurídico','Clientes','Processos','Prazos','Audiências','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Configurações']);
+ assert.equal(crmAreaHref('Clientes'),'/clientes');assert.equal(crmAreaHref('Processos'),'/processos');
+ assert.equal(crmAreaHref('Peças e petições'),'/pecas');
+ assert.equal(labels.filter(x=>x==='WhatsApp').length,1);
+ assert.ok(!labels.some(x=>/quitação|finalizados|instituições/i.test(x)));
 });
-test('abas da carteira mantêm o endereço e a seleção ao voltar das tarefas',()=>{
+test('rotas e seleção mantêm identidade jurídica',()=>{
  assert.equal(areaFromQuery('?aba=clientes'),'Clientes');
- assert.equal(areaFromQuery('?aba=revisar'),'Finalizados');
- assert.equal(areaFromQuery('?aba=instituicoes'),'Instituições');
- assert.equal(areaFromQuery(''),'Visão geral');
- assert.equal(areaFromQuery('?aba=naoexiste'),'Visão geral');
+ assert.equal(areaFromQuery('?aba=processos'),'Processos');
+ assert.equal(areaFromQuery(''),'Painel jurídico');
+ assert.equal(areaFromQuery('?aba=inexistente'),'Painel jurídico');
 });
-test('páginas autenticadas compartilham uma única estrutura',()=>{
- const home=readFileSync(new URL('../app/page.jsx',import.meta.url),'utf8');
- const tasks=readFileSync(new URL('../app/tarefas/page.jsx',import.meta.url),'utf8');
- const sidebar=readFileSync(new URL('../components/crm-shell.jsx',import.meta.url),'utf8');
- assert.match(home,/<CrmShell\b/);
- assert.match(tasks,/<CrmShell\b/);
- assert.doesNotMatch(home,/className="layout"><aside/);
- assert.doesNotMatch(tasks,/<aside className="task-sidebar"/);
- assert.match(sidebar,/aria-label="Navegação principal"/);
+test('escritório compartilhado usa auth e único sidebar',()=>{
+ assert.match(read('app/page.jsx'),/OfficeConsole/);
+ assert.match(read('app/processos/page.jsx'),/OfficeConsole/);
+ assert.match(read('components/office-console.jsx'),/SecuredWorkspace/);
+ assert.match(read('components/secured-workspace.jsx'),/useCrmAccess/);
+ assert.match(read('components/crm-shell.jsx'),/aria-label="Navegação principal"/);
+ assert.doesNotMatch(read('components/crm-shell.jsx'),/Quitações/);
 });
-test('filas vencidos e finalizados são filtros internos e não outro menu lateral',()=>{
- const tasks=readFileSync(new URL('../app/tarefas/page.jsx',import.meta.url),'utf8');
- assert.match(tasks,/className="task-queue-tabs"/);
- assert.match(tasks,/go\('vencidos'\)/);
- assert.doesNotMatch(tasks,/task-side-item/);
+test('prazos são organizados com vencidos/hoje/semana na nova carteira',()=>{
+ const ui=read('components/office-console.jsx');
+ assert.match(ui,/deadlineFilter/);
+ assert.match(ui,/deadlineState/);
+ assert.match(ui,/office_deadlines/);
 });

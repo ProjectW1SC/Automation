@@ -4,12 +4,11 @@ import {readFileSync} from 'node:fs';
 import {CRM_AREAS,areaFromQuery,crmAreaHref} from '../lib/crm-navigation.mjs';
 import {isFinalizedClient,finalizedClients,reopenClientPatch} from '../lib/finalizados.mjs';
 const read=(file)=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
-test('Finalizados replaces Revisar in the only shared navigation',()=>{
- assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Processos','Gerador de processos','Leads','Superagente','Audiências','Veredito','Finalizados','Instituições','Minhas atividades','Relatórios','Configurações']);
- assert.equal(CRM_AREAS.some(x=>x.label==='Revisar'),false);
- assert.equal(crmAreaHref('Finalizados'),'/?aba=finalizados');
- assert.equal(areaFromQuery('?aba=finalizados'),'Finalizados');
- assert.equal(areaFromQuery('?aba=revisar'),'Finalizados');
+test('finalizados da negociação antiga não aparecem no novo menu jurídico',()=>{
+ assert.equal(CRM_AREAS.some(x=>x.label==='Finalizados'),false);
+ assert.equal(CRM_AREAS.some(x=>x.label==='Painel jurídico'),true);
+ assert.equal(crmAreaHref('Clientes'),'/clientes');
+ assert.equal(areaFromQuery('?aba=finalizados'),'Painel jurídico');
 });
 test('Finalizados lists only explicitly completed workflow, regardless of sheet labels',()=>{
  const rows=[
@@ -26,14 +25,11 @@ test('Reopen requires reason and returns a minimal status patch without changing
  assert.deepEqual(reopenClientPatch({workflow_status:'finalizado',evidence_status:'quitacao_verificada'},'Novo contato confirmado'),{workflow_status:'ativo'});
  assert.throws(()=>reopenClientPatch({workflow_status:'ativo'},'Retomar contato'),/finalizado/i);
 });
-test('Finalizados UI supports reopen and hides unmatched review list',()=>{
- const ui=read('app/page.jsx');
- assert.match(ui,/page==='Finalizados'/);
- assert.match(ui,/reopenClient/);
- assert.match(ui,/Reabrir/);
- assert.doesNotMatch(ui,/page==='Revisar'/);
- const nav=read('components/crm-shell.jsx');
- assert.match(nav,/CRM_AREAS/);
+test('a nova tela de clientes não consulta registros financeiros legados',()=>{
+ const ui=read('components/office-console.jsx');
+ assert.match(ui,/office_clients/);
+ assert.doesNotMatch(ui,/crm_clients/);
+ const nav=read('components/crm-shell.jsx');assert.match(nav,/CRM_AREAS/);
 });
 test('Database prevents automatic sheet reconciliation from overriding manual reopen',()=>{
  const sql=read('supabase/migrations/20261109_004_reconciliacao_finalizados.sql');

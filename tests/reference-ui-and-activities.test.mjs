@@ -5,9 +5,9 @@ import {ACTIVITY_CATEGORIES,validateCompletedActivity,activitySummary,paginateAc
 import {CRM_AREAS,crmAreaHref} from '../lib/crm-navigation.mjs';
 const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
-test('minhas atividades has dedicated navigation within one CRM',()=>{
- assert.deepEqual(CRM_AREAS.map(a=>a.label),['Visão geral','Tarefas','Clientes','Processos','Gerador de processos','Leads','Superagente','Audiências','Veredito','Finalizados','Instituições','Minhas atividades','Relatórios','Configurações']);
- assert.equal(crmAreaHref('Minhas atividades'),'/minhas-atividades');
+test('new judicial areas share the original CRM shell',()=>{
+ assert.deepEqual(CRM_AREAS.map(a=>a.label),['Painel jurídico','Clientes','Processos','Prazos','Audiências','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Configurações']);
+ assert.equal(crmAreaHref('Mini Agentes'),'/agentes');
  const shell=file('components/crm-shell.jsx');
  assert.match(shell,/projectw1sc-wordmark\.svg/);
  assert.match(shell,/CRM_AREAS/);
@@ -43,7 +43,8 @@ test('visual references remain a functioning UI not a static screenshot',()=>{
  assert.match(ui,/CrmShell/);
  assert.match(ui,/Registrar atividade/);
  const main=file('app/page.jsx');
- assert.match(main,/<ReferencePages/);
+ assert.match(main,/OfficeConsole/);
+ assert.match(file('components/office-console.jsx'),/office_clients/);
  assert.match(file('components/reference-pages.jsx'),/reference-client-grid/);
 });
 test('Supabase completed activity storage enforces RLS and binds actor identity',()=>{
