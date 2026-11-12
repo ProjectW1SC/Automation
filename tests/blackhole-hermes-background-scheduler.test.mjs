@@ -21,7 +21,7 @@ test('fila automática prioriza retornos vencidos, ignora encerrados, CNJ invál
  assert.equal(rows[1].process_number,'1001218-36.2026.5.02.0043');
 });
 test('DataJud só armazena o CNJ exato e distingue retorno válido sem processo',()=>{
- assert.equal(resolveCourtAlias(cnj),'tjsp');
+ assert.equal(resolveCourtAlias(cnj),'trt2');
  const payload={hits:{hits:[
   {_source:{numeroProcesso:other.replace(/\D/g,''),movimentos:[{nome:'Não pertence ao CNJ consultado'}]}},
   {_source:{numeroProcesso:cnj.replace(/\D/g,''),tribunal:'TJSP',movimentos:[{codigo:1,nome:'Distribuído',dataHora:'2026-11-10T12:00:00Z'}]}}

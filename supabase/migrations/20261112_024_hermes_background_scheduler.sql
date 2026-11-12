@@ -20,7 +20,8 @@ create table if not exists public.office_source_cooldowns(
 );
 alter table public.office_source_cooldowns enable row level security;
 revoke all on public.office_source_cooldowns from public,anon;
-grant select on public.office_source_cooldowns to authenticated,service_role;
+grant select on public.office_source_cooldowns to authenticated;
+grant all on public.office_source_cooldowns to service_role;
 drop policy if exists office_source_cooldowns_read on public.office_source_cooldowns;
 create policy office_source_cooldowns_read on public.office_source_cooldowns
  for select to authenticated using (public.office_has_access());
@@ -33,6 +34,13 @@ create table if not exists public.office_cron_guard(
 alter table public.office_cron_guard enable row level security;
 revoke all on public.office_cron_guard from public,anon,authenticated;
 grant select on public.office_cron_guard to service_role;
+grant all on public.office_scan_runs to service_role;
+grant all on public.crm_judicial_snapshots to service_role;
+grant all on public.office_agent_runs to service_role;
+grant all on public.office_official_backoff to service_role;
+grant select on public.office_cases to service_role;
+grant select on public.crm_processes to service_role;
+
 
 create or replace function public.record_office_source_cooldown(p_source text,p_status integer)
 returns void language plpgsql security definer set search_path=''

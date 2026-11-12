@@ -134,10 +134,11 @@ function Scanner({db,session}){
    <div className="inf-stat"><label>CNJs disponíveis</label><strong>{cases.length}</strong></div>
    <div className="inf-stat"><label>Processos com histórico de varredura</label><strong>{perNumber.size}</strong></div>
    <div className="inf-stat"><label>Verificados na sessão</label><strong>{progress.done}</strong></div>
+   <div className="inf-stat"><label>Execuções automáticas do servidor</label><strong>{history.filter(x=>x.trigger_mode==='scheduled').length}</strong></div>
    <div className="inf-stat"><label>Restantes nesta execução</label><strong>{Math.max(0,progress.total-progress.done)}</strong></div>
   </div>
   <section className="inf-panel"><h2><ScanSearch size={17}/> Varredura de carteira</h2>
-   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa. Uma fonte nunca substitui a confirmação da outra.</p>
+   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa global. O Hermes agendado no Supabase trabalha em segundo plano em micro-lotes, mesmo com esta tela fechada. Uma fonte nunca substitui a confirmação da outra.</p>
    <div className="office-action-row blackhole-scanner-controls">
     <input className="inf-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Filtrar CNJ, tribunal ou caso" aria-label="Filtrar processos"/>
     <select aria-label="Tamanho do lote" value={scanBatch} onChange={e=>setScanBatch(e.target.value)}>
@@ -182,7 +183,7 @@ function Scanner({db,session}){
    <button className="inf-btn" onClick={read} disabled={busy}>Atualizar registros</button></div>
    {!history.length?<div className="inf-empty">Não há varreduras registradas. Escolha Verificar lote para consultar os primeiros CNJs.</div>:
    <div className="office-records">{history.slice(0,70).map(r=><article key={r.id} className="office-record">
-    <div className="office-action-row"><strong>{r.process_number}</strong><small>{fmtDate(r.checked_at)} · {r.trigger_mode==='foreground'?'Enquanto aba aberta':'Manual'}</small></div>
+    <div className="office-action-row"><strong>{r.process_number}</strong><small>{fmtDate(r.checked_at)} · {r.trigger_mode==='scheduled'?'Agendado pelo servidor':r.trigger_mode==='foreground'?'Enquanto aba aberta':'Manual'}</small></div>
     <p>DataJud: {label[r.source_status?.datajud?.status]||'—'} · DJEN: {label[r.source_status?.djen?.status]||'—'}</p>
     <div className="office-action-row">
      {(r.review?.hearings||[]).slice(0,2).map((h,i)=><span className="inf-badge" key={'h'+i}><CalendarDays size={12}/> {h.date} {h.time||''} · a confirmar</span>)}
