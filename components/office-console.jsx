@@ -226,7 +226,10 @@ function OfficeUI({area,db,session}){
       </div></article>)}
      {!cases.length&&<div className="office-list-empty">Cadastre os processos do escritório. O gerador DJEN também pode identificar candidatos para revisão.</div>}
     </div>
-    {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong><p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
+    {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
+     {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
+     {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
+     <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
    </section></>}
   {['deadlines','audiencias'].includes(area)&&<><div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>

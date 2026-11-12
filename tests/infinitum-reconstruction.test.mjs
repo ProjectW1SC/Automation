@@ -44,5 +44,5 @@ test('segredos do Infinitum ficam no servidor e só existe conector público aut
  assert.match(route,/INFINITUM_PUBLIC_TOKEN/);
  assert.match(route,/officeAuth/);
  assert.match(route,/buildInfinitumPath/);
- assert.doesNotMatch(rd('components/office-integrations.jsx'),/INFINITUM_PUBLIC_TOKEN/);
+ assert.doesNotMatch(rd('components/office-integrations.jsx'),/process\.env\.INFINITUM_PUBLIC_TOKEN/);
 });

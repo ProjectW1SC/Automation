@@ -10,7 +10,7 @@ test('Kanban jurídico persiste etapas sob RLS e não publica dados anônimos',(
 test('interface faz movimentação real no banco; não simula sucesso',()=>{
  const ui=read('components/office-kanban.jsx');
  assert.match(ui,/from\('office_workflow_cards'\)/);
- assert.match(ui,/\.update\(\{stage:/);
+ assert.match(ui,/\.update\(\{stage(?:,|:)/);
  assert.match(ui,/dragstart|onDragStart/i);
  assert.match(ui,/error/);
 });
