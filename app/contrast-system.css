@@ -503,3 +503,9 @@ html[data-crm-theme] .w1-auth-screen .office-forgot{color:#334155!important}
 html[data-crm-theme] .w1-auth-screen .office-password-field button{color:#475569!important}
 html[data-crm-theme] .w1-auth-screen .office-remember{color:#4b5563!important}
 html[data-crm-theme] .w1-auth-screen .office-login-feedback{color:#991b1b!important}
+
+html[data-crm-theme] .w1-auth-benefits{display:grid;gap:12px;margin:30px 0 22px;max-width:430px}
+html[data-crm-theme] .w1-auth-benefits>div{display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:11px;align-items:center}
+html[data-crm-theme] .w1-auth-benefits>div>span{grid-row:span 2;display:grid;place-items:center;width:36px;height:36px;border:1px solid #ffffff3a;border-radius:10px;background:#ffffff12;color:#fff}
+html[data-crm-theme] .w1-auth-benefits strong{font-size:11px;color:#fff;font-weight:750}
+html[data-crm-theme] .w1-auth-benefits small{font-size:9px;color:#e0e7f0;line-height:1.4;margin-top:2px}

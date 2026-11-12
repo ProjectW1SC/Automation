@@ -31,7 +31,7 @@ function Body({db}){
   if(requests[2].status==='fulfilled'&&requests[2].value?.ok)setCourts(getItems(requests[2].value));
  },[db]);
  useEffect(()=>{load().catch(()=>{})},[load]);
- const status=k=>k==='ai'?(ai.configured?'Chave de IA cadastrada':'Motor local disponível'):k==='web'?'Uso manual gratuito':'Disponível sem API paga';
+ const status=k=>k==='ai'?(ai.configured?'Chave de IA cadastrada':'Motor local disponível'):k==='web'?(wa.configured?'Worker QR configurado':'Aguardando worker QR'):'Disponível sem API paga';
  function createEvent(e){
   e.preventDefault();
   try{

@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {ArrowRight,ShieldCheck} from 'lucide-react';
+import {ArrowRight,ShieldCheck,Workflow,CalendarDays,MessageSquare} from 'lucide-react';
 
 // Reconstrução independente da composição enviada: card preto marmorizado + formulário branco.
 // A identidade, marcas e permissões continuam próprias do ProjectW1SC.
@@ -11,6 +11,11 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
     <div className="w1-auth-hero-top">
      <span className="w1-auth-hero-kicker">GESTÃO INTELIGENTE</span>
      <h2>Entre no horizonte<br/><em>da inteligência jurídica.</em></h2>
+     <div className="w1-auth-benefits">
+      <div><span><Workflow size={17}/></span><strong>Carteira organizada</strong><small>Clientes, processos e tarefas em um só fluxo.</small></div>
+      <div><span><CalendarDays size={17}/></span><strong>Agenda operacional</strong><small>Prazos, audiências e retornos em visão única.</small></div>
+      <div><span><MessageSquare size={17}/></span><strong>Atendimento integrado</strong><small>Conversas e histórico ligados ao cadastro.</small></div>
+     </div>
     </div>
     <div className="w1-auth-hero-footer">
      <p>Tudo em uma só plataforma</p>
