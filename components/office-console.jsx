@@ -40,6 +40,9 @@ function OfficeUI({area,db,session}){
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [webPhone,setWebPhone]=useState(''),[webText,setWebText]=useState('');
+ const [waQr,setWaQr]=useState({configured:false,status:'offline',connected:false,qr:null});
+ const [waQrBusy,setWaQrBusy]=useState(false),[waQrNotice,setWaQrNotice]=useState('');
+
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const [agentSearch,setAgentSearch]=useState(''),[agentFilter,setAgentFilter]=useState('todos');
  const need=LOADED[area]||LOADED.dashboard;
@@ -171,6 +174,58 @@ function OfficeUI({area,db,session}){
   }).catch(()=>{if(active)setWhatsappStatus({configured:false})});
   return()=>{active=false};
  },[area,db]);
+
+ const waAuthHeaders=async()=>{
+  const {data:{session:s}}=await db.auth.getSession();
+  if(!s?.access_token)throw Error('Sua sessão expirou.');
+  return {Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'};
+ };
+ const refreshWaQr=useCallback(async()=>{
+  if(area!=='whatsapp')return;
+  const {data:{session:s}}=await db.auth.getSession();
+  if(!s?.access_token)return;
+  try{
+   const r=await fetch('/api/office/wa-qr',{cache:'no-store',headers:{Authorization:'Bearer '+s.access_token}});
+   const p=await r.json();
+   if(p?.ok)setWaQr({configured:true,status:p.status,connected:p.connected===true,qr:p.qr||null,phone:p.phone||null,error:p.error||''});
+   else setWaQr(x=>({...x,configured:false,connected:false,qr:null,error:p.error||'Worker não disponível'}));
+  }catch{setWaQr(x=>({...x,configured:false,connected:false,qr:null,error:'Conexão WhatsApp QR indisponível'}))}
+ },[area,db]);
+ useEffect(()=>{
+  if(area!=='whatsapp')return;
+  let active=true;
+  refreshWaQr().catch(()=>{});
+  const timer=setInterval(()=>{if(active&&document.visibilityState==='visible')refreshWaQr().catch(()=>{})},9000);
+  return()=>{active=false;clearInterval(timer)};
+ },[area,refreshWaQr]);
+ async function connectWaQr(){
+  if(waQrBusy)return;setWaQrBusy(true);setWaQrNotice('');
+  try{
+   const r=await fetch('/api/office/wa-qr',{method:'POST',headers:await waAuthHeaders(),body:JSON.stringify({action:'connect'})});
+   const p=await r.json();if(!p.ok)throw Error(p.error||'Não foi possível iniciar QR');
+   setWaQr(x=>({...x,configured:true,status:p.status||'connecting',connected:p.connected===true,qr:p.qr||null,error:''}));
+   setWaQrNotice('Conexão solicitada. Se o QR estiver disponível, abra WhatsApp no celular → Aparelhos conectados e escaneie.');
+   await refreshWaQr();
+  }catch(e){setWaQrNotice('Conexão QR indisponível: '+e.message)}
+  finally{setWaQrBusy(false)}
+ }
+ async function sendWaQr(e){
+  e.preventDefault();
+  if(!waQr.connected||waQrBusy)return;
+  const message=String(webText||'').trim();
+  if(!message)return setWaQrNotice('Digite a mensagem a enviar.');
+  const confirmation=window.confirm('Enviar esta mensagem pelo WhatsApp conectado para o telefone informado? Confirme destinatário e conteúdo. O aceite não comprova entrega.');
+  if(!confirmation)return;
+  setWaQrBusy(true);setWaQrNotice('');
+  try{
+   const r=await fetch('/api/office/wa-qr',{method:'POST',headers:await waAuthHeaders(),
+    body:JSON.stringify({action:'send',phone:webPhone,text:message,approved:true})});
+   const p=await r.json();if(!p.ok)throw Error(p.error||'Provedor não aceitou mensagem');
+   setWaQrNotice(p.notice||'Solicitação aceita pelo dispositivo. Entrega não confirmada.');
+   setWebText('');
+  }catch(err){setWaQrNotice('Envio não confirmado: '+err.message+' Não reenvie sem verificar no aparelho para evitar duplicidade.')}
+  finally{setWaQrBusy(false)}
+ }
  async function sendWhatsApp(e){e.preventDefault();if(!selectedPhone||!reply.trim())return;
   setBusy(true);setNotice('');
   try{
@@ -299,7 +354,35 @@ function OfficeUI({area,db,session}){
      <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
     {!documents.length&&<div className="office-list-empty">Nenhuma peça cadastrada.</div>}</div></section>
   </>}
-  {area==='whatsapp'&&<><section className="inf-panel" aria-label="WhatsApp Web gratuito">
+  {area==='whatsapp'&&<><section className="inf-panel blackhole-wa-qr-panel" aria-label="WhatsApp QR Baileys">
+    <div className="office-toolbar"><div><h2>Conectar WhatsApp pelo QR Code</h2>
+      <p>BLACKHOLE WA.Auto (Baileys). Usa aparelho vinculado e servidor próprio. O serviço é não oficial e pode sofrer restrições do WhatsApp.</p></div>
+     <span className={'inf-badge '+(waQr.connected?'configured':'pending')}>{waQr.connected?'Conectado · '+(waQr.phone||''):waQr.status==='qr'?'QR disponível':waQr.status==='connecting'?'Conectando':waQr.configured?'Desconectado':'Worker indisponível'}</span>
+    </div>
+    <div className="blackhole-wa-qr-body">
+     <div className="blackhole-wa-qr-actions">
+      <button className="inf-btn primary" type="button" disabled={waQrBusy||waQr.connected} onClick={connectWaQr}>{waQrBusy?'Conectando...':'Conectar / gerar QR Code'}</button>
+      <button className="inf-btn" type="button" disabled={waQrBusy} onClick={()=>refreshWaQr()}>Atualizar QR e estado</button>
+      <p>{waQr.connected?'Seu aparelho confirmou o vínculo. Você pode enviar mensagens aprovadas pelo operador.':
+       waQr.status==='qr'?'No WhatsApp do telefone abra Aparelhos conectados → Conectar um aparelho e escaneie o QR.':
+       'O código real aparecerá aqui após o servidor iniciar a sessão. Não existe QR falso ou simulado.'}</p>
+      {waQr.error&&<p className="inf-note">{waQr.error}</p>}
+      {waQrNotice&&<p className="inf-note" role="status">{waQrNotice}</p>}
+     </div>
+     {waQr.qr&&/^data:image\/png;base64,/.test(waQr.qr)&&!waQr.connected&&<div className="blackhole-wa-qr-image">
+       <img src={waQr.qr} alt="QR Code real de vinculação do WhatsApp. Escaneie com o telefone." width="240" height="240"/>
+       <small>Este QR é temporário. Não compartilhe a imagem.</small>
+     </div>}
+    </div>
+    {waQr.connected&&<form onSubmit={sendWaQr} className="office-form-col blackhole-wa-qr-send">
+     <div className="inf-fields">
+      <label>Telefone destinatário (DDD)<input type="tel" required value={webPhone} onChange={e=>setWebPhone(e.target.value)} placeholder="(11) 99999-1234"/></label>
+      <label>Mensagem revisada<textarea required maxLength={1000} rows={3} value={webText} onChange={e=>setWebText(e.target.value)}/></label>
+     </div>
+     <button className="inf-btn primary" type="submit" disabled={waQrBusy||!webPhone.trim()||!webText.trim()}>Revisar e enviar pelo WhatsApp conectado</button>
+     <small>O botão registra somente a confirmação de aceite pelo dispositivo. Entrega e leitura não são presumidas.</small>
+    </form>}
+   </section><section className="inf-panel" aria-label="WhatsApp Web gratuito">
     <h2>WhatsApp Web · atendimento sem API oficial</h2>
     <p>Abra uma conversa com seu aparelho já vinculado. Você confirma o destinatário e clica em Enviar no próprio WhatsApp; abrir a conversa não registra nem confirma atendimento.</p>
     <form className="office-form-col" onSubmit={e=>{e.preventDefault();try{
@@ -318,7 +401,7 @@ function OfficeUI({area,db,session}){
    </section><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
    <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'O envio e recebimento automáticos por QR dependem de um serviço persistente Baileys/WA.Auto vinculado. Enquanto isso, o WhatsApp Web manual acima funciona sem API.'} O agente apenas prepara rascunhos.</Source>
    <div className="office-panel-grid"><section className="inf-panel"><h2>Conversas recebidas</h2><div className="office-records">{threads.map(m=><button key={m.phone} type="button" className="office-record" style={{textAlign:'left',cursor:'pointer'}} onClick={()=>{setSelectedPhone(m.phone);setReply('')}}><strong>{m.display_name||m.phone}</strong><p>{m.phone} · {dateLabel(m.received_at)}</p><small>{safeText(m.body,130)}</small></button>)}
-    {!threads.length&&<div className="office-list-empty">Nenhuma mensagem recebida pelo webhook oficial.</div>}</div></section>
+    {!threads.length&&<div className="office-list-empty">Nenhuma mensagem recebida pelo WhatsApp ou webhook autorizado.</div>}</div></section>
     <section className="inf-panel"><h2>Atendimento {selectedPhone||''}</h2>{selectedPhone?<><div className="office-whatsapp-messages">{currentThread.map(m=><div key={m.id} className={'office-bubble '+m.direction}><small className="office-hint">{m.direction==='inbound'?'Cliente':'Escritório'} · {dateLabel(m.received_at)}</small><div>{m.body}</div></div>)}</div>
       <form onSubmit={sendWhatsApp} className="office-form-col" style={{marginTop:15}}><label>Resposta revisada pelo operador<textarea value={reply} maxLength={1000} onChange={e=>setReply(e.target.value)}/></label>
        <div className="office-action-row"><button type="button" className="inf-btn" onClick={()=>setReply(buildWhatsAppSuggestion(lastInbound||{}))}>Mini Agent: sugerir resposta</button>
