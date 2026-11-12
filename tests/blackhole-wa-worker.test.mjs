@@ -6,7 +6,7 @@ test('worker Baileys tem sintaxe válida, QR verdadeiro, cofre criptografado e n
  const s=file('workers/blackhole-wa/server.mjs');
  assert.match(s,/useMultiFileAuthState/);assert.match(s,/QRCode\.toDataURL/);
  assert.match(s,/createCipheriv\('aes-256-gcm'/);assert.match(s,/BLACKHOLE_WA_VAULT_URL/);
- assert.match(s,/approved!==true/);assert.match(s,/messageId/);
+ assert.match(s,/api\\/integrations\\/lexispredict\\/send/);assert.match(s,/messageId/);
 });
 test('cofre Supabase não permite leitura de sessão por clientes autenticados',()=>{
  const sql=file('supabase/migrations/20261112_028_blackhole_wa_bridge.sql');

@@ -25,6 +25,8 @@ await mkdir(sessionDir,{recursive:true});
 let current=null,connecting=null,ready=false,status='offline',qrData='',phone='',ownerId='',error='',lastSend=0,restored=false;
 let flushTimer=null,flushing=false,restartTimer=null,backoff=0;
 const recentIds=new Set();
+const recentMessages=[];
+function rememberMessage(row){recentMessages.push(row);if(recentMessages.length>1200)recentMessages.splice(0,recentMessages.length-1200)}
 const DDD=/^55\d{10,11}$/;
 const logger=pino({level:'silent'});
 function reply(res,statusCode,body){
@@ -116,6 +118,7 @@ async function inbound(raw){
  const recipient=digits(jid),body=bodyOf(raw.message),id=String(raw.key?.id||'');
  if(!recipient||!body||!id||recentIds.has(id))return;
  recentIds.add(id);if(recentIds.size>500)recentIds.delete(recentIds.values().next().value);
+ rememberMessage({jid,phone:recipient,body,direction:'inbound',timestamp:new Date().toISOString(),id,name:String(raw.pushName||'').slice(0,100)});
  try{await vault('POST',{op:'inbound',owner_id:ownerId,phone:recipient,provider_id:id,body})}
  catch{recentIds.delete(id);error='Falha ao registrar recebimento no CRM.'}
 }
@@ -158,9 +161,67 @@ async function readBody(req){
 }
 const server=http.createServer(async(req,res)=>{
  try{
-  const route=new URL(req.url||'/',"http://localhost").pathname;
-  if(route==='/health'&&req.method==='GET')return reply(res,200,{ok:true,service:'BLACKHOLE QR',healthy:true});
+  const requestUrl=new URL(req.url||'/',"http://localhost"),route=requestUrl.pathname;
+  if(route==='/health'&&req.method==='GET')return reply(res,200,{ok:true,service:'WA.Auto compatible · BLACKHOLE',healthy:true});
   if(!authorized(req))return reply(res,401,{ok:false,error:'Não autorizado'});
+  const prefix='/api/integrations/lexispredict/';
+  if(route.startsWith(prefix)){
+   const action=route.slice(prefix.length),actor=String(req.headers['x-lexis-user-id']||'');
+   if(!/^[0-9a-f-]{36}$/i.test(actor))return reply(res,403,{ok:false,error:'Identidade do CRM inválida'});
+   await restore();
+   if(ownerId&&ownerId!==actor)return reply(res,403,{ok:false,error:'WhatsApp já vinculado a outro operador'});
+   if(!ownerId){ownerId=actor;scheduleFlush()}
+   if(action==='status'&&req.method==='GET')return reply(res,200,{ok:true,connection:{status,qr:status==='qr'?qrData:null,phone:ready?phone:null,error:error||null},memory:{recentMessages:recentMessages.length}});
+   if(action==='connect'&&req.method==='POST'){
+    void connect();return reply(res,202,{ok:true,connection:{status,qr:status==='qr'?qrData:null}});
+   }
+   if(action==='chats'&&req.method==='GET'){
+    const q=String(requestUrl.searchParams.get('q')||'').toLocaleLowerCase('pt-BR');
+    const limit=Math.min(Math.max(Number(requestUrl.searchParams.get('limit'))||80,1),100);
+    const groups=requestUrl.searchParams.get('onlyGroups')==='1',map=new Map();
+    for(const item of [...recentMessages].reverse()){
+     if(groups&&!item.jid.endsWith('@g.us'))continue;
+     const key=item.jid;if(!key)continue;
+     const old=map.get(key)||{jid:key,name:item.name||item.phone||key,lastMessage:item.body||'',timestamp:item.timestamp||null,unreadCount:0};
+     if(!old.lastMessage)old.lastMessage=item.body||'';
+     if(!old.name||old.name===key)old.name=item.name||item.phone||key;
+     map.set(key,old);
+    }
+    const chats=[...map.values()].filter(x=>(x.name+' '+x.jid+' '+x.lastMessage).toLocaleLowerCase('pt-BR').includes(q)).slice(0,limit);
+    return reply(res,200,{ok:true,chats});
+   }
+   if(action==='messages'&&req.method==='GET'){
+    const jid=String(requestUrl.searchParams.get('jid')||'');
+    if(!/@(?:s\.whatsapp\.net|g\.us|lid|c\.us)$/.test(jid))return reply(res,400,{ok:false,error:'Conversa inválida'});
+    const limit=Math.min(Math.max(Number(requestUrl.searchParams.get('limit'))||80,1),100);
+    return reply(res,200,{ok:true,messages:recentMessages.filter(x=>x.jid===jid).slice(-limit)});
+   }
+   if(action==='pair'&&req.method==='POST'){
+    const b=await readBody(req),pairPhone=String(b.phone||'').replace(/\D/g,'');
+    if(!/^\d{10,15}$/.test(pairPhone))return reply(res,400,{ok:false,error:'Telefone inválido para pareamento'});
+    if(!ready||!current||typeof current.requestPairingCode!=='function')return reply(res,503,{ok:false,error:'Conecte o WhatsApp e tente o pareamento novamente'});
+    const pairingCode=await current.requestPairingCode(pairPhone);
+    return reply(res,200,{ok:true,pairingCode,connection:{status}});
+   }
+   if(action==='logout'&&req.method==='POST'){
+    if(current)await current.logout();
+    current=null;ready=false;qrData='';status='logged_out';error='Sessão encerrada. Será necessário conectar novamente.';
+    return reply(res,200,{ok:true,connection:{status}});
+   }
+   if(action==='send'&&req.method==='POST'){
+    const b=await readBody(req),to=String(b.to||'').trim(),message=String(b.message||'').trim();
+    const target=to.endsWith('@g.us')?to:(digits(to).length>=10?digits(to)+'@s.whatsapp.net':'');
+    if(!target||!message||message.length>3000)return reply(res,400,{ok:false,error:'Destino ou mensagem inválidos'});
+    if(!ready||!current)return reply(res,503,{ok:false,error:'WhatsApp QR não conectado'});
+    if(Date.now()-lastSend<3500)return reply(res,429,{ok:false,error:'Aguarde antes de outro envio'});
+    lastSend=Date.now();
+    const sent=await current.sendMessage(target,{text:message}),messageId=String(sent?.key?.id||'');
+    if(!messageId)return reply(res,502,{ok:false,error:'Provedor não confirmou aceite da mensagem'});
+    rememberMessage({jid:target,phone:digits(target),body:message,direction:'outbound',timestamp:new Date().toISOString(),id:messageId});
+    return reply(res,200,{ok:true,messageId});
+   }
+   return reply(res,404,{ok:false,error:'Ação WA.Auto não permitida'});
+  }
   if(route==='/api/status'&&req.method==='GET')return reply(res,200,{ok:true,status,connected:ready,qr:status==='qr'?qrData:null,phone:ready?phone:null,owner_id:ownerId,error:error||null,provider:'Baileys (não oficial)'});
   if(route==='/api/connect'&&req.method==='POST'){
    const b=await readBody(req),requested=String(b.owner_id||'');
@@ -169,19 +230,6 @@ const server=http.createServer(async(req,res)=>{
    if(ownerId&&ownerId!==requested)return reply(res,403,{ok:false,error:'WhatsApp QR já vinculado a outro operador. Administração necessária.'});
    if(!ownerId){ownerId=requested;scheduleFlush()}
    void connect();return reply(res,202,{ok:true,status,connected:ready,qr:status==='qr'?qrData:null});
-  }
-  if(route==='/api/send'&&req.method==='POST'){
-   const b=await readBody(req),to=digits(String(b.phone||'')+'@s.whatsapp.net'),message=String(b.text||'').trim();
-   if(b.approved!==true)return reply(res,403,{ok:false,error:'Revisão manual obrigatória'});
-   if(!ownerId||b.owner_id!==ownerId)return reply(res,403,{ok:false,error:'Aparelho vinculado a outro operador'});
-   if(!to||!message||message.length>1000)return reply(res,400,{ok:false,error:'Destino ou conteúdo inválido'});
-   if(!ready||!current)return reply(res,503,{ok:false,error:'WhatsApp QR não conectado'});
-   if(Date.now()-lastSend<3500)return reply(res,429,{ok:false,error:'Aguarde antes de outro envio'});
-   lastSend=Date.now();
-   const delivered=await current.sendMessage(to+'@s.whatsapp.net',{text:message});
-   const messageId=String(delivered?.key?.id||'');
-   if(!messageId)return reply(res,502,{ok:false,error:'Provedor não confirmou aceite da mensagem'});
-   return reply(res,200,{ok:true,accepted:true,delivered:false,messageId,provider:'Baileys'});
   }
   return reply(res,404,{ok:false,error:'Rota inexistente'});
  }catch(e){return reply(res,502,{ok:false,error:String(e?.message||e).slice(0,150)})}
