@@ -15,12 +15,12 @@ test('apenas números E164 plausíveis; envio requer confirmação explícita',(
  assert.equal(metaReplyIsApproved({text:'Olá'}),false);
  assert.equal(canReplyWhatsApp('2026-11-10T09:00:00Z',new Date('2026-11-12T09:00:00Z')),false);
 });
-test('rotas não expõem serviço privado no navegador e não enviam antes da aprovação',()=>{
+test('envio do CRM agora usa WA.Auto com sessão segura e sem Meta',()=>{
  const hook=read('app/api/office/whatsapp/webhook/route.js');
  const send=read('app/api/office/whatsapp/send/route.js');
- assert.match(hook,/verifyMetaBody/);
- assert.match(hook,/SUPABASE_SERVICE_ROLE_KEY/);
- assert.match(send,/metaReplyIsApproved/);
- assert.match(send,/canReplyWhatsApp/);
- assert.doesNotMatch(read('components/office-console.jsx'),/SUPABASE_SERVICE_ROLE_KEY/);
+ assert.match(hook,/410/);
+ assert.match(send,/waAutoOperation/);
+ assert.match(send,/officeAuth/);
+ assert.doesNotMatch(send,/graph.facebook.com|WHATSAPP_ACCESS_TOKEN/);
+ assert.doesNotMatch(read('components/wa-auto-inbox.jsx'),/process\\.env\\.WA_AUTO_TOKEN/);
 });
