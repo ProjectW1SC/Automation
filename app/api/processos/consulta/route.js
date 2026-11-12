@@ -1,3 +1,4 @@
+import {snapshotIsFresh,snapshotQueryKey,shrinkOfficialResult} from '../../../../lib/judicial-triage.mjs';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
@@ -73,8 +74,23 @@ export async function GET(request){
   if(registry.error||activities.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
   if(!registry.data?.length&&!activities.data?.length)
    return json({ok:false,error:'Salve o número CNJ em Processos ou em Minhas atividades antes da consulta.'},403);
+  const queryKey=snapshotQueryKey(source,params);
+  const {data:cached}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
+   .eq('actor_id',user.id).eq('process_number',number).eq('source',source).eq('query_key',queryKey).maybeSingle();
+  if(params.get('forcar')!=='1'&&snapshotIsFresh(cached,source)){
+   return json({...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
+    ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'});
+  }
   const result=source==='datajud'?await datajud(number):await djen(number,params);
-  return json(result);
+  // O armazenamento usa o JWT do próprio usuário e obedece ao RLS; erros de gravação
+  // jamais são tratados como uma consulta judicial confirmada.
+  const reduced=shrinkOfficialResult(result);
+  const {error:saveError}=await db.from('crm_judicial_snapshots').upsert({
+   actor_id:user.id,process_number:number,source,query_key:queryKey,
+   checked_at:result.checkedAt,found:!!result.found,payload:reduced
+  },{onConflict:'actor_id,process_number,source,query_key'});
+  return json({...result,snapshotSaved:!saveError,snapshotError:saveError?
+   'A consulta foi concluída, mas o histórico não pôde ser armazenado.':undefined});
  }catch(error){
   const message=error?.name==='TimeoutError'||error?.name==='AbortError'?
     'Consulta à fonte oficial excedeu o tempo limite. Tente novamente.':
