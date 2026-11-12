@@ -3,11 +3,12 @@ import {useCallback,useEffect,useState} from 'react';
 import {FileSearch,RefreshCw,Search,Plus,ExternalLink,ShieldCheck} from 'lucide-react';
 import {normalizeOfficeCNJ} from '../../lib/office-core.mjs';
 import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.mjs';
+import {PUBLIC_DATAJUD_COURTS} from '../../lib/blackhole-datajud-discovery.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const initialStart=()=>{const d=new Date();d.setDate(d.getDate()-14);return d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})};
 function Generator({db,session}){
- const [form,setForm]=useState({term:'busca e apreensão',court:'',start:initialStart(),end:now()});
+ const [form,setForm]=useState({term:'busca e apreensão',court:'',start:initialStart(),end:now(),page:1});
  const [sourceMode,setSourceMode]=useState('datajud');
  const [rows,setRows]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[status,setStatus]=useState('idle');
  const [manual,setManual]=useState({cnj:'',title:'',tribunal:''});
@@ -87,7 +88,8 @@ function Generator({db,session}){
    </div>
    <form onSubmit={consult}><div className="inf-fields">
      <label>Tipo ou expressão<input required minLength={4} maxLength={110} value={form.term} onChange={e=>setForm({...form,term:e.target.value})}/></label>
-     <label>Tribunal<select value={form.court} onChange={e=>setForm({...form,court:e.target.value})}><option value="">{sourceMode==='datajud'?'Selecione um tribunal':'Todos'}</option>{['TJSP','TJRJ','TJMG','TJPR','TJBA','TJRS','TJSC','TJPE','TRT2','TRT3','TRT4','TRF1','TRF2','TRF3','STJ','TST'].map(x=><option key={x}>{x}</option>)}</select></label>
+     <label>Tribunal<select value={form.court} onChange={e=>setForm({...form,court:e.target.value})}><option value="">{sourceMode==='datajud'?'Selecione um tribunal':'Todos'}</option>{PUBLIC_DATAJUD_COURTS.map(x=><option key={x}>{x}</option>)}</select></label>
+     <label>Página oficial<input type="number" min="1" max="25" step="1" value={form.page} onChange={e=>setForm({...form,page:Number(e.target.value)||1})}/></label>
      {sourceMode==='djen'&&<><label>Data inicial da publicação<input type="date" required value={form.start} onChange={e=>setForm({...form,start:e.target.value})}/></label>
      <label>Data final da publicação<input type="date" required value={form.end} onChange={e=>setForm({...form,end:e.target.value})}/></label></>}
     </div><div className="inf-row-end"><button className="inf-btn primary" type="submit" disabled={busy}><Search size={15}/> {busy?'Consultando...':'Buscar candidatos oficiais'}</button>

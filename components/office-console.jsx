@@ -300,7 +300,7 @@ function OfficeUI({area,db,session}){
      <small>{miniResult.notes.join(' ')}</small></div>}
    </div>
    <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><article className="office-agent-card" key={x.id}><span className="inf-badge">{x.mode}</span><strong style={{marginTop:9}}>{x.name}</strong><p>{x.role}</p>
-    <Link className="inf-btn" href={x.id==='mini'?'/agentes':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link></article>)}</div>
+    <Link className="inf-btn" href={x.id==='mini'?'/agentes':x.id==='hermes'?'/scanner':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link></article>)}</div>
    <section className="inf-panel" style={{marginTop:15}}><h2>Execuções registradas</h2>{runs.slice(0,15).map(r=><article className="office-record" key={r.id}><strong>{r.agent} · {r.task}</strong><small>{dateLabel(r.created_at)} · {r.status} · {r.external_actions} ações externas</small></article>)}
     {!runs.length&&<div className="office-list-empty">Ainda não há execuções registradas.</div>}</section>
   </>}
