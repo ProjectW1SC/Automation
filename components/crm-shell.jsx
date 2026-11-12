@@ -8,6 +8,17 @@ import {getClient} from '../lib/supabase-client';
 
 import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
+function preferredTheme(){
+ try{
+  const key='projectw1sc.crm-theme',migration='projectw1sc.prestige-v1';
+  let stored=window.localStorage.getItem(key);
+  if(window.localStorage.getItem(migration)!=='done'){
+   if(!stored||stored==='blackhole'){window.localStorage.setItem(key,'infinitum');stored='infinitum'}
+   window.localStorage.setItem(migration,'done');
+  }
+  return resolveTheme(stored||'infinitum');
+ }catch{return 'infinitum'}
+}
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
  'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Agenda':CalendarDays,'Peças e petições':FileText,
@@ -45,7 +56,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
    if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);
    previousPhotoUrl=photoUrl;previousBackgroundUrl=backgroundUrl;setAvatarUrl(photoUrl);
-   const savedTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum');
+   const savedTheme=preferredTheme();
    appearanceRef.current={colors:{},backgroundUrl:''};
    document.documentElement.dataset.crmTheme=savedTheme;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===savedTheme),{},'');

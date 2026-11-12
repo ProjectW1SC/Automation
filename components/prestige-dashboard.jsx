@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import Link from 'next/link';
-import {ArrowRight,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,Clock3,FileText,Gavel,Plus,Scale,Users} from 'lucide-react';
+import {ArrowRight,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,Clock3,FileText,Gavel,Plus,Scale,Users,RefreshCw} from 'lucide-react';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const fmt=v=>Number(v||0).toLocaleString('pt-BR');
 const day=x=>String(x||'').slice(0,10);
@@ -30,14 +30,14 @@ function Breakdown({cases}){
  let pos=0;const stops=counts.map((n,i)=>{const a=pos;pos+=sum?100*n/sum:0;return colors[i]+' '+a+'% '+pos+'%'});
  return <section className="pr-surface pr-breakdown"><PanelHeading caption="Distribuição por matéria">Processos por área</PanelHeading><div className="pr-breakdown-row"><div className="pr-donut" style={{background:sum?'conic-gradient('+stops.join(',')+')':'#e9e4dd'}}><div><strong>{fmt(sum)}</strong><small>processos</small></div></div><div className="pr-legend">{labels.map((l,i)=><div key={l}><i style={{background:colors[i]}}/><span>{l}</span><strong>{sum?Math.round(100*counts[i]/sum):0}%</strong></div>)}</div></div></section>;
 }
-export default function PrestigeDashboard({clients=[],cases=[],deadlines=[],mini,session}){
+export default function PrestigeDashboard({clients=[],cases=[],deadlines=[],mini,session,onRefresh}){
  const today=now();
  const active=cases.filter(x=>x.status!=='encerrado');
  const future=deadlines.filter(x=>x.status==='aberto'&&day(x.due_on)>=today).sort((a,b)=>day(a.due_on).localeCompare(day(b.due_on)));
  const upcoming=future.filter(x=>x.kind==='audiencia');
  const name=String(session?.user?.user_metadata?.display_name||session?.user?.user_metadata?.full_name||'').trim().split(' ')[0];
  const humanDate=new Date(today+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
- return <div className="pr-dashboard"><header className="pr-hero"><span>VISÃO EXECUTIVA · {humanDate}</span><h1>{name?'Bom dia, '+name+'.':'Seu escritório, em perspectiva.'}</h1><p>Uma visão clara da carteira, dos compromissos e das decisões que importam.</p><Link className="pr-main-button" href="/processos"><Plus size={17}/> Abrir processos</Link></header>
+ return <div className="pr-dashboard"><header className="pr-hero"><span>VISÃO EXECUTIVA · {humanDate}</span><h1>{name?'Bom dia, '+name+'.':'Seu escritório, em perspectiva.'}</h1><p>Uma visão clara da carteira, dos compromissos e das decisões que importam.</p><div className="pr-hero-actions"><button className="pr-refresh-button" type="button" onClick={onRefresh}><RefreshCw size={15}/> Atualizar</button><Link className="pr-main-button" href="/processos"><Plus size={17}/> Abrir processos</Link></div></header>
  <div className="pr-metrics">
  <Metric Icon={Scale} name="Processos ativos" value={active.length} href="/processos" help="Registros em andamento"/>
  <Metric Icon={Users} name="Clientes ativos" value={clients.filter(x=>x.status==='ativo').length} href="/clientes" help="Carteira jurídica"/>

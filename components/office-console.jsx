@@ -190,7 +190,7 @@ function OfficeUI({area,db,session}){
   setBusy(false);
   setNotice(error?'Triagem exibida, mas o log não foi salvo: '+error.message:'Mini Agent executou triagem somente leitura e registrou seu relatório.');
  }
- return <main className="inf-studio">
+ return <main className={'inf-studio '+(area==='dashboard'?'pr-dashboard-route':'')}>
   <header className="inf-heading"><div><small>BLACKHOLE · INTELIGÊNCIA JURÍDICA</small><h1>{titleMap[area]||'Painel jurídico'}</h1>
    <p>{area==='dashboard'?'Controle da carteira, prazos, audiências, atendimento e agentes sem dados inventados.': 'Área jurídica integrada aos dados privados do escritório e às fontes verificadas.'}</p></div>
    <div className="inf-actions"><button type="button" className="inf-btn" onClick={load} disabled={loading||busy}><RefreshCw size={15}/> Atualizar</button>
@@ -198,7 +198,7 @@ function OfficeUI({area,db,session}){
   </header>
   {notice&&<div className={'inf-note '+(/não |falha|recusou|erro|expirad|indisponível|bloqueou/i.test(notice)?'error':'')} role="status">{notice}</div>}
   {loading&&<div className="inf-note">Carregando registros autorizados...</div>}
-  {area==='dashboard'&&<PrestigeDashboard clients={clients} cases={cases} deadlines={deadlines} mini={mini} session={session}/>}
+  {area==='dashboard'&&<PrestigeDashboard clients={clients} cases={cases} deadlines={deadlines} mini={mini} session={session} onRefresh={load}/>}
   {area==='clients'&&<><div className="inf-grid"><Stat label="Total na carteira jurídica" value={clients.length} href="/clientes"/><Stat label="Ativos" value={clients.filter(x=>x.status==='ativo').length} href="/clientes"/><Stat label="Com processo" value={new Set(cases.filter(x=>x.client_id).map(x=>x.client_id)).size} href="/processos"/><Stat label="Retornos cadastrados" value={clients.filter(x=>x.next_return).length} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editClientId?'Editar cliente jurídico':'Cadastrar cliente jurídico'}</h2><form className="office-form-col" onSubmit={createClient}>
     <div className="inf-fields"><label>Nome completo<input required minLength={2} value={client.name} onChange={e=>setClient({...client,name:e.target.value})}/></label>

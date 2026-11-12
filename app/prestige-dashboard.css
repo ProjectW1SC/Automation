@@ -73,3 +73,10 @@ html[data-crm-theme="infinitum"] .pr-disclaimer{font-size:10px;color:#93897c;mar
 @media(max-width:1350px){html[data-crm-theme="infinitum"] .pr-upper-grid,html[data-crm-theme="infinitum"] .pr-lower-grid{grid-template-columns:1fr 1fr}html[data-crm-theme="infinitum"] .pr-processes,html[data-crm-theme="infinitum"] .pr-breakdown{grid-column:span 2}}
 @media(max-width:1050px){html[data-crm-theme="infinitum"] .pr-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){html[data-crm-theme="infinitum"] .pr-hero{min-height:190px}html[data-crm-theme="infinitum"] .pr-hero h1{font-size:30px!important}html[data-crm-theme="infinitum"] .pr-main-button{position:relative;right:auto;bottom:auto;width:max-content;margin-top:13px}html[data-crm-theme="infinitum"] .pr-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}html[data-crm-theme="infinitum"] .pr-upper-grid,html[data-crm-theme="infinitum"] .pr-lower-grid{grid-template-columns:1fr}html[data-crm-theme="infinitum"] .pr-processes,html[data-crm-theme="infinitum"] .pr-breakdown{grid-column:auto}html[data-crm-theme="infinitum"] .pr-surface{padding:15px}html[data-crm-theme="infinitum"] .pr-donut{height:115px;width:115px}html[data-crm-theme="infinitum"] .pr-donut>div{height:70px;width:70px}}
+
+html[data-crm-theme="infinitum"] .pr-dashboard-route>.inf-heading{display:none!important}
+html[data-crm-theme="infinitum"] .pr-hero-actions{position:absolute;right:24px;bottom:21px;z-index:2;display:flex;align-items:center;gap:8px}
+html[data-crm-theme="infinitum"] .pr-hero-actions .pr-main-button{position:static!important}
+html[data-crm-theme="infinitum"] .pr-refresh-button{display:inline-flex;align-items:center;gap:7px;border:1px solid #d9d0c4;color:#4e4236;background:#fff9;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:700}
+html[data-crm-theme="infinitum"] .pr-refresh-button:hover{background:#fff}
+@media(max-width:650px){html[data-crm-theme="infinitum"] .pr-hero-actions{position:relative;right:auto;bottom:auto;margin-top:15px;flex-wrap:wrap}}
