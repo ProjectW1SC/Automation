@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
 import PrestigeDashboard from './prestige-dashboard';
+import {PrestigeClients,PrestigeCases} from './prestige-office-lists';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
@@ -210,10 +211,8 @@ function OfficeUI({area,db,session}){
      <label style={{gridColumn:'1/-1'}}>Observações<textarea value={client.notes} onChange={e=>setClient({...client,notes:e.target.value})}/></label>
     </div><div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>{editClientId?"Salvar alterações":"Salvar cliente"}</button></div>
     </form></section>}
-   <section className="inf-panel"><h2>Carteira jurídica</h2><div className="inf-toolbar"><input className="inf-search" aria-label="Filtrar clientes" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Nome, telefone ou responsável"/></div>
-    <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>Cliente</th><th>Contato</th><th>Responsável</th><th>Processos</th><th>Próximo retorno</th><th>Situação</th><th>Ação</th></tr></thead><tbody>{clients.filter(x=>match([x.name,x.phone,x.responsible])).slice(0,300).map(x=><tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.email||x.phone||'—'}</td><td>{x.responsible||'—'}</td><td>{cases.filter(p=>p.client_id===x.id).length}</td><td>{dateLabel(x.next_return)}</td><td><span className="inf-badge">{x.status}</span></td><td><button type="button" className="inf-btn" onClick={()=>startEditClient(x)}>Editar</button></td></tr>)}</tbody></table></div>
-    {!clients.length&&<div className="inf-empty">Nenhum cliente jurídico cadastrado. A carteira anterior de quitações não foi importada.</div>}
-   </section></>}
+   <PrestigeClients clients={clients} cases={cases} query={query} setQuery={setQuery} edit={startEditClient}/>
+</>}
   {area==='cases'&&<><div className="inf-grid"><Stat label="Processos da carteira" value={cases.length} href="/processos"/><Stat label="Ativos" value={cases.filter(x=>x.status==='ativo').length} href="/processos"/><Stat label="Com número CNJ" value={cases.filter(x=>x.process_number).length} href="/processos"/><Stat label="Com revisão agendada" value={cases.filter(x=>x.next_review).length} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editCaseId?'Editar processo':'Cadastrar processo'}</h2><form onSubmit={createCase} className="office-form-col"><div className="inf-fields">
       <label>Assunto / identificação<input required minLength={3} value={caseForm.title} onChange={e=>setCaseForm({...caseForm,title:e.target.value})}/></label>
@@ -226,23 +225,13 @@ function OfficeUI({area,db,session}){
       <label>Próxima revisão<input type="date" value={caseForm.next_review} onChange={e=>setCaseForm({...caseForm,next_review:e.target.value})}/></label>
       <label style={{gridColumn:'1/-1'}}>Notas<textarea value={caseForm.notes} onChange={e=>setCaseForm({...caseForm,notes:e.target.value})}/></label>
     </div><div className="inf-row-end"><button disabled={busy} className="inf-btn primary">Salvar processo</button></div></form></section>}
-   <section className="inf-panel"><h2>Processos e consultas oficiais</h2><input className="inf-search" aria-label="Filtrar processos" placeholder="Buscar CNJ, matéria, advogado ou cliente" value={query} onChange={e=>setQuery(e.target.value)}/>
-    <div className="office-records" style={{marginTop:15}}>{cases.filter(x=>match([x.title,x.process_number,x.subject,x.lawyer,getClientName(x.client_id)])).slice(0,250).map(x=><article key={x.id} className="office-record">
-      <span className="inf-badge">{x.status}</span><strong>{x.title}</strong><p>{x.process_number||'Sem CNJ'} · {x.tribunal||'Tribunal não informado'}</p><small>{getClientName(x.client_id)} · {x.lawyer||'Sem advogado designado'}</small>
-      <div className="office-action-row"><button className="inf-btn" onClick={()=>startEditCase(x)}>Editar cadastro</button>
-       <button className="inf-btn primary" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'auto')}>Consultar oficiais (com fallback)</button>
-       <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'datajud')}>DataJud</button>
-       <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'djen')}>DJEN</button>
-       <Link className="inf-btn" href={'/pecas?case='+encodeURIComponent(x.id)}><FileText size={14}/> Criar petição</Link>
-      </div></article>)}
-     {!cases.length&&<div className="office-list-empty">Cadastre os processos do escritório. O gerador DJEN também pode identificar candidatos para revisão.</div>}
-    </div>
+   <PrestigeCases cases={cases} clients={clients} query={query} setQuery={setQuery} edit={startEditCase} court={courtSearch} consulting={consulting}/>
     {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
      {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
      {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
      <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
-   </section></>}
+</>}
   {['deadlines','audiencias'].includes(area)&&<>{area==='audiencias'&&<BlackholeOfficialHearings db={db}/>}<div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editDeadlineId?'Editar prazo ou audiência':'Novo prazo, audiência ou retorno'}</h2><form onSubmit={createDeadline}><div className="inf-fields">
      <label>Descrição<input required minLength={3} value={deadlineForm.title} onChange={e=>setDeadlineForm({...deadlineForm,title:e.target.value})}/></label>
