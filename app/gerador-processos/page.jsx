@@ -4,6 +4,7 @@ import {FileSearch,RefreshCw,Search,Plus,ExternalLink,ShieldCheck} from 'lucide-
 import {normalizeOfficeCNJ} from '../../lib/office-core.mjs';
 import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.mjs';
 import {PUBLIC_DATAJUD_COURTS} from '../../lib/blackhole-datajud-discovery.mjs';
+import {saveNamedCandidate} from '../../lib/office-candidate-save.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const initialStart=()=>{const d=new Date();d.setDate(d.getDate()-14);return d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})};
@@ -12,6 +13,7 @@ function Generator({db,session}){
  const [sourceMode,setSourceMode]=useState('datajud');
  const [rows,setRows]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[status,setStatus]=useState('idle');
  const [manual,setManual]=useState({cnj:'',title:'',tribunal:''});
+ const [personNames,setPersonNames]=useState({});
  const load=useCallback(async()=>{
   const r=await db.from('crm_process_candidates').select('*').order('created_at',{ascending:false}).limit(250);
   if(r.error)setNotice('Não foi possível carregar resultados anteriores: '+r.error.message);
@@ -81,14 +83,24 @@ function Generator({db,session}){
   finally{setBusy(false)}
  }
  async function add(row){
-  setBusy(true);
-  const source=row.source==='DataJud'?'DataJud':'DJEN';
-  const r=await db.from('office_cases').insert({owner_id:session.user.id,process_number:row.process_number,
-    title:source+' · '+String(row.headline||'Candidato processual').slice(0,180),tribunal:row.tribunal||null,
-    subject:row.query_term||null,status:'ativo',
-    notes:'Candidato identificado na fonte '+source+'; verificar vínculo, existência e situação processual antes de prosseguir.'});
-  setBusy(false);
-  setNotice(r.error?'Não foi possível cadastrar CNJ: '+r.error.message:'Processo '+row.process_number+' adicionado à carteira jurídica para validação.');
+  if(busy)return;setBusy(true);setStatus('running');setNotice('Salvando contato e processo com nome identificado...');
+  try{
+   const saved=await saveNamedCandidate(db,{row,ownerId:session.user.id,
+    enteredName:personNames[row.id]??''});
+   setStatus('ok');setNotice('Contato '+saved.name+' '+(saved.existing?'vinculado ao processo existente.':'e ficha processual criados.')+' Confira a identidade antes de qualquer comunicação.');
+  }catch(e){setStatus('error');setNotice('Cadastro não concluído: '+e.message)}
+  finally{setBusy(false)}
+ }
+ async function addVerifiedBatch(){
+  if(busy)return;setBusy(true);setStatus('running');let saved=0,errors=[];
+  const candidates=rows.filter(r=>r.person_name&&r.person_name_source==='DJEN_parte').slice(0,30);
+  for(const row of candidates){
+   try{await saveNamedCandidate(db,{row,ownerId:session.user.id,enteredName:personNames[row.id]||''});saved++}
+   catch(e){errors.push(row.process_number+': '+String(e.message||e).slice(0,110))}
+  }
+  setBusy(false);setStatus(errors.length?'error':'ok');
+  setNotice(saved+' processos vinculados a contatos com nome de parte informado pelo DJEN.'+
+   (errors.length?' · Não concluídos: '+errors.slice(0,3).join(' | '):'')+' · Nenhuma mensagem foi enviada.');
  }
  return <main className="inf-studio"><header className="inf-heading"><div>
   <small>BLACKHOLE / GERADOR DE PROCESSOS</small><h1>Gerador de processos</h1>
@@ -120,12 +132,12 @@ function Generator({db,session}){
    <div className="inf-row-end"><button className="inf-btn primary" disabled={busy} type="submit"><Plus size={14}/> Cadastrar CNJ manualmente</button></div></form>
   </section>
   {notice&&<p className={'inf-note '+(status==='error'?'error':'')} role="status">{notice}</p>}
-  <section className="inf-panel"><div className="inf-toolbar"><h2>Processos encontrados e registrados</h2><button className="inf-btn" onClick={load}><RefreshCw size={14}/> Atualizar</button></div>
+  <section className="inf-panel"><div className="inf-toolbar"><h2>Processos encontrados e registrados</h2><div className="office-action-row"><button className="inf-btn" disabled={busy||!rows.some(r=>r.person_name_source==='DJEN_parte')} onClick={addVerifiedBatch}>Cadastrar em lote partes identificadas (até 30)</button><button className="inf-btn" onClick={load}><RefreshCw size={14}/> Atualizar</button></div></div><p className="inf-note">O nome deve vir de campo oficial do DJEN ou ser preenchido e confirmado pelo operador. O DataJud público não traz nomes de partes. Salvar um contato não autoriza enviar mensagem.</p>
    {!rows.length?<div className="inf-empty">Ainda não existem candidatos registrados. Execute uma consulta oficial acima.</div>:
-   <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>CNJ</th><th>Tribunal</th><th>Data oficial (ajuizamento ou publicação)</th><th>Natureza</th><th>Evidência</th><th>Ação</th></tr></thead><tbody>{rows.map(row=>
+   <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>CNJ</th><th>Tribunal</th><th>Data oficial (ajuizamento ou publicação)</th><th>Natureza</th><th>Nome da pessoa / contato</th><th>Evidência</th><th>Ação</th></tr></thead><tbody>{rows.map(row=>
     <tr key={row.id}><td><strong>{row.process_number}</strong>{row.source_url&&<div><a href={row.source_url} target="_blank" rel="noreferrer">Publicação <ExternalLink size={11}/></a></div>}</td>
-    <td>{row.tribunal||'—'}</td><td>{row.official_date||'—'}</td><td><span className="inf-badge">{row.source||'Oficial'}</span> {row.headline||'Registro'}</td><td>{String(row.evidence||'').slice(0,190)||'Sem teor disponível'}</td>
-    <td><button className="inf-btn" disabled={busy} onClick={()=>add(row)}><Plus size={13}/> Salvar na carteira</button></td></tr>)}</tbody></table></div>}
+    <td>{row.tribunal||'—'}</td><td>{row.official_date||'—'}</td><td><span className="inf-badge">{row.source||'Oficial'}</span> {row.headline||'Registro'}</td><td><label className="generator-person-cell"><span>{row.person_name_source==='DJEN_parte'?'Parte identificada na fonte':row.person_name_source==='DJEN_destinatario'?'Destinatário · confira se é cliente':'Nome a confirmar'}</span><input aria-label={'Nome da pessoa do processo '+row.process_number} type="text" maxLength={180} placeholder="Nome completo da pessoa" value={personNames[row.id]??row.person_name??''} onChange={e=>setPersonNames(old=>({...old,[row.id]:e.target.value}))}/></label></td><td>{String(row.evidence||'').slice(0,190)||'Sem teor disponível'}</td>
+    <td><button className="inf-btn" disabled={busy||!String(personNames[row.id]??row.person_name??'').trim()} onClick={()=>add(row)}><Plus size={13}/> Salvar cliente + processo</button></td></tr>)}</tbody></table></div>}
   </section>
  </main>;
 }
