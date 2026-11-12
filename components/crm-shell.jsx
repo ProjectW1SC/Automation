@@ -13,7 +13,7 @@ const icons={
  'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Peças e petições':FileText,
  'WhatsApp':MessageSquare,'Leads':Target,'Gerador de processos':Radar,
  'Superagente':Bot,'Mini Agentes':UserRoundCheck,'Relatórios':BarChart3,
- 'Integrações':PlugZap,'Configurações':Settings2
+ 'Integrações':PlugZap,'Guia visual':Palette,'Agenda':CalendarDays,'Configurações':Settings2
 };
 export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(false);

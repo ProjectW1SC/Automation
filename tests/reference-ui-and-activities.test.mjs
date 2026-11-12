@@ -6,7 +6,7 @@ import {CRM_AREAS,crmAreaHref} from '../lib/crm-navigation.mjs';
 const file=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('new judicial areas share the original CRM shell',()=>{
- assert.deepEqual(CRM_AREAS.map(a=>a.label),['Painel jurídico','Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Integrações','Configurações']);
+ assert.deepEqual(CRM_AREAS.map(a=>a.label),['Painel jurídico','Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Agenda','Audiências','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Integrações','Guia visual','Configurações']);
  assert.equal(crmAreaHref('Mini Agentes'),'/agentes');
  const shell=file('components/crm-shell.jsx');
  assert.match(shell,/blackhole-logo\.svg/);

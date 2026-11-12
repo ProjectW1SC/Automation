@@ -44,7 +44,7 @@ test('tema aparece no shell e nos estilos globais com opcao de movimento reduzid
  const shell=file('components/crm-shell.jsx');
  const css=file('app/crm-themes.css');
  const layout=file('app/layout.jsx');
- assert.match(shell,/BLACKHOLE fixo/);
+ assert.match(shell,/O tema escolhido permanece/);assert.match(shell,/crm-theme-picker/);
  assert.match(shell,/localStorage/);
  assert.match(shell,/crmTheme/);
  assert.match(layout,/crm-themes\.css/);
