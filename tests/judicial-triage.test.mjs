@@ -4,7 +4,7 @@ import {snapshotQueryKey,snapshotIsFresh,shrinkOfficialResult,hearingCandidates,
 const params=(q)=>new URLSearchParams(q);
 test('cache mantém DJEN por janela e evita dados de outra janela',()=>{
  assert.equal(snapshotQueryKey('datajud',params('inicio=2026-01-01')),'latest');
- assert.equal(snapshotQueryKey('djen',params('inicio=2026-10-01&fim=2026-11-12')),'2026-10-01:2026-11-12');
+ assert.equal(snapshotQueryKey('djen',params('inicio=2026-10-01&fim=2026-11-12')),'2026-10-01:2026-11-12:1');
  assert.equal(snapshotIsFresh({checked_at:'2026-11-12T12:00:00.000Z'},'djen',Date.parse('2026-11-12T12:14:00Z')),true);
  assert.equal(snapshotIsFresh({checked_at:'2026-11-12T12:00:00.000Z'},'djen',Date.parse('2026-11-12T12:16:00Z')),false);
 });
