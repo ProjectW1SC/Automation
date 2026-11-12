@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildDjenSearchURL,parseDjenCandidates} from '../../../lib/djen-generator.mjs';
+import {dedupeCandidateUpserts} from '../../../lib/blackhole-candidate-dedupe.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=35;
 const result=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 export async function POST(request){
@@ -25,7 +26,7 @@ export async function POST(request){
   const items=parseDjenCandidates(payload,String(input.term));
   let persisted=true,saveError='';
   if(items.length){
-   const insert=items.map(row=>({...row,owner_id:user.id}));
+   const insert=dedupeCandidateUpserts(items.map(row=>({...row,owner_id:user.id})));
    const r=await db.from('crm_process_candidates').upsert(insert,{onConflict:'owner_id,process_number,query_term'});
    if(r.error){persisted=false;saveError='Resultados consultados, mas não gravados: '+r.error.message;}
   }

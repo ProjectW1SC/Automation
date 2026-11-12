@@ -4,6 +4,7 @@ import {FileSearch,RefreshCw,Search,Plus,ExternalLink,ShieldCheck} from 'lucide-
 import {normalizeOfficeCNJ} from '../../lib/office-core.mjs';
 import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.mjs';
 import {PUBLIC_DATAJUD_COURTS} from '../../lib/blackhole-datajud-discovery.mjs';
+import {dedupeCandidateUpserts} from '../../lib/blackhole-candidate-dedupe.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const initialStart=()=>{const d=new Date();d.setDate(d.getDate()-14);return d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})};
@@ -32,7 +33,7 @@ function Generator({db,session}){
     const browserResult=await browseOfficialDjenSearch(form);
     let saved=true,saveError='';
     if(browserResult.items.length){
-     const write=await db.from('crm_process_candidates').upsert(browserResult.items.map(row=>({...row,owner_id:session.user.id})),
+     const write=await db.from('crm_process_candidates').upsert(dedupeCandidateUpserts(browserResult.items.map(row=>({...row,owner_id:session.user.id}))),
       {onConflict:'owner_id,process_number,query_term'});
      if(write.error){saved=false;saveError=write.error.message}
     }
@@ -52,7 +53,7 @@ function Generator({db,session}){
    const result=await browseOfficialDjenSearch(form);
    let saved=true,saveError='';
    if(result.items.length){
-    const r=await db.from('crm_process_candidates').upsert(result.items.map(row=>({...row,owner_id:session.user.id})),
+    const r=await db.from('crm_process_candidates').upsert(dedupeCandidateUpserts(result.items.map(row=>({...row,owner_id:session.user.id}))),
       {onConflict:'owner_id,process_number,query_term'});
     if(r.error){saved=false;saveError=r.error.message}
    }

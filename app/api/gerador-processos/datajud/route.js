@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {buildDataJudDiscoveryQuery,normalizeDataJudCandidates} from '../../../../lib/blackhole-datajud-discovery.mjs';
+import {dedupeCandidateUpserts} from '../../../../lib/blackhole-candidate-dedupe.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=25;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 // A chave pública é publicada pelo CNJ e pode ser substituída via variável de ambiente.
@@ -28,7 +29,7 @@ export async function POST(request){
   const rows=normalizeDataJudCandidates(obj,input.term);
   let persisted=true,saveError='';
   if(rows.length){
-   const upsert=await db.from('crm_process_candidates').upsert(rows.map(x=>({...x,owner_id:user.id})),
+   const upsert=await db.from('crm_process_candidates').upsert(dedupeCandidateUpserts(rows.map(x=>({...x,owner_id:user.id}))),
     {onConflict:'owner_id,process_number,query_term'});
    if(upsert.error){persisted=false;saveError='Consulta real concluída, mas resultados não salvos: '+upsert.error.message}
   }

@@ -28,7 +28,7 @@ function Console({db,session}){
  useEffect(()=>{load()},[load]);
  function newChat(){setMessages([]);setPrompt('');setNotice('');setTab('nova')}
  function openHistory(row){setMessages([
-  {role:'user',content:row.task},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null}
+  {role:'user',content:String(row.result?.userPrompt||row.task).trim()},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null}
  ]);setTab('nova');setNotice('Conversa recuperada do histórico do CRM.')}
  function chooseAction(q){setPrompt(q);setTab('nova')}
  async function ask(e){e?.preventDefault();const q=prompt.trim();if(!q||busy)return;
@@ -53,8 +53,8 @@ function Console({db,session}){
    setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null}]);
    setPrompt('');
    const saved=await db.from('office_agent_runs').insert({
-    owner_id:session.user.id,agent:'superagente',task:q.slice(0,300),mode:'manual',status:'review',
-    result:{answer,review:payload.review||null,engine:payload.model},sources:(payload.review?.source_status||[]).map(x=>({source:x})),
+    owner_id:session.user.id,agent:'superagente',task:(q.length<3?'Consulta curta: '+q:q).slice(0,300),mode:'manual',status:'review',
+    result:{answer,userPrompt:q,review:payload.review||null,engine:payload.model},sources:(payload.review?.source_status||[]).map(x=>({source:x})),
     external_actions:0
    });
    setNotice(saved.error?'Resposta concluída, mas o histórico não foi salvo: '+saved.error.message:
