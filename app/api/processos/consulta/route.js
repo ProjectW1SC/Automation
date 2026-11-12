@@ -96,6 +96,10 @@ export async function GET(request){
    if(localPause.error||globalPause.error||platformPause.error)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
    const paused=[localPause.data,globalPause.data,platformPause.data].find(entry=>officialBackoffActive(entry));
    if(paused&&cached?.payload)return {...cached.payload,stale:true,fromCache:true,notice:'Fonte oficial temporariamente bloqueada. Exibindo consulta anterior ('+cached.checked_at+'), sem atualização em tempo real.'};
+   if(paused){
+    const historical=await db.from('crm_judicial_snapshots').select('payload,checked_at').eq('actor_id',user.id).eq('process_number',number).eq('source',kind).order('checked_at',{ascending:false}).limit(1).maybeSingle();
+    if(!historical.error&&historical.data?.payload)return {...historical.data.payload,stale:true,fromCache:true,checkedAt:historical.data.checked_at,notice:'Histórico anteriormente confirmado ('+historical.data.checked_at+'). Fonte '+kind.toUpperCase()+' permanece bloqueada: NÃO é uma atualização atual.'};
+   }
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
    let result;

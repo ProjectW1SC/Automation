@@ -13,6 +13,7 @@ import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
+import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
@@ -139,7 +140,24 @@ function OfficeUI({area,db,session}){
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada');
    const r=await fetch('/api/processos/consulta?'+new URLSearchParams({numero:row.process_number,fonte,...(period?.inicio?{inicio:period.inicio}:{}),...(period?.fim?{fim:period.fim}:{}),...(period?.pagina?{pagina:String(period.pagina)}:{})}),{headers:{Authorization:'Bearer '+s.access_token}});
-   const p=await r.json();if(!p.ok)throw Error(p.error||'Fonte indisponível');
+   const p=await r.json();
+   if(!p.ok){
+    let fallback=null, fallbackError='';
+    // Browser access is a regular public CNJ GET, not a proxy or CAPTCHA bypass.
+    // Never retry an HTTP 429 through another source or invent a successful result.
+    if(fonte==='auto'&&p.sourceStatus?.djen!=='rate_limited_429'){
+     try{fallback=await browseOfficialDjenNumber({number:row.process_number,start:period?.inicio,end:period?.fim,page:period?.pagina||1})}
+     catch(e){fallbackError=String(e?.message||'Falha de acesso público').slice(0,200)}
+    }
+    if(fallback){
+     setCheckResult({...fallback,number:row.process_number,partial:true,sourceStatus:{djen:'ok_browser',datajud:p.sourceStatus?.datajud||'unavailable'},sourceErrors:p.sourceErrors});
+     setNotice('DJEN confirmado pela API pública no navegador; DataJud não confirmado no servidor. Nenhuma movimentação foi presumida.');
+    }else{
+     setCheckResult({...p,number:row.process_number});
+     setNotice('Consulta não confirmada: '+(p.error||'As fontes não responderam.')+(fallbackError?' · Navegador: '+fallbackError:''));
+    }
+    return;
+   }
    setCheckResult({...p,number:row.process_number});setNotice((p.fromCache?'Cache oficial anterior consultado. ':'')+(p.notice||'Consulta concluída.'));
   }catch(e){setNotice('Consulta não confirmada: '+e.message)}finally{setConsulting('')}
  }
@@ -250,8 +268,10 @@ function OfficeUI({area,db,session}){
     </div><div className="inf-row-end"><button disabled={busy} className="inf-btn primary">Salvar processo</button></div></form></section>}
    <PrestigeCases cases={cases} clients={clients} query={query} setQuery={setQuery} edit={startEditCase} court={courtSearch} consulting={consulting} linkClient={linkCaseClient}/>
     {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
-     {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
+     {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>{checkResult.ok===false?'Nenhuma fonte respondeu nesta tentativa. Dados históricos anteriores podem continuar disponíveis.':'Consulta parcial. Consulte a origem e a data de cada movimentação.'}</p>}
      {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
+     {checkResult.sourceErrors&&(checkResult.sourceErrors.djen||checkResult.sourceErrors.datajud)&&<p>Motivos: {checkResult.sourceErrors.djen?'DJEN: '+checkResult.sourceErrors.djen+'; ':''}{checkResult.sourceErrors.datajud?'DataJud: '+checkResult.sourceErrors.datajud:''}</p>}
+     {checkResult.ok===false&&<p><a href="https://comunica.pje.jus.br/" rel="noreferrer" target="_blank">Conferir DJEN oficial</a> · <a href="https://datajud-wiki.cnj.jus.br/api-publica/" rel="noreferrer" target="_blank">Consultar documentação DataJud</a></p>}
      <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,300).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
 </>}
