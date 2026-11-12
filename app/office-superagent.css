@@ -1,0 +1,48 @@
+/* Visual reconstituído do superagente: rail compacto e área de chat clara, sem computação pesada. */
+.office-ai-console{height:calc(100dvh - 63px);min-height:550px;display:flex;overflow:hidden;background:#fff;color:#292524}
+.office-ai-rail{width:69px;flex:0 0 69px;transition:width .22s ease,flex-basis .22s ease;display:flex;flex-direction:column;background:#181818;color:#e7e5e4;padding:12px 7px;overflow:hidden;contain:layout paint}
+.office-ai-rail.expanded{width:236px;flex-basis:236px}
+.office-ai-rail-brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:8px;min-height:34px}
+.office-ai-infinity{display:grid;place-items:center;width:38px;font-family:Georgia,serif;font-size:31px;line-height:1}
+.office-ai-rail button,.office-ai-rail a{display:flex;align-items:center;gap:12px;min-height:42px;width:100%;color:#ddd;background:transparent;border:0;text-align:left;padding:10px 12px;border-radius:10px;font-size:12px;white-space:nowrap;cursor:pointer}
+.office-ai-rail button:hover,.office-ai-rail a:hover,.office-ai-rail button.selected{background:#393939;color:#fff}
+.office-ai-rail-brand button{width:35px;min-height:35px;padding:7px;flex:none}
+.office-ai-rail nav{display:flex;flex-direction:column;gap:5px;flex:1}
+.office-ai-rail-bottom{display:flex;flex-direction:column;gap:4px;padding-top:8px;border-top:1px solid #3b3b3b}
+.office-ai-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.office-ai-header{border-bottom:1px solid #f1efed;min-height:70px;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.office-ai-header>div{display:grid;gap:4px}.office-ai-header small{font-size:10px;color:#a8a29e;letter-spacing:.09em}.office-ai-header strong{font-size:15px;color:#292524}
+.office-ai-engine{font-size:11px;color:#78716c;display:flex;align-items:center;gap:7px;white-space:nowrap}.office-ai-engine span{width:7px;height:7px;border-radius:50%;background:#22c55e}
+.office-ai-content{flex:1;min-height:0;overflow-y:auto;padding:26px clamp(16px,4vw,50px)}
+.office-ai-content.office-ai-empty{display:grid;place-items:center}
+.office-ai-welcome{text-align:center;max-width:760px;margin:auto}
+.office-ai-orbit{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#f5f5f4;margin:0 auto 22px;color:#333}
+.office-ai-welcome h1,.office-ai-content h1{font-weight:650;font-size:25px;line-height:1.3;color:#292524;margin:0 0 7px}
+.office-ai-welcome p,.office-ai-content>p{font-size:12px;color:#a8a29e;margin:0 0 25px}
+.office-ai-action-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-top:30px}
+.office-ai-action-cards button{border:1px solid #e7e5e4;background:#fff;border-radius:11px;display:grid;place-items:center;gap:14px;padding:21px 10px;font-size:11px;color:#44403c;min-height:105px;cursor:pointer;transition:transform .14s,border-color .14s}
+.office-ai-action-cards button:hover{border-color:#a8a29e;transform:translateY(-2px)}
+.office-ai-messages{max-width:850px;margin:auto;display:flex;flex-direction:column;gap:26px;padding-bottom:20px}
+.office-ai-message{max-width:100%;white-space:pre-wrap;word-break:break-word}
+.office-ai-message.user{align-self:flex-end;max-width:min(690px,86%)}
+.office-ai-message.assistant{align-self:stretch}
+.office-ai-author{color:#78716c;font-size:11px;font-weight:700;margin-bottom:7px}
+.office-ai-message-body{font-size:13px;line-height:1.85;color:#292524}
+.office-ai-message.user .office-ai-message-body{background:#f5f5f4;border-radius:15px;padding:13px 17px}
+.office-ai-message-tools{display:flex;align-items:center;gap:13px;color:#a8a29e;font-size:10px;margin-top:12px}
+.office-ai-message-tools button{border:0;background:none;display:flex;align-items:center;gap:4px;color:#78716c;font-size:11px;cursor:pointer;padding:5px 0}
+.office-ai-bottom{flex:none;padding:10px clamp(16px,4vw,50px) 12px;background:#fff}
+.office-ai-composer{max-width:850px;margin:auto;border:1px solid #dedbd9;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 7px 20px #00000008}
+.office-ai-composer textarea{width:100%;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;min-height:45px;resize:vertical;background:transparent;font-size:13px;color:#292524}
+.office-ai-composer-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.office-ai-composer-foot span{font-size:10px;color:#a8a29e;display:flex;gap:5px;align-items:center}
+.office-ai-composer-foot button{border:0;background:#1b1b1b;color:#fff;border-radius:9px;display:flex;align-items:center;gap:6px;padding:9px 13px;font-size:11px;cursor:pointer}
+.office-ai-composer-foot button:disabled{opacity:.35;cursor:not-allowed}
+.office-ai-disclaimer{text-align:center;font-size:10px;color:#a8a29e;margin:8px 0 0}
+.office-ai-notice{max-width:850px;margin:0 auto 8px;color:#805b20;font-size:11px}
+.office-ai-history{display:grid;gap:7px;margin-top:17px}.office-ai-history button{padding:13px;text-align:left;border:1px solid #e7e5e4;border-radius:9px;background:#fff;cursor:pointer}.office-ai-history strong{display:block;color:#292524;font-size:12px}.office-ai-history small{color:#a8a29e;font-size:10px}
+.office-ai-model-choice{border:1px solid #e7e5e4;border-radius:12px;padding:20px;max-width:560px}.office-ai-model-choice button{display:flex;gap:8px;align-items:center;padding:10px;border-radius:8px;background:#f5f5f4;border:0;font-size:13px}.office-ai-model-choice p{font-size:12px;color:#78716c;line-height:1.6}
+.office-ai-links{display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:1060px){.office-ai-action-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:670px){.office-ai-console{height:calc(100dvh - 55px)}.office-ai-rail{width:52px;flex-basis:52px}.office-ai-rail.expanded{width:170px;flex-basis:170px}.office-ai-rail button,.office-ai-rail a{padding:10px 8px}.office-ai-header{padding:10px 15px}.office-ai-engine{display:none}}
+@media(prefers-reduced-motion:reduce){.office-ai-rail,.office-ai-action-cards button{transition:none}.office-ai-action-cards button:hover{transform:none}}

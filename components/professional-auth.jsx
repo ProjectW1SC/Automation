@@ -1,23 +1,39 @@
 'use client';
-import {ShieldCheck,ChartNoAxesCombined,History,LockKeyhole} from 'lucide-react';
+import {useState} from 'react';
+import {ArrowRight,ShieldCheck} from 'lucide-react';
 
-export default function ProfessionalAuth({eyebrow='ÁREA RESTRITA',title='Bem-vindo de volta',description='Entre com seu acesso autorizado.',children}){
- return <main className="w1-auth-screen"><div className="w1-auth-frame">
-  <section className="w1-auth-hero" aria-label="Apresentação ProjectW1SC">
-   <div className="w1-auth-hero-top"><img className="w1-auth-hero-logo" src="/branding/projectw1sc-wordmark.svg" alt="ProjectW1SC — Gestão jurídica" width="390" height="120"/><div className="w1-auth-hero-tag"><i/> PLATAFORMA OPERACIONAL</div></div>
-   <div className="w1-auth-hero-content"><span>UM AMBIENTE. TODA A OPERAÇÃO.</span><h2>Mais clareza em cada decisão.</h2><p>Clientes, processos, prazos e atendimentos organizados para a rotina de um escritório de advocacia.</p>
-    <div className="w1-auth-capabilities">
-     <div><span><ChartNoAxesCombined size={19}/></span><div><strong>Visão inteligente</strong><small>Indicadores e prioridades em um só lugar</small></div></div>
-     <div><span><History size={19}/></span><div><strong>Histórico organizado</strong><small>Informações e atendimentos rastreáveis</small></div></div>
-     <div><span><ShieldCheck size={19}/></span><div><strong>Acesso controlado</strong><small>Autenticação e permissões no banco</small></div></div>
+// Reconstrução independente da composição enviada: card preto marmorizado + formulário branco.
+// A identidade, marcas e permissões continuam próprias do ProjectW1SC.
+export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem-vindo de volta',description='Entre na sua conta para continuar.',onSignup=null,signupMode=false,children}){
+ return <main className="w1-auth-screen" data-office-login="infinitum-reference">
+  <div className="w1-auth-frame">
+   <section className="w1-auth-hero" aria-label="Gestão inteligente ProjectW1SC">
+    <div className="w1-auth-hero-top">
+     <span className="w1-auth-hero-kicker">GESTÃO INTELIGENTE</span>
+     <h2>Transforme sua<br/><em>gestão jurídica.</em></h2>
     </div>
-   </div>
-   <div className="w1-auth-hero-footer"><span>PROJECTW1SC · W1 CAPITAL</span><span>© 2026 W1 Capital</span></div>
-  </section>
-  <section className="w1-auth-panel" aria-label="Acesso ao sistema">
-   <div className="w1-auth-panel-top"><span>PROJECTW1SC · CONSOLE OPERACIONAL</span><span className="w1-auth-lock"><LockKeyhole size={14}/> Acesso privado</span></div>
-   <div className="w1-auth-panel-center"><div className="w1-auth-heading"><span className="w1-auth-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>{children}</div>
-   <div className="w1-auth-panel-footer"><ShieldCheck size={15}/> Protegido por autenticação e políticas de acesso · W1 Capital</div>
-  </section>
- </div></main>;
+    <div className="w1-auth-hero-footer">
+     <p>Tudo em uma só plataforma</p>
+     <div className="w1-auth-hero-tags" aria-label="Funcionalidades integradas">
+      {['Processos','WhatsApp','Análises','Prazos','Atividades','IA'].map(label=><span key={label}>{label}</span>)}
+     </div>
+    </div>
+   </section>
+   <section className="w1-auth-panel" aria-label="Entrar no ProjectW1SC">
+    <div className="w1-auth-panel-top">
+     <a className="w1-auth-mark" href="/" title="ProjectW1SC — Gestão jurídica" aria-label="ProjectW1SC">
+      <svg viewBox="0 0 80 42" role="img" aria-label="Marca do ProjectW1SC">
+       <path d="M40 21c-6.7-11.1-12.5-16.8-21-16.8C9.3 4.2 3 11.7 3 21s6.3 16.8 16 16.8c8.5 0 14.3-5.7 21-16.8 6.7-11.1 12.5-16.8 21-16.8 9.7 0 16 7.5 16 16.8s-6.3 16.8-16 16.8c-8.5 0-14.3-5.7-21-16.8Z" fill="none" stroke="currentColor" strokeWidth="3.7" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+     </a>
+     {onSignup&&<button type="button" className="w1-auth-create" onClick={onSignup}>{signupMode?'Fazer login':'Criar conta'} <ArrowRight size={14}/></button>}
+    </div>
+    <div className="w1-auth-panel-center">
+     <div className="w1-auth-heading"><span className="w1-auth-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>
+     {children}
+    </div>
+    <div className="w1-auth-panel-footer"><ShieldCheck size={14}/> Projeto jurídico independente · Acesso por membros autorizados</div>
+   </section>
+  </div>
+ </main>
 }

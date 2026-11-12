@@ -1,40 +1,103 @@
 'use client';
-import {useState} from 'react';
-import {Bot,Send,ShieldCheck,ClipboardCopy,FileSearch} from 'lucide-react';
+import {useCallback,useEffect,useState} from 'react';
+import Link from 'next/link';
+import {Plus,Search,BriefcaseBusiness,BookOpen,Layers3,PlugZap,Send,Copy,ShieldCheck,Bot,PanelLeftClose,PanelLeftOpen,FileText,Scale,Clock3} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
-function SuperAgent({db}){
- const [prompt,setPrompt]=useState('Faça um relatório dos processos e das consultas oficiais registradas na carteira.');
- const [reply,setReply]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
- async function ask(e){
-  e.preventDefault();setBusy(true);setError('');
+import {OFFICE_AGENTS} from '../../lib/office-core.mjs';
+const ACTIONS=[
+ {label:'Analisar processos',prompt:'Analise os processos cadastrados e indique pendências documentadas sem inventar movimentações.',icon:Scale},
+ {label:'Revisar prazos',prompt:'Faça um relatório dos processos e consultas oficiais para orientar a conferência dos próximos prazos.',icon:Clock3},
+ {label:'Preparar petição',prompt:'Indique os documentos e os fatos que devem ser conferidos antes de elaborar uma petição com base no processo.',icon:FileText},
+ {label:'Atendimento',prompt:'Prepare orientações para revisar mensagens de clientes, sem enviar respostas automaticamente.',icon:Bot}
+];
+const tabs=[{id:'nova',title:'Nova conversa',icon:Plus},{id:'historico',title:'Buscar conversas',icon:Search},{id:'habilidades',title:'Habilidades',icon:BookOpen},{id:'modelos',title:'Modelos',icon:Layers3},{id:'conectores',title:'Conectores',icon:PlugZap}];
+function Console({db,session}){
+ const [prompt,setPrompt]=useState(''),[messages,setMessages]=useState([]),[history,setHistory]=useState([]);
+ const [tab,setTab]=useState('nova'),[expanded,setExpanded]=useState(false);
+ const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
+ const [engine,setEngine]=useState('evidencias');
+ const load=useCallback(async()=>{
+  const {data,error}=await db.from('office_agent_runs').select('id,task,result,created_at,status').eq('owner_id',session.user.id)
+   .eq('agent','superagente').order('created_at',{ascending:false}).limit(45);
+  if(error)setNotice('Histórico não disponível: '+error.message);else setHistory(data||[]);
+ },[db,session.user.id]);
+ useEffect(()=>{load()},[load]);
+ function newChat(){setMessages([]);setPrompt('');setNotice('');setTab('nova')}
+ function openHistory(row){setMessages([
+  {role:'user',content:row.task},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null}
+ ]);setTab('nova');setNotice('Conversa recuperada do histórico do CRM.')}
+ function chooseAction(q){setPrompt(q);setTab('nova')}
+ async function ask(e){e?.preventDefault();const q=prompt.trim();if(q.length<6||busy)return;
+  setBusy(true);setNotice('');
   try{
-   const {data:{session}}=await db.auth.getSession();
-   if(!session?.access_token)throw Error('Sessão expirada.');
-   const r=await fetch('/api/superagente',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({prompt})});
-   const payload=await r.json();if(!payload.ok)throw Error(payload.error||'Não foi possível analisar');
-   setReply(payload);
-  }catch(e){setError(e.message)}finally{setBusy(false)}
+   const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
+   const response=await fetch('/api/superagente',{method:'POST',
+    headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+    body:JSON.stringify({prompt:q})});
+   const payload=await response.json();if(!payload?.ok||!payload.review)throw Error(payload.error||'Não foi possível analisar');
+   const answer=String(payload.review.answer||'').trim();if(!answer)throw Error('O motor não produziu análise válida.');
+   setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review}]);
+   setPrompt('');
+   const saved=await db.from('office_agent_runs').insert({
+    owner_id:session.user.id,agent:'superagente',task:q.slice(0,300),mode:'manual',status:'review',
+    result:{answer,review:payload.review,engine:'motor-de-evidencias'},sources:(payload.review.source_status||[]).map(x=>({source:x})),
+    external_actions:0
+   });
+   setNotice(saved.error?'Análise concluída, mas o histórico não foi salvo: '+saved.error.message:
+    'Análise de evidências registrada; nenhuma ação externa foi executada.');
+   if(!saved.error)await load();
+  }catch(e){setNotice(e.message)}finally{setBusy(false)}
  }
- return <main className="inf-studio">
-  <header className="inf-heading"><div><small>LEXISPREDICT / CENTRAL DE INTELIGÊNCIA</small><h1>Superagente Lexis</h1>
-   <p>Roteador por tarefas: atendimento, dossiê, investigação, relatórios e análise processual. Usa exclusivamente informações autorizadas e evidências armazenadas.</p></div>
-   <a className="inf-btn" href="/processos"><FileSearch size={15}/> Fontes judiciais</a></header>
-  <div className="inf-grid">
-   {['Análise processual','Investigação','Dossiê','Atendimento'].map((x,i)=><div className="inf-stat" key={x}><label>Especialista {i+1}</label><strong style={{fontSize:15}}>{x}</strong></div>)}
+ const activeTab=tab==='nova'?null:tab;
+ return <main className="office-ai-console" aria-label="Superagente jurídico ProjectW1SC">
+  <aside className={'office-ai-rail '+(expanded?'expanded':'')} aria-label="Ferramentas do agente">
+   <div className="office-ai-rail-brand">
+    <span className="office-ai-infinity" aria-hidden="true">∞</span>
+    <button type="button" title="Expandir/recolher painel" onClick={()=>setExpanded(x=>!x)} aria-label={expanded?'Recolher painel do agente':'Expandir painel do agente'}>{expanded?<PanelLeftClose size={18}/>:<PanelLeftOpen size={18}/>}</button>
+   </div>
+   <nav>{tabs.map(t=>{const Icon=t.icon;return <button key={t.id} type="button" className={tab===t.id?'selected':''} title={t.title} aria-label={t.title} onClick={()=>t.id==='nova'?newChat():setTab(t.id)}><Icon size={18}/>{expanded&&<span>{t.title}</span>}</button>})}</nav>
+   <div className="office-ai-rail-bottom"><Link href="/processos" title="Casos do escritório" aria-label="Processos"><BriefcaseBusiness size={17}/>{expanded&&<span>Processos</span>}</Link><Link href="/integracoes" title="Integrações" aria-label="Integrações"><PlugZap size={17}/>{expanded&&<span>Integrações</span>}</Link></div>
+  </aside>
+  <div className="office-ai-main">
+   <header className="office-ai-header"><div><small>W1 CAPITAL · SUPERAGENTE JURÍDICO</small><strong>Inteligência para Advocacia</strong></div>
+    <span className="office-ai-engine"><span/> Motor de evidências · sem custo de tokens</span></header>
+   {activeTab?<div className="office-ai-content">
+    {tab==='historico'&&<><h1>Buscar conversas</h1><p>Atividades que foram efetivamente registradas na carteira privada.</p>
+     <input className="inf-search" aria-label="Pesquisar no histórico" placeholder="Buscar pedido" value={search} onChange={e=>setSearch(e.target.value)}/>
+     <div className="office-ai-history">{history.filter(x=>x.task.toLowerCase().includes(search.toLowerCase())).map(r=><button type="button" key={r.id} onClick={()=>openHistory(r)}><strong>{r.task}</strong><small>{new Date(r.created_at).toLocaleDateString('pt-BR')} · {r.status}</small></button>)}
+      {!history.length&&<p>Nenhuma conversa registrada.</p>}</div></>}
+    {tab==='habilidades'&&<><h1>Habilidades e mini agentes</h1><p>Cada especialista encaminha seu pedido ao motor de análise verificável. Nenhuma ação é executada sem autorização.</p>
+      <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><button className="office-agent-card" type="button" key={x.id} onClick={()=>chooseAction('Analise a carteira como especialista de '+x.name+'. Objetivo: '+x.role+'. Aponte somente o que estiver comprovado nos registros disponíveis.')}>
+       <strong>{x.name}</strong><p>{x.role}</p><small>{x.mode}</small></button>)}</div></>}
+    {tab==='modelos'&&<><h1>Motor de análise</h1><p>O mecanismo atual lê os registros do CRM e os snapshots de consultas oficiais já salvas, sem baixar modelos pesados para seu computador.</p>
+      <div className="office-ai-model-choice"><button type="button" onClick={()=>setEngine('evidencias')} aria-pressed={engine==='evidencias'}><ShieldCheck size={18}/> Motor de evidências · ativo</button>
+       <p>Uma IA generativa externa pode ser configurada para minutas em Peças e petições, mas não está conectada a esta interface até a configuração das chaves e autorização de dados.</p>
+       <Link className="inf-btn" href="/pecas">Abrir elaboração de peças</Link></div></>}
+    {tab==='conectores'&&<><h1>Conectores</h1><p>Fontes oficiais DataJud e DJEN, WhatsApp Cloud API e conector público Infinitum autorizado.</p>
+      <div className="office-ai-links"><Link className="inf-btn" href="/integracoes">Integrações externas</Link><Link className="inf-btn" href="/processos">Consultas judiciais</Link><Link className="inf-btn" href="/whatsapp">WhatsApp</Link></div></>}
+   </div>:
+   <div className={'office-ai-content '+(!messages.length?'office-ai-empty':'')}>
+    {!messages.length?<div className="office-ai-welcome">
+      <span className="office-ai-orbit"><Bot size={24}/></span>
+      <h1>O que você deseja analisar?</h1><p>Um assistente jurídico baseado nas informações autorizadas do seu escritório.</p>
+      <div className="office-ai-action-cards">{ACTIONS.map(a=>{const Icon=a.icon;return <button key={a.label} type="button" onClick={()=>chooseAction(a.prompt)}><Icon size={19}/><span>{a.label}</span></button>})}</div>
+     </div>:
+     <div className="office-ai-messages" role="log" aria-live="polite">{messages.map((m,i)=><article key={i} className={'office-ai-message '+m.role}>
+      <div className="office-ai-author">{m.role==='user'?'Você':'Superagente · evidências'}</div><div className="office-ai-message-body">{m.content}</div>
+      {m.role==='assistant'&&<div className="office-ai-message-tools"><button type="button" onClick={()=>navigator.clipboard?.writeText(m.content)}><Copy size={13}/> Copiar</button><span>Revisão humana necessária · nenhuma ação executada</span></div>}
+     </article>)}</div>}
+   </div>}
+   <div className="office-ai-bottom">
+    {notice&&<p className="office-ai-notice" role="status">{notice}</p>}
+    <form onSubmit={ask} className="office-ai-composer"><textarea required minLength={6} maxLength={1800} rows={2} value={prompt}
+      onChange={e=>setPrompt(e.target.value)}
+      onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();ask()}}}
+      placeholder="Descreva uma tarefa jurídica, um número CNJ ou um relatório..."/>
+      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> Somente informações autorizadas</span><button type="submit" disabled={busy||prompt.trim().length<6}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
+    </form>
+    <p className="office-ai-disclaimer">Pode haver erros e lacunas. Consulte documentos e fontes oficiais antes de atuar.</p>
+   </div>
   </div>
-  <div className="inf-2col"><section className="inf-panel"><h2><Bot size={16}/> Nova solicitação</h2>
-   <p>Descreva a tarefa; para casos específicos, utilize o CNJ cadastrado. É uma análise local das informações do CRM, sem mensagens automáticas.</p>
-   <form onSubmit={ask}><label className="inf-field">Pedido<textarea required minLength={6} maxLength={1800} rows={7} value={prompt} onChange={e=>setPrompt(e.target.value)}/></label>
-    <div className="inf-row-end"><button className="inf-btn primary" disabled={busy}><Send size={15}/> {busy?'Analisando...':'Analisar evidências'}</button></div></form>
-   <div className="inf-note"><ShieldCheck size={14}/> Motor atual: regras verificáveis do LexisPredict. O modelo generativo, o envio de WhatsApp e as ações externas não estão conectados nesta tela.</div>
-  </section>
-  <section className="inf-panel"><h2>Resultado e rastreabilidade</h2>
-   {error&&<p className="inf-note error" role="alert">{error}</p>}
-   {reply?<><div className="inf-toolbar"><span className="inf-badge">{reply.review.task}</span><span className="inf-badge">Dados autorizados</span>
-     <button className="inf-btn" type="button" onClick={()=>navigator.clipboard?.writeText(reply.review.answer)}><ClipboardCopy size={13}/> Copiar</button></div>
-    <div className="inf-chat-output">{reply.review.answer}</div><p className="inf-note">{reply.notice}</p></>:
-    <div className="inf-empty">Envie uma tarefa para gerar o resumo com dados confirmados, fontes e limites.</div>}
-  </section></div>
  </main>;
 }
-export default function SuperAgentPage(){return <SecuredWorkspace active="Superagente">{({db})=><SuperAgent db={db}/>}</SecuredWorkspace>}
+export default function SuperAgentPage(){return <SecuredWorkspace active="Superagente">{({db,session})=><Console db={db} session={session}/>}</SecuredWorkspace>}

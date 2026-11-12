@@ -219,13 +219,17 @@ function OfficeUI({area,db,session}){
     <div className="office-records" style={{marginTop:15}}>{cases.filter(x=>match([x.title,x.process_number,x.subject,x.lawyer,getClientName(x.client_id)])).slice(0,250).map(x=><article key={x.id} className="office-record">
       <span className="inf-badge">{x.status}</span><strong>{x.title}</strong><p>{x.process_number||'Sem CNJ'} · {x.tribunal||'Tribunal não informado'}</p><small>{getClientName(x.client_id)} · {x.lawyer||'Sem advogado designado'}</small>
       <div className="office-action-row"><button className="inf-btn" onClick={()=>startEditCase(x)}>Editar cadastro</button>
+       <button className="inf-btn primary" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'auto')}>Consultar oficiais (com fallback)</button>
        <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'datajud')}>DataJud</button>
        <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'djen')}>DJEN</button>
        <Link className="inf-btn" href={'/pecas?case='+encodeURIComponent(x.id)}><FileText size={14}/> Criar petição</Link>
       </div></article>)}
      {!cases.length&&<div className="office-list-empty">Cadastre os processos do escritório. O gerador DJEN também pode identificar candidatos para revisão.</div>}
     </div>
-    {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong><p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
+    {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
+     {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
+     {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
+     <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
    </section></>}
   {['deadlines','audiencias'].includes(area)&&<><div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>

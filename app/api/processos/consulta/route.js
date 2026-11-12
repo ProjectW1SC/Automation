@@ -1,4 +1,5 @@
 import {snapshotIsFresh,snapshotQueryKey,shrinkOfficialResult} from '../../../../lib/judicial-triage.mjs';
+import {consultJudicialWithFallback,officialBackoffDuration,officialBackoffActive} from '../../../../lib/judicial-source-recovery.mjs';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
@@ -12,8 +13,8 @@ async function fetchJson(url,opts={}){
  const response=await fetch(url,{...opts,cache:'no-store',signal:AbortSignal.timeout(14000)});
  const raw=await response.text();
  if(!response.ok){
-  if(response.status===429)throw new Error('Fonte oficial limitou as consultas (HTTP 429). Tente novamente mais tarde.');
-  if(response.status===403)throw new Error('A fonte oficial bloqueou esta rede (HTTP 403).');
+  if(response.status===429)throw Object.assign(new Error('Fonte oficial limitou as consultas (HTTP 429). Tente novamente mais tarde.'),{status:429});
+  if(response.status===403)throw Object.assign(new Error('A fonte oficial bloqueou esta rede (HTTP 403).'),{status:403});
   throw new Error('Fonte oficial indisponível (HTTP '+response.status+').');
  }
  if(raw.trim().startsWith('<'))throw new Error('A fonte oficial retornou HTML ou bloqueio temporário, não dados.');
@@ -65,7 +66,7 @@ export async function GET(request){
   const params=new URL(request.url).searchParams;
   const number=formatProcessNumber(params.get('numero'));
   const source=params.get('fonte');
-  if(!['datajud','djen'].includes(source))return json({ok:false,error:'Escolha DataJud ou DJEN.'},400);
+  if(!['datajud','djen','auto'].includes(source))return json({ok:false,error:'Escolha DataJud, DJEN ou consulta automática.'},400);
   // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
   const [registry,activities,officeCase]=await Promise.all([
    db.from('crm_processes').select('id').eq('process_number',number).limit(1),
@@ -75,23 +76,51 @@ export async function GET(request){
   if(registry.error||activities.error||officeCase.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
   if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length)
    return json({ok:false,error:'Cadastre o CNJ no escritório antes de consultar a fonte oficial.'},403);
-  const queryKey=snapshotQueryKey(source,params);
-  const {data:cached}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
-   .eq('actor_id',user.id).eq('process_number',number).eq('source',source).eq('query_key',queryKey).maybeSingle();
-  if(params.get('forcar')!=='1'&&snapshotIsFresh(cached,source)){
-   return json({...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
-    ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'});
+  async function consultOne(kind){
+   const queryKey=snapshotQueryKey(kind,params);
+   const {data:cached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
+    .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).eq('query_key',queryKey).maybeSingle();
+   if(cacheError)throw Object.assign(new Error('Não foi possível ler histórico oficial autorizado.'),{status:503});
+   if(params.get('forcar')!=='1'&&snapshotIsFresh(cached,kind)){
+    return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
+     ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
+   }
+   const {data:backoff,error:backoffError}=await db.from('office_official_backoff').select('status,retry_after')
+    .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle();
+   if(backoffError)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
+   if(officialBackoffActive(backoff)){
+    throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+backoff.status+
+     '. Próxima tentativa após '+backoff.retry_after+'. Use outra fonte ou o portal oficial.'),{status:backoff.status});
+   }
+   let result;
+   try{result=kind==='datajud'?await datajud(number):await djen(number,params)}
+   catch(error){
+    const duration=officialBackoffDuration(error?.status);
+    if(duration){
+     const failedAt=new Date();
+     await db.from('office_official_backoff').upsert({
+      actor_id:user.id,process_number:number,source:kind,status:error.status,
+      failed_at:failedAt.toISOString(),retry_after:new Date(failedAt.getTime()+duration).toISOString()
+     },{onConflict:'actor_id,process_number,source'});
+    }
+    throw error;
+   }
+   // A resposta foi confirmada pelo serviço oficial; não registrar falhas como "sem movimentações".
+   await db.from('office_official_backoff').delete().eq('actor_id',user.id)
+    .eq('process_number',number).eq('source',kind);
+   const reduced=shrinkOfficialResult(result);
+   const {error:saveError}=await db.from('crm_judicial_snapshots').upsert({
+    actor_id:user.id,process_number:number,source:kind,query_key:queryKey,
+    checked_at:result.checkedAt,found:!!result.found,payload:reduced
+   },{onConflict:'actor_id,process_number,source,query_key'});
+   return {...result,snapshotSaved:!saveError,snapshotError:saveError?
+    'A consulta foi concluída, mas o histórico não pôde ser armazenado.':undefined};
   }
-  const result=source==='datajud'?await datajud(number):await djen(number,params);
-  // O armazenamento usa o JWT do próprio usuário e obedece ao RLS; erros de gravação
-  // jamais são tratados como uma consulta judicial confirmada.
-  const reduced=shrinkOfficialResult(result);
-  const {error:saveError}=await db.from('crm_judicial_snapshots').upsert({
-   actor_id:user.id,process_number:number,source,query_key:queryKey,
-   checked_at:result.checkedAt,found:!!result.found,payload:reduced
-  },{onConflict:'actor_id,process_number,source,query_key'});
-  return json({...result,snapshotSaved:!saveError,snapshotError:saveError?
-   'A consulta foi concluída, mas o histórico não pôde ser armazenado.':undefined});
+  if(source==='auto'){
+   const result=await consultJudicialWithFallback({djen:()=>consultOne('djen'),datajud:()=>consultOne('datajud')});
+   return json(result,result.ok?200:502);
+  }
+  return json(await consultOne(source));
  }catch(error){
   const message=error?.name==='TimeoutError'||error?.name==='AbortError'?
     'Consulta à fonte oficial excedeu o tempo limite. Tente novamente.':

@@ -1,0 +1,31 @@
+.office-integration-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 24px}
+.office-integration-card{display:flex;min-height:162px;flex-direction:column;gap:9px;padding:19px;background:white;border:1px solid #e8e5e2;border-radius:13px;color:#1c1917;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;text-decoration:none}
+.office-integration-card:hover{transform:translateY(-2px);border-color:#d6d3d1;box-shadow:0 6px 18px #2925240d}
+.office-integration-icon{height:35px;width:35px;border-radius:9px;background:#f5f5f4;display:grid;place-items:center;color:#292524}
+.office-integration-card strong{font-size:14px}.office-integration-card p{font-size:12px;color:#78716c;margin:0}.office-integration-card small{margin-top:auto;font-size:11px}
+.office-integration-card .configured{color:#0f766e}.office-integration-card .pending{color:#a8a29e}
+.office-kanban-columns{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:13px;overflow-x:auto;padding:4px 2px 18px}
+.office-kanban-column{background:#f4f4f3;border:1px solid #ece9e6;border-radius:12px;min-height:450px;padding:12px}
+.office-kanban-head{display:flex;align-items:center;gap:10px;padding:4px 3px 13px;border-bottom:1px solid #e7e5e4}
+.office-kanban-head>div{flex:1}.office-kanban-head strong{display:block;font-size:13px;color:#242322}
+.office-kanban-head small{display:block;color:#8a8684;font-size:10px;margin-top:4px}
+.office-kanban-head b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:99px;background:#e5e5e4;font-size:11px}
+.office-phase-dot{height:9px;width:9px;border-radius:50%;background:#b0aaa5;flex:none}
+.office-phase-triagem{background:#3b82f6}.office-phase-producao{background:#a78bfa}.office-phase-revisao{background:#f59e0b}.office-phase-concluido{background:#10b981}
+.office-kanban-stack{display:flex;flex-direction:column;gap:10px;padding-top:12px}
+.office-kanban-card{border:1px solid #e5e1df;border-radius:10px;padding:13px;background:#fff;box-shadow:0 1px 3px #00000009;cursor:grab}
+.office-kanban-card:active{cursor:grabbing}
+.office-kanban-line{display:flex;align-items:center;gap:5px;text-transform:capitalize;color:#79716c;font-size:11px;margin-bottom:9px}
+.office-kanban-priority{margin-left:auto;padding:3px 6px;border-radius:5px;font-size:10px}
+.pr-urgente{background:#fff1f2;color:#be123c}.pr-alta{background:#fffbeb;color:#a16207}.pr-normal{background:#f5f5f4;color:#78716c}
+.office-kanban-card strong{display:block;font-size:12px;line-height:1.45;color:#252423}
+.office-kanban-card p{font-size:11px;line-height:1.5;color:#79716c;margin:7px 0}
+.office-kanban-card small{font-size:10px;color:#a8a29e}
+.office-kanban-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.office-kanban-actions .inf-btn{padding:5px 8px;min-height:27px;font-size:10px}
+.office-kanban-empty{border:1px dashed #dfdcda;border-radius:9px;padding:20px 8px;text-align:center;font-size:11px;color:#a8a29e}
+.office-workflow-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.office-workflow-tools .inf-search{flex:1;max-width:450px}
+@media(max-width:1050px){.office-integration-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.office-integration-cards{grid-template-columns:1fr}.office-kanban-columns{grid-template-columns:repeat(5,255px)}}
+@media(prefers-reduced-motion:reduce){.office-integration-card{transition:none}.office-integration-card:hover{transform:none}}
