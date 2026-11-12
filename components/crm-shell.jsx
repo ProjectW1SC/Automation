@@ -19,6 +19,7 @@ function preferredTheme(){
   return resolveTheme(stored||'infinitum');
  }catch{return 'infinitum'}
 }
+const displayLabels={ 'Painel jurídico':'Dashboard','WhatsApp':'Comunicação','Peças e petições':'Documentos','Fluxos (POP)':'Procedimentos','Mini Agentes':'Agentes','Scanner judicial':'Scanner judicial' };
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
  'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Agenda':CalendarDays,'Peças e petições':FileText,
@@ -28,6 +29,7 @@ const icons={
 };
 export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(true);
+ useEffect(()=>{if(window.innerWidth<880)setSidebarExpanded(false)},[]);
  const [navSearch,setNavSearch]=useState('');
  const navSearchRef=useRef(null);
  const matches=navSearch.trim()?CRM_AREAS.filter(x=>x.label.toLocaleLowerCase('pt-BR').includes(navSearch.trim().toLocaleLowerCase('pt-BR'))).slice(0,6):[];
@@ -135,7 +137,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
        if(onNavigate&&!['Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
-      }} ><Icon size={17} aria-hidden="true"/><span>{item.label}</span></Link>;
+      }} ><Icon size={17} aria-hidden="true"/><span>{displayLabels[item.label]||item.label}</span></Link>;
     })}
    </nav>
    <footer className="app-nav-footer">

@@ -67,3 +67,10 @@ html[data-crm-theme="infinitum"] .office-ai-message-body :is(strong,small,span){
 html[data-crm-theme="infinitum"] .office-ai-engine{border:1px solid #e5ded6!important;background:#f8f5f1!important;color:#75695d!important}
 @media(max-width:820px){html[data-crm-theme="infinitum"] .report-dashboard,html[data-crm-theme="infinitum"] .settings-dashboard,html[data-crm-theme="infinitum"] .task-main{padding:17px!important}html[data-crm-theme="infinitum"] .settings-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media print{html[data-crm-theme="infinitum"] .report-dashboard{background:#fff!important}html[data-crm-theme="infinitum"] .report-pdf-print-host .report-print-document{display:block!important}}
+
+/* Marca visível também quando o usuário escolhe uma paleta secundária. */
+html[data-crm-theme]:not([data-crm-theme="infinitum"]) .pr-brand{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;min-width:0;color:var(--ui-nav-ink,#fff);padding:8px}
+html[data-crm-theme]:not([data-crm-theme="infinitum"]) .pr-brand-symbol{font-family:Georgia,serif;font-size:40px;color:var(--ui-accent,#ad9777);line-height:30px}
+html[data-crm-theme]:not([data-crm-theme="infinitum"]) .pr-brand-name{font-family:Georgia,serif;font-size:18px;letter-spacing:.08em;font-weight:400;margin-top:10px}
+html[data-crm-theme]:not([data-crm-theme="infinitum"]) .pr-brand-sub{font-size:9px;letter-spacing:.16em}
+html[data-crm-theme]:not([data-crm-theme="infinitum"]) .sidebar-collapsed .pr-brand-name,html[data-crm-theme]:not([data-crm-theme="infinitum"]) .sidebar-collapsed .pr-brand-sub{display:none}
