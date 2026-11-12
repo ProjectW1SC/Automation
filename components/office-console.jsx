@@ -7,6 +7,7 @@ import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
+import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
@@ -38,6 +39,7 @@ function OfficeUI({area,db,session}){
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
+ const [webPhone,setWebPhone]=useState(''),[webText,setWebText]=useState('');
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const [agentSearch,setAgentSearch]=useState(''),[agentFilter,setAgentFilter]=useState('todos');
  const need=LOADED[area]||LOADED.dashboard;
@@ -63,37 +65,44 @@ function OfficeUI({area,db,session}){
  const match=(values)=>values.some(x=>String(x||'').toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
  const act=async(op,success)=>{
   setBusy(true);setNotice('');
-  try{await op();setNotice(success);await load();setShowForm(false)}
-  catch(e){setNotice('Operação não concluída: '+(e.message||String(e)))}
+  try{await op();setNotice(success);await load();setShowForm(false);return true}
+  catch(e){setNotice('Operação não concluída: '+(e.message||String(e)));return false}
   finally{setBusy(false)}
  };
  const save=(table,row)=>async()=>{const r=await db.from(table).insert(row);if(r.error)throw r.error;};
  useEffect(()=>{if(area==='documents')setSelectedCase(new URLSearchParams(window.location.search).get('case')||'')},[area]);
  async function createClient(e){e.preventDefault();
-  const row={name:client.name.trim(),phone:client.phone||null,email:client.email||null,document:client.document||null,
-   notes:client.notes||null,responsible:client.responsible||null,next_return:client.next_return||null};
+  if(busy)return;
+  const name=String(client.name||'').trim();
+  if(name.length<2||name.length>180){setNotice('Informe nome de cliente entre 2 e 180 caracteres.');return}
+  const row={owner_id:session.user.id,name,phone:String(client.phone||'').trim()||null,email:String(client.email||'').trim()||null,document:String(client.document||'').trim()||null,
+   notes:String(client.notes||'').trim()||null,responsible:String(client.responsible||'').trim()||null,next_return:client.next_return||null};
   if(editClientId)row.status=client.status||'ativo';
-  await act(async()=>{const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId):
-   await db.from('office_clients').insert(row);if(r.error)throw r.error;},editClientId?'Cadastro jurídico atualizado.':'Cliente jurídico registrado.');
-  setClient(emptyClient());setEditClientId(null);
+  const saved=await act(async()=>{
+   const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId).select('id,name').maybeSingle():
+    await db.from('office_clients').insert(row).select('id,name').single();
+   if(r.error)throw Error(r.error.message+(r.error.code?' (código '+r.error.code+')':''));
+   if(!r.data?.id)throw Error('O banco não confirmou a gravação. O formulário foi preservado.');
+  },editClientId?'Cadastro jurídico atualizado e confirmado.':'Cliente jurídico criado e confirmado no banco.');
+  if(saved){setClient(emptyClient());setEditClientId(null)}
  }
  async function createCase(e){e.preventDefault();let number;
   try{number=normalizeOfficeCNJ(caseForm.process_number)}catch(e){setNotice(e.message);return}
   const row={title:caseForm.title,process_number:number,client_id:caseForm.client_id||null,next_review:caseForm.next_review||null,
    tribunal:caseForm.tribunal||null,subject:caseForm.subject||null,lawyer:caseForm.lawyer||null,notes:caseForm.notes||null};
   if(editCaseId)row.status=caseForm.status||'ativo';
-  await act(async()=>{const r=editCaseId?await db.from('office_cases').update({...row,updated_at:new Date().toISOString()}).eq('id',editCaseId):
-   await db.from('office_cases').insert(row);if(r.error)throw r.error;},editCaseId?'Processo atualizado.':'Processo jurídico registrado.');
-  setCaseForm(emptyCase());setEditCaseId(null);
+  const saved=await act(async()=>{const r=editCaseId?await db.from('office_cases').update({...row,updated_at:new Date().toISOString()}).eq('id',editCaseId):
+   await db.from('office_cases').insert({...row,owner_id:session.user.id});if(r.error)throw r.error;},editCaseId?'Processo atualizado.':'Processo jurídico registrado.');
+  if(saved){setCaseForm(emptyCase());setEditCaseId(null)}
  }
  async function createDeadline(e){e.preventDefault();
   try{validateOfficeDay(deadlineForm.due_on)}catch(e){setNotice(e.message);return}
   const row={title:deadlineForm.title,due_on:deadlineForm.due_on,kind:deadlineForm.kind,priority:deadlineForm.priority,
    case_id:deadlineForm.case_id||null,client_id:deadlineForm.client_id||null,verified:!!deadlineForm.verified,
    source:deadlineForm.source||null,source_url:deadlineForm.source_url||null,responsible:deadlineForm.responsible||null,notes:deadlineForm.notes||null};
-  await act(async()=>{const r=editDeadlineId?await db.from('office_deadlines').update({...row,updated_at:new Date().toISOString()}).eq('id',editDeadlineId):
-   await db.from('office_deadlines').insert(row);if(r.error)throw r.error;},editDeadlineId?'Prazo atualizado; confira a origem judicial.':'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');
-  setDeadlineForm(emptyDeadline());setEditDeadlineId(null);
+  const saved=await act(async()=>{const r=editDeadlineId?await db.from('office_deadlines').update({...row,updated_at:new Date().toISOString()}).eq('id',editDeadlineId):
+   await db.from('office_deadlines').insert({...row,owner_id:session.user.id});if(r.error)throw r.error;},editDeadlineId?'Prazo atualizado; confira a origem judicial.':'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');
+  if(saved){setDeadlineForm(emptyDeadline());setEditDeadlineId(null)}
  }
  function startEditClient(x){setClient({...emptyClient(),...x,next_return:x.next_return||''});setEditClientId(x.id);setShowForm(true);}
  function startEditCase(x){setCaseForm({...emptyCase(),...x,client_id:x.client_id||'',next_review:x.next_review||'',process_number:x.process_number||''});setEditCaseId(x.id);setShowForm(true);}
@@ -290,8 +299,24 @@ function OfficeUI({area,db,session}){
      <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
     {!documents.length&&<div className="office-list-empty">Nenhuma peça cadastrada.</div>}</div></section>
   </>}
-  {area==='whatsapp'&&<><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
-   <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'A conexão oficial WhatsApp Cloud API ainda não está completa. Configure as credenciais privadas da Meta na Vercel e o webhook assinado. Não é possível enviar antes disso.'} O agente apenas prepara rascunhos.</Source>
+  {area==='whatsapp'&&<><section className="inf-panel" aria-label="WhatsApp Web gratuito">
+    <h2>WhatsApp Web · atendimento sem API oficial</h2>
+    <p>Abra uma conversa com seu aparelho já vinculado. Você confirma o destinatário e clica em Enviar no próprio WhatsApp; abrir a conversa não registra nem confirma atendimento.</p>
+    <form className="office-form-col" onSubmit={e=>{e.preventDefault();try{
+      const url=blackholeWhatsAppWebUrl(webPhone,webText);
+      const opened=window.open(url,'_blank','noopener,noreferrer');
+      setNotice(opened?'WhatsApp Web aberto. Confira o número e confirme o envio no WhatsApp. Nenhuma mensagem foi registrada automaticamente.':'O navegador pode ter bloqueado a nova aba; permita pop-ups para abrir o WhatsApp Web.');
+    }catch(err){setNotice(err.message)}}}>
+     <div className="inf-fields">
+      <label>Escolher cliente cadastrado<select value="" onChange={e=>{const x=clients.find(c=>c.id===e.target.value);if(x?.phone)setWebPhone(x.phone)}}>
+       <option value="">Selecionar da carteira (opcional)</option>{clients.filter(c=>c.phone).map(c=><option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}</select></label>
+      <label>DDD + telefone<input type="tel" required value={webPhone} placeholder="(11) 99999-1234" onChange={e=>setWebPhone(e.target.value)}/></label>
+      <label style={{gridColumn:'1/-1'}}>Mensagem (opcional)<textarea rows={3} maxLength={3000} value={webText} onChange={e=>setWebText(e.target.value)} placeholder="Digite a mensagem para revisão no WhatsApp Web..."/></label>
+     </div>
+     <div className="inf-row-end"><button className="inf-btn primary" type="submit">Abrir conversa no WhatsApp Web</button></div>
+    </form>
+   </section><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
+   <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'O envio e recebimento automáticos por QR dependem de um serviço persistente Baileys/WA.Auto vinculado. Enquanto isso, o WhatsApp Web manual acima funciona sem API.'} O agente apenas prepara rascunhos.</Source>
    <div className="office-panel-grid"><section className="inf-panel"><h2>Conversas recebidas</h2><div className="office-records">{threads.map(m=><button key={m.phone} type="button" className="office-record" style={{textAlign:'left',cursor:'pointer'}} onClick={()=>{setSelectedPhone(m.phone);setReply('')}}><strong>{m.display_name||m.phone}</strong><p>{m.phone} · {dateLabel(m.received_at)}</p><small>{safeText(m.body,130)}</small></button>)}
     {!threads.length&&<div className="office-list-empty">Nenhuma mensagem recebida pelo webhook oficial.</div>}</div></section>
     <section className="inf-panel"><h2>Atendimento {selectedPhone||''}</h2>{selectedPhone?<><div className="office-whatsapp-messages">{currentThread.map(m=><div key={m.id} className={'office-bubble '+m.direction}><small className="office-hint">{m.direction==='inbound'?'Cliente':'Escritório'} · {dateLabel(m.received_at)}</small><div>{m.body}</div></div>)}</div>
