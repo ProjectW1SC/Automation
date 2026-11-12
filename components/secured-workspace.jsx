@@ -58,7 +58,7 @@ export default function SecuredWorkspace({active,children}){
  }
  if(!db)return <main className="reference-auth">A conexão segura do Supabase não está configurada.</main>;
  if(loading||access.loading)return <main className="reference-auth">Verificando sessão e permissões do escritório...</main>;
- if(!session){
+ if(!session&&mode!=='recover'&&!recovery){
   const registration=mode==='signup';
   return <ProfessionalAuth title={registration?'Criar minha conta':'Bem-vindo de volta'} eyebrow="GESTÃO JURÍDICA" signupMode={registration}
    description={registration?'Cadastre-se e aguarde autorização do administrador do escritório.':'Entre na sua conta para continuar.'}

@@ -15,5 +15,6 @@ import './brand-auth.css';
 import './infinitum-reference.css';
 import './office-console.css';
 import './infinitum-login.css';
+import './integrations-console.css';
 export const metadata={title:'ProjectW1SC • Gestão jurídica',description:'Plataforma para advocacia: processos, prazos, peças, agentes e WhatsApp'};
 export default function RootLayout({children}){return <html lang="pt-BR"><body>{children}</body></html>}
