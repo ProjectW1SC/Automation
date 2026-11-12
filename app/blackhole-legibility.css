@@ -112,3 +112,16 @@ html[data-crm-theme="blackhole"] .office-ai-console .office-ai-progress{text-ali
 @media(prefers-reduced-motion:reduce){
  html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar{transition:none!important}
 }
+
+html[data-crm-theme="blackhole"] .blackhole-native-integrations-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:15px 0 24px}
+html[data-crm-theme="blackhole"] .blackhole-native-integration{
+ display:flex;flex-direction:column;gap:9px;min-height:152px;padding:17px;background:#fff;
+ border:1px solid #e1e4e9;border-radius:12px;color:#20242a;text-decoration:none;
+ box-shadow:0 2px 8px #11182708;transition:border-color .15s ease;
+}
+html[data-crm-theme="blackhole"] .blackhole-native-integration:hover{border-color:#91a1bb}
+html[data-crm-theme="blackhole"] .blackhole-native-integration strong{font-size:13px;color:#20232a}
+html[data-crm-theme="blackhole"] .blackhole-native-integration p{font-size:11px;color:#636b79;line-height:1.5;flex:1;margin:0}
+html[data-crm-theme="blackhole"] .blackhole-native-integration small{font-size:10px;color:#4d5c70}
+html[data-crm-theme="blackhole"] .blackhole-native-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#f0f2f5;color:#222f44}
+html[data-crm-theme="blackhole"] .blackhole-native-integrations .inf-panel p{color:#565e69;font-size:12px;line-height:1.7}
