@@ -97,10 +97,10 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  };
  return <div className={'app-shell blackhole-studio-shell '+(sidebarExpanded?'sidebar-expanded':'sidebar-collapsed')}>
   <aside ref={sidebarRef} className="app-sidebar"
-    onMouseEnter={()=>{}}
-    onMouseLeave={()=>{}}
-    onFocusCapture={()=>{}}
-    onBlurCapture={()=>{}}>
+    onMouseEnter={()=>setSidebarExpanded(true)}
+    onMouseLeave={shrinkIfUnfocused}
+    onFocusCapture={()=>setSidebarExpanded(true)}
+    onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSidebarExpanded(false)}}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
     <Link className="app-brand-link" href="/" aria-label="BLACKHOLE — Painel jurídico" title="Ir ao painel jurídico" prefetch={false}>

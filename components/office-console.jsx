@@ -63,37 +63,44 @@ function OfficeUI({area,db,session}){
  const match=(values)=>values.some(x=>String(x||'').toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
  const act=async(op,success)=>{
   setBusy(true);setNotice('');
-  try{await op();setNotice(success);await load();setShowForm(false)}
-  catch(e){setNotice('Operação não concluída: '+(e.message||String(e)))}
+  try{await op();setNotice(success);await load();setShowForm(false);return true}
+  catch(e){setNotice('Operação não concluída: '+(e.message||String(e)));return false}
   finally{setBusy(false)}
  };
  const save=(table,row)=>async()=>{const r=await db.from(table).insert(row);if(r.error)throw r.error;};
  useEffect(()=>{if(area==='documents')setSelectedCase(new URLSearchParams(window.location.search).get('case')||'')},[area]);
  async function createClient(e){e.preventDefault();
-  const row={name:client.name.trim(),phone:client.phone||null,email:client.email||null,document:client.document||null,
-   notes:client.notes||null,responsible:client.responsible||null,next_return:client.next_return||null};
+  if(busy)return;
+  const name=String(client.name||'').trim();
+  if(name.length<2||name.length>180){setNotice('Informe nome de cliente entre 2 e 180 caracteres.');return}
+  const row={owner_id:session.user.id,name,phone:client.phone.trim()||null,email:client.email.trim()||null,document:client.document.trim()||null,
+   notes:client.notes.trim()||null,responsible:client.responsible.trim()||null,next_return:client.next_return||null};
   if(editClientId)row.status=client.status||'ativo';
-  await act(async()=>{const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId):
-   await db.from('office_clients').insert(row);if(r.error)throw r.error;},editClientId?'Cadastro jurídico atualizado.':'Cliente jurídico registrado.');
-  setClient(emptyClient());setEditClientId(null);
+  const saved=await act(async()=>{
+   const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId).select('id,name').maybeSingle():
+    await db.from('office_clients').insert(row).select('id,name').single();
+   if(r.error)throw Error(r.error.message+(r.error.code?' (código '+r.error.code+')':''));
+   if(!r.data?.id)throw Error('O banco não confirmou a gravação. O formulário foi preservado.');
+  },editClientId?'Cadastro jurídico atualizado e confirmado.':'Cliente jurídico criado e confirmado no banco.');
+  if(saved){setClient(emptyClient());setEditClientId(null)}
  }
  async function createCase(e){e.preventDefault();let number;
   try{number=normalizeOfficeCNJ(caseForm.process_number)}catch(e){setNotice(e.message);return}
   const row={title:caseForm.title,process_number:number,client_id:caseForm.client_id||null,next_review:caseForm.next_review||null,
    tribunal:caseForm.tribunal||null,subject:caseForm.subject||null,lawyer:caseForm.lawyer||null,notes:caseForm.notes||null};
   if(editCaseId)row.status=caseForm.status||'ativo';
-  await act(async()=>{const r=editCaseId?await db.from('office_cases').update({...row,updated_at:new Date().toISOString()}).eq('id',editCaseId):
-   await db.from('office_cases').insert(row);if(r.error)throw r.error;},editCaseId?'Processo atualizado.':'Processo jurídico registrado.');
-  setCaseForm(emptyCase());setEditCaseId(null);
+  const saved=await act(async()=>{const r=editCaseId?await db.from('office_cases').update({...row,updated_at:new Date().toISOString()}).eq('id',editCaseId):
+   await db.from('office_cases').insert({...row,owner_id:session.user.id});if(r.error)throw r.error;},editCaseId?'Processo atualizado.':'Processo jurídico registrado.');
+  if(saved){setCaseForm(emptyCase());setEditCaseId(null)}
  }
  async function createDeadline(e){e.preventDefault();
   try{validateOfficeDay(deadlineForm.due_on)}catch(e){setNotice(e.message);return}
   const row={title:deadlineForm.title,due_on:deadlineForm.due_on,kind:deadlineForm.kind,priority:deadlineForm.priority,
    case_id:deadlineForm.case_id||null,client_id:deadlineForm.client_id||null,verified:!!deadlineForm.verified,
    source:deadlineForm.source||null,source_url:deadlineForm.source_url||null,responsible:deadlineForm.responsible||null,notes:deadlineForm.notes||null};
-  await act(async()=>{const r=editDeadlineId?await db.from('office_deadlines').update({...row,updated_at:new Date().toISOString()}).eq('id',editDeadlineId):
-   await db.from('office_deadlines').insert(row);if(r.error)throw r.error;},editDeadlineId?'Prazo atualizado; confira a origem judicial.':'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');
-  setDeadlineForm(emptyDeadline());setEditDeadlineId(null);
+  const saved=await act(async()=>{const r=editDeadlineId?await db.from('office_deadlines').update({...row,updated_at:new Date().toISOString()}).eq('id',editDeadlineId):
+   await db.from('office_deadlines').insert({...row,owner_id:session.user.id});if(r.error)throw r.error;},editDeadlineId?'Prazo atualizado; confira a origem judicial.':'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');
+  if(saved){setDeadlineForm(emptyDeadline());setEditDeadlineId(null)}
  }
  function startEditClient(x){setClient({...emptyClient(),...x,next_return:x.next_return||''});setEditClientId(x.id);setShowForm(true);}
  function startEditCase(x){setCaseForm({...emptyCase(),...x,client_id:x.client_id||'',next_review:x.next_review||'',process_number:x.process_number||''});setEditCaseId(x.id);setShowForm(true);}
