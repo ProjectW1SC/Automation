@@ -17,7 +17,7 @@ export async function POST(request){
   const {prompt}=await request.json();
   if(typeof prompt!=='string'||prompt.trim().length<6||prompt.length>1800)return json({ok:false,error:'Informe uma tarefa de 6 a 1.800 caracteres.'},400);
   const number=targetCNJ(prompt),formatted=number?formatProcessNumber(number):null;
-  let processQ=db.from('office_cases').select('process_number,process_type,client_id').limit(formatted?5:250);
+  let processQ=db.from('office_cases').select('id,process_number,title,subject,status,client_id').limit(formatted?5:250);
   if(formatted)processQ=processQ.eq('process_number',formatted);
   const [p,c,l]=await Promise.all([
    processQ,db.from('office_clients').select('id').limit(100),
@@ -25,7 +25,7 @@ export async function POST(request){
   ]);
   const errors=[p,c,l].filter(x=>x.error).map(x=>x.error.message);
   if(errors.length)return json({ok:false,error:'A carteira não pôde ser lida integralmente: '+errors.join(' · ')},503);
-  const allowedNumbers=(p.data||[]).map(x=>x.process_number);
+  const allowedNumbers=[...new Set((p.data||[]).map(x=>x.process_number).filter(Boolean))];
   const snaps=allowedNumbers.length?await db.from('crm_judicial_snapshots')
    .select('process_number,source,checked_at,payload')
    .in('process_number',allowedNumbers.slice(0,200)).order('checked_at',{ascending:false}).limit(200):
