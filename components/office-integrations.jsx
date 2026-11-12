@@ -6,7 +6,7 @@ import SecuredWorkspace from './secured-workspace';
 import {createIcsEvent} from '../lib/blackhole-free-integrations.mjs';
 const OPTIONS=[
  {title:'Superagente',icon:Bot,desc:'Motor de evidências, Qwen 0.5B local sob demanda e IA gratuita opcional.',route:'/superagente',type:'ai'},
- {title:'WhatsApp Web',icon:MessageSquare,desc:'Abrir conversas gratuitamente no navegador. O envio é confirmado pelo usuário.',route:'/whatsapp',type:'web'},
+ {title:'WA.Auto · WhatsApp interno',icon:MessageSquare,desc:'Conversas, QR Code e mensagens no próprio CRM com o worker Baileys.',route:'/whatsapp',type:'wa'},
  {title:'Leads',icon:Cloud,desc:'Cadastro, qualificação e importação de leads para seu escritório.',route:'/leads',type:'local'},
  {title:'Scanner judicial',icon:FileSearch,desc:'DataJud e DJEN públicos, sujeitas aos bloqueios reais dos tribunais.',route:'/scanner',type:'local'},
  {title:'Peças e petições',icon:Scale,desc:'Minutas estruturadas e IA online autorizada para aprimorar rascunhos.',route:'/pecas',type:'ai'},
@@ -31,7 +31,7 @@ function Body({db}){
   if(requests[2].status==='fulfilled'&&requests[2].value?.ok)setCourts(getItems(requests[2].value));
  },[db]);
  useEffect(()=>{load().catch(()=>{})},[load]);
- const status=k=>k==='ai'?(ai.configured?'Chave de IA cadastrada':'Motor local disponível'):k==='web'?'Uso manual gratuito':'Disponível sem API paga';
+ const status=k=>k==='ai'?(ai.configured?'Chave de IA cadastrada':'Motor local disponível'):k==='wa'?(wa.connected?'WA.Auto conectado':wa.configured?'WA.Auto sem conexão':'WA.Auto precisa de configuração'):'Disponível sem API paga';
  function createEvent(e){
   e.preventDefault();
   try{
@@ -53,11 +53,11 @@ function Body({db}){
     <small>{status(item.type)}</small>
    </Link>})}
   </div>
-  <section className="inf-panel"><h2><ShieldCheck size={16}/> WhatsApp sem API oficial</h2>
-   <p>Use gratuitamente o <a href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer">WhatsApp Web</a> pelo próprio aparelho conectado. O BLACKHOLE pode abrir uma conversa com texto preenchido, mas não pode ler sua sessão em outra aba nem confirmar envios sem um worker conectado.</p>
+  <section className="inf-panel"><h2><ShieldCheck size={16}/> WA.Auto · WhatsApp sem API oficial</h2>
+   <p>O CRM usa o WA.Auto/Baileys em um worker persistente. Abra as conversas aqui mesmo, conecte seu aparelho e envie após revisar a mensagem. O serviço precisa de credenciais configuradas no Vercel.</p>
    <div className="office-action-row"><Link href="/whatsapp" className="inf-btn primary">Abrir atendimento e conversa</Link>
     <a href="https://web.whatsapp.com/" className="inf-btn" rel="noopener noreferrer" target="_blank">Abrir WhatsApp Web <ExternalLink size={13}/></a></div>
-   <p>WA.Auto do LexisPredict utiliza Baileys; Wechaty e Evolution também exigem uma sessão/serviço persistente. Nenhum deles está vinculado automaticamente ao BLACKHOLE. Conexão por QR não será indicada sem QR verdadeiro.</p>
+   <p>WA.Auto utiliza Baileys; Wechaty e Evolution são alternativas que exigem servidor persistente. A conexão só é indicada quando o serviço confirma o estado conectado. Nenhum deles está vinculado automaticamente ao BLACKHOLE. Conexão por QR não será indicada sem QR verdadeiro.</p>
   </section>
   <section className="inf-panel"><h2><Bot size={16}/> Motores de inteligência artificial</h2>
    <div className="office-panel-grid">

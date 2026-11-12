@@ -21,6 +21,7 @@ import './blackhole-theme.css';
 import './blackhole-infinitum-studio.css';
 import './blackhole-legibility.css';
 import './crm-unified-2026.css';
+import './wa-auto-inbox.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'ProjectW1SC • CRM Jurídico',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
 export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
