@@ -27,7 +27,7 @@ test('seleção sanitiza e limita lote por vez',()=>{
 });
 test('API usa autenticação Supabase, consulta DJEN e DataJud e grava trilha RLS',()=>{
  const api=read('app/api/scanner/route.js'),migration=read('supabase/migrations/20261112_023_official_scanner.sql');
- assert.match(api,/checkCrmAccess/);assert.match(api,/fonte=datajud|fonte.*datajud/);assert.match(api,/fonte=djen|fonte.*djen/);
+ assert.match(api,/checkCrmAccess/);assert.match(api,/checkOne\(number,'datajud'/);assert.match(api,/checkOne\(number,'djen'/);
  assert.match(api,/office_scan_runs/);assert.match(migration,/enable row level security/);assert.match(migration,/revoke all .* from public,anon/i);
 });
 test('navegação mostra scanner independente, agentes reusam evidências',()=>{
