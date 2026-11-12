@@ -75,8 +75,8 @@ function OfficeUI({area,db,session}){
   if(busy)return;
   const name=String(client.name||'').trim();
   if(name.length<2||name.length>180){setNotice('Informe nome de cliente entre 2 e 180 caracteres.');return}
-  const row={owner_id:session.user.id,name,phone:client.phone.trim()||null,email:client.email.trim()||null,document:client.document.trim()||null,
-   notes:client.notes.trim()||null,responsible:client.responsible.trim()||null,next_return:client.next_return||null};
+  const row={owner_id:session.user.id,name,phone:String(client.phone||'').trim()||null,email:String(client.email||'').trim()||null,document:String(client.document||'').trim()||null,
+   notes:String(client.notes||'').trim()||null,responsible:String(client.responsible||'').trim()||null,next_return:client.next_return||null};
   if(editClientId)row.status=client.status||'ativo';
   const saved=await act(async()=>{
    const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId).select('id,name').maybeSingle():

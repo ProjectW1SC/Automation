@@ -74,7 +74,7 @@ function Body({db}){
      <label>Observações<input maxLength={300} value={event.description} onChange={e=>setEvent({...event,description:e.target.value})}/></label>
     </div><div className="inf-row-end"><button type="submit" className="inf-btn primary">Exportar compromisso</button></div></form>
   </section>
-  {courts.length>0&&<section className="inf-panel"><h2>Tribunais · links oficiais públicos</h2>
+  {courts.length>0&&<section className="inf-panel"><h2>Fontes dos tribunais · links oficiais públicos</h2>
    <p>{courts.length} fontes cadastradas para abrir no portal do tribunal. Links não substituem consulta autenticada ou confirmação de audiências.</p>
    <div className="blackhole-native-integrations-grid">
     {courts.slice(0,more?courts.length:9).map(item=><a key={item.id} className="blackhole-native-integration" href={item.url} rel="noopener noreferrer" target="_blank"><strong>{item.label}</strong><small>Consultar site oficial <ExternalLink size={12}/></small></a>)}
