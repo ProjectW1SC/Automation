@@ -7,10 +7,10 @@ import {ArrowRight,ShieldCheck} from 'lucide-react';
 export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem-vindo de volta',description='Entre na sua conta para continuar.',onSignup=null,signupMode=false,children}){
  return <main className="w1-auth-screen" data-office-login="infinitum-reference">
   <div className="w1-auth-frame">
-   <section className="w1-auth-hero" aria-label="Gestão inteligente ProjectW1SC">
+   <section className="w1-auth-hero" aria-label="Inteligência jurídica BLACKHOLE">
     <div className="w1-auth-hero-top">
      <span className="w1-auth-hero-kicker">GESTÃO INTELIGENTE</span>
-     <h2>Transforme sua<br/><em>gestão jurídica.</em></h2>
+     <h2>Entre no horizonte<br/><em>da inteligência jurídica.</em></h2>
     </div>
     <div className="w1-auth-hero-footer">
      <p>Tudo em uma só plataforma</p>
@@ -21,8 +21,8 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
    </section>
    <section className="w1-auth-panel" aria-label="Entrar no ProjectW1SC">
     <div className="w1-auth-panel-top">
-     <a className="w1-auth-mark" href="/" title="ProjectW1SC — Gestão jurídica" aria-label="ProjectW1SC">
-      <svg viewBox="0 0 80 42" role="img" aria-label="Marca do ProjectW1SC">
+     <a className="w1-auth-mark" href="/" title="BLACKHOLE — Gestão jurídica" aria-label="BLACKHOLE">
+      <img src="/branding/blackhole-symbol.svg" width="60" height="42" alt="BLACKHOLE"/> <svg viewBox="0 0 80 42" role="img" aria-label="Marca do BLACKHOLE" style={{display:"none"}}>
        <path d="M40 21c-6.7-11.1-12.5-16.8-21-16.8C9.3 4.2 3 11.7 3 21s6.3 16.8 16 16.8c8.5 0 14.3-5.7 21-16.8 6.7-11.1 12.5-16.8 21-16.8 9.7 0 16 7.5 16 16.8s-6.3 16.8-16 16.8c-8.5 0-14.3-5.7-21-16.8Z" fill="none" stroke="currentColor" strokeWidth="3.7" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
      </a>
@@ -32,7 +32,7 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
      <div className="w1-auth-heading"><span className="w1-auth-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>
      {children}
     </div>
-    <div className="w1-auth-panel-footer"><ShieldCheck size={14}/> Projeto jurídico independente · Acesso por membros autorizados</div>
+    <div className="w1-auth-panel-footer"><ShieldCheck size={14}/> BLACKHOLE · Acesso exclusivo a membros autorizados</div>
    </section>
   </div>
  </main>

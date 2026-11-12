@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck,Workflow,PlugZap} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck,Workflow,PlugZap,ScanSearch} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
@@ -8,7 +8,7 @@ import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
 import {APPEARANCE_BUCKET,applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
 const icons={
- 'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,
+ 'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
  'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Peças e petições':FileText,
  'WhatsApp':MessageSquare,'Leads':Target,'Gerador de processos':Radar,
  'Superagente':Bot,'Mini Agentes':UserRoundCheck,'Relatórios':BarChart3,
@@ -16,7 +16,7 @@ const icons={
 };
 export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
  const [sidebarExpanded,setSidebarExpanded]=useState(false);
- const [theme,setTheme]=useState('infinitum');
+ const [theme,setTheme]=useState('blackhole');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
  const [avatarUrl,setAvatarUrl]=useState('');
  const appearanceRef=useRef({colors:{},backgroundUrl:''});
@@ -40,7 +40,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
    const colors=metadata.crm_colors&&typeof metadata.crm_colors==='object'?metadata.crm_colors:{};
    appearanceRef.current={colors,backgroundUrl:background?.data?.signedUrl||''};
-   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum');
+   const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'blackhole');
    try{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),colors,appearanceRef.current.backgroundUrl)}
    catch{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),{},appearanceRef.current.backgroundUrl)}
   }
@@ -56,12 +56,12 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
   function applyStoredTheme(){
    // Na primeira visita desta refatoração, coloca a referência visual solicitada.
    // O seletor de temas continua editável e suas escolhas posteriores são preservadas.
-   try{if(!window.localStorage.getItem('projectw1sc.infinitum-refactor-v1')){
-     window.localStorage.setItem('projectw1sc.crm-theme','infinitum');
-     window.localStorage.setItem('projectw1sc.infinitum-refactor-v1','1');
+   try{if(!window.localStorage.getItem('projectw1sc.blackhole-rebrand-v1')){
+     window.localStorage.setItem('projectw1sc.crm-theme','blackhole');
+     window.localStorage.setItem('projectw1sc.blackhole-rebrand-v1','1');
    }}catch{}
    let stored='infinitum';
-   try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
+   try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'blackhole'}catch{}
    const id=resolveTheme(stored);
    setTheme(id);document.documentElement.dataset.crmTheme=id;
    const t=CRM_THEMES.find(x=>x.id===id);try{applyAppearanceToDocument(document.documentElement,t,appearanceRef.current.colors,appearanceRef.current.backgroundUrl)}catch{applyAppearanceToDocument(document.documentElement,t,{},appearanceRef.current.backgroundUrl)}
@@ -105,9 +105,9 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     }}>
    <div className="app-identity">
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
-    <a className="app-brand-link" href="/" aria-label="ProjectW1SC — Painel jurídico" title="Ir ao painel jurídico">
-     <img className="app-brand-compact" src="/branding/projectw1sc-symbol.svg" alt="" width="54" height="58"/>
-     <img className="app-brand-full" src="/branding/projectw1sc-wordmark.svg" alt="" width="202" height="65"/>
+    <a className="app-brand-link" href="/" aria-label="BLACKHOLE — Painel jurídico" title="Ir ao painel jurídico">
+     <img className="app-brand-compact" src="/branding/blackhole-symbol.svg" alt="" width="54" height="58"/>
+     <img className="app-brand-full" src="/branding/blackhole-logo.svg" alt="" width="202" height="65"/>
     </a>
    </div>
    <div className="app-mobile-account">
@@ -119,7 +119,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <a key={item.key} href={item.path} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Clientes','Processos','Prazos','Fluxos (POP)','Audiências','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }}><Icon size={17} aria-hidden="true"/><span>{item.label}</span></a>;
@@ -132,7 +132,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
      {onPassword?<button onClick={onPassword} type="button"><KeyRound size={14}/> Alterar senha</button>:<a href="/?senha=1"><KeyRound size={14}/> Alterar senha</a>}
      <button onClick={onSignOut} type="button"><LogOut size={14}/> Sair</button>
     </div>
-    <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 W1 Capital · Todos os direitos reservados</small>
+    <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 BLACKHOLE · W1 Capital</small>
    </footer>
   </aside>
   <div className="app-content"><div className="reference-top-tools">

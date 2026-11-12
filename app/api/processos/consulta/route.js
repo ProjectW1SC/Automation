@@ -85,29 +85,34 @@ export async function GET(request){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
    }
-   const {data:backoff,error:backoffError}=await db.from('office_official_backoff').select('status,retry_after')
-    .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle();
-   if(backoffError)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
-   if(officialBackoffActive(backoff)){
-    throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+backoff.status+
-     '. Próxima tentativa após '+backoff.retry_after+'. Use outra fonte ou o portal oficial.'),{status:backoff.status});
-   }
+   const [localPause,globalPause]=await Promise.all([
+    db.from('office_official_backoff').select('status,retry_after')
+     .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle(),
+    db.from('office_official_backoff').select('status,retry_after')
+     .eq('actor_id',user.id).eq('process_number','*').eq('source',kind).maybeSingle()
+   ]);
+   if(localPause.error||globalPause.error)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
+   const paused=[localPause.data,globalPause.data].find(entry=>officialBackoffActive(entry));
+   if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
+     '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
    let result;
    try{result=kind==='datajud'?await datajud(number):await djen(number,params)}
    catch(error){
     const duration=officialBackoffDuration(error?.status);
     if(duration){
      const failedAt=new Date();
-     await db.from('office_official_backoff').upsert({
-      actor_id:user.id,process_number:number,source:kind,status:error.status,
+     // O bloqueio é também global por fonte/usuário: outro CNJ não dispara nova
+     // requisição no mesmo IP da plataforma enquanto houver cooldown.
+     await db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+      actor_id:user.id,process_number,source:kind,status:error.status,
       failed_at:failedAt.toISOString(),retry_after:new Date(failedAt.getTime()+duration).toISOString()
-     },{onConflict:'actor_id,process_number,source'});
+     })),{onConflict:'actor_id,process_number,source'});
     }
     throw error;
    }
    // A resposta foi confirmada pelo serviço oficial; não registrar falhas como "sem movimentações".
    await db.from('office_official_backoff').delete().eq('actor_id',user.id)
-    .eq('process_number',number).eq('source',kind);
+    .in('process_number',[number,'*']).eq('source',kind);
    const reduced=shrinkOfficialResult(result);
    const {error:saveError}=await db.from('crm_judicial_snapshots').upsert({
     actor_id:user.id,process_number:number,source:kind,query_key:queryKey,

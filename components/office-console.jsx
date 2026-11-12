@@ -3,6 +3,10 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import BlackholeHermesAgent from './blackhole-hermes-agent';
+import BlackholeOfficialHearings from './blackhole-official-hearings';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
+import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
@@ -32,18 +36,19 @@ function OfficeUI({area,db,session}){
  const [client,setClient]=useState(emptyClient()),[caseForm,setCaseForm]=useState(emptyCase()),[deadlineForm,setDeadlineForm]=useState(emptyDeadline());
  const [editClientId,setEditClientId]=useState(null),[editCaseId,setEditCaseId]=useState(null),[editDeadlineId,setEditDeadlineId]=useState(null);
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
- const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false);
+ const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const need=LOADED[area]||LOADED.dashboard;
  const load=useCallback(async()=>{
   setLoading(true);
-  const entries=await Promise.all(need.map(async key=>{
+  let entries;
+ try{entries=await withAuthDeadline(Promise.all(need.map(async key=>{
    const limit=key==='deadlines'?600:key==='messages'?350:key==='clients'||key==='cases'?500:200;
    const sort=key==='deadlines'?'due_on':key==='clients'?'name':key==='cases'?'updated_at':'created_at';
    const res=await db.from(TABLES[key]).select('*').order(sort,{ascending:key==='clients'||key==='deadlines'}).limit(limit);
    return {key,res}
-  }));
+  })),12000)}catch(e){setNotice('Falha ao carregar: '+e.message+' Atualize para tentar novamente.');setLoading(false);return}
   setData(old=>({...old,...Object.fromEntries(entries.map(({key,res})=>[key,res.data||[]]))}));
   const problems=entries.filter(({res})=>res.error);
   if(problems.length)setNotice('Não foi possível acessar: '+problems.map(x=>x.key+': '+x.res.error.message).join(' · '));
@@ -112,25 +117,27 @@ function OfficeUI({area,db,session}){
   const a=document.createElement('a');a.href=u;a.download=filename.replace(/[^a-z0-9._-]/gi,'_');a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)
  };
  async function generateDocument(e){
-  e.preventDefault();const caseRecord=cases.find(x=>x.id===selectedCase);if(!caseRecord){setNotice('Escolha um processo.');return}
+  e.preventDefault();const caseRecord=selectedCase?cases.find(x=>x.id===selectedCase):null;
+   if(selectedCase&&!caseRecord){setNotice('Processo informado não consta da carteira atual.');return}
   setBusy(true);setNotice('');
   try{
-   const client=clients.find(x=>x.id===caseRecord.client_id);
+   const client=caseRecord?clients.find(x=>x.id===caseRecord.client_id):null;
    let evidence=[];
-   if(caseRecord.process_number){
+   if(caseRecord?.process_number){
     const r=await db.from('crm_judicial_snapshots').select('source,checked_at,payload').eq('process_number',caseRecord.process_number).order('checked_at',{ascending:false}).limit(8);
     if(r.error)throw Error('Não foi possível conferir as fontes oficiais: '+r.error.message);
     evidence=(r.data||[]).map(x=>({source:x.source,checked_at:x.checked_at,summary:safeText(x.payload?.items?.[0]?.title||x.payload?.items?.[0]?.description,200)}));
    }
-   let draft=makePetitionSkeleton({kind:docKind,caseRecord,client,instructions:docInstructions,evidence}),modelUsed='estrutura-verificavel';
+   let draft=caseRecord?makePetitionSkeleton({kind:docKind,caseRecord,client,instructions:docInstructions,evidence}):makeStandalonePetition({kind:docKind,instructions:docInstructions}),modelUsed='estrutura-verificavel';
    if(useAi){
+    if(!caseRecord)throw Error('Selecione um processo para IA externa; a minuta avulsa funciona no modo gratuito sem IA.');
     const {data:{session:s}}=await db.auth.getSession();
     const r=await fetch('/api/office/ai',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
      body:JSON.stringify({caseId:caseRecord.id,kind:docKind,instructions:docInstructions,externalAiConsent:true})});
     const output=await r.json();if(!output.ok)throw Error(output.error||'IA indisponível');
     draft={...draft,body:output.content};modelUsed=output.model;
    }
-   const rec={case_id:caseRecord.id,client_id:caseRecord.client_id,title:draft.title,kind:docKind,body:draft.body,
+   const rec={owner_id:session.user.id,case_id:caseRecord?.id||null,client_id:caseRecord?.client_id||null,title:draft.title,kind:docKind,body:draft.body,
     evidence:draft.evidence,status:'rascunho',external_ai_consent:useAi,model_used:modelUsed};
    const result=await db.from('office_documents').insert(rec).select('id').single();
    if(result.error)throw result.error;
@@ -232,7 +239,7 @@ function OfficeUI({area,db,session}){
      <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
    </section></>}
-  {['deadlines','audiencias'].includes(area)&&<><div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
+  {['deadlines','audiencias'].includes(area)&&<>{area==='audiencias'&&<BlackholeOfficialHearings db={db}/>}<div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editDeadlineId?'Editar prazo ou audiência':'Novo prazo, audiência ou retorno'}</h2><form onSubmit={createDeadline}><div className="inf-fields">
      <label>Descrição<input required minLength={3} value={deadlineForm.title} onChange={e=>setDeadlineForm({...deadlineForm,title:e.target.value})}/></label>
      <label>Data<input required type="date" value={deadlineForm.due_on} onChange={e=>setDeadlineForm({...deadlineForm,due_on:e.target.value})}/></label>
@@ -259,15 +266,18 @@ function OfficeUI({area,db,session}){
    </section></>}
   {area==='documents'&&<><div className="office-panel-grid"><section className="inf-panel"><h2>Gerar peça ou petição</h2>
    <form className="office-form-col" onSubmit={generateDocument}>
-    <label>Processo<select required value={selectedCase} onChange={e=>setSelectedCase(e.target.value)}><option value="">Selecione o processo</option>{cases.map(c=><option key={c.id} value={c.id}>{c.process_number||'Sem CNJ'} · {c.title}</option>)}</select></label>
+    <label>Processo (opcional)<select value={selectedCase} onChange={e=>setSelectedCase(e.target.value)}><option value="">Peça avulsa — sem processo cadastrado</option>{cases.map(c=><option key={c.id} value={c.id}>{c.process_number||'Sem CNJ'} · {c.title}</option>)}</select></label>
     <label>Tipo de peça<select value={docKind} onChange={e=>setDocKind(e.target.value)}>{OFFICE_DOC_TYPES.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
     <label>Fatos e instruções do advogado<textarea value={docInstructions} onChange={e=>setDocInstructions(e.target.value)} maxLength={1500} placeholder="Informe fatos que constam dos autos, objetivo, fase e pontos a conferir."/></label>
     <label className="office-hint" style={{display:'flex',alignItems:'center',gap:7}}><input style={{width:'auto'}} type="checkbox" checked={useAi} onChange={e=>setUseAi(e.target.checked)}/> Autorizar envio do contexto processual ao modelo externo configurado para gerar minuta com IA</label>
-    <button className="inf-btn primary" disabled={busy||!selectedCase}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
+    <button className="inf-btn primary" disabled={busy}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
     <Source>Sem API de IA configurada, o sistema gera estrutura editável com lacunas explícitas. Nenhuma fundamentação ou documento inexistente será inventado. Não há peticionamento automático.</Source>
    </form></section>
-   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button></div>
+   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar office-document-controls"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button>
+      <button type="button" className="inf-btn" onClick={()=>setShowPreview(x=>!x)}>{showPreview?'Ocultar folha A4':'Visualizar folha A4'}</button>
+      <button type="button" className="inf-btn primary" onClick={()=>{setShowPreview(true);window.setTimeout(()=>window.print(),0)}}>Imprimir / Salvar PDF</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
+    {showPreview&&<div className="office-document-preview" role="document" aria-label="Prévia A4 da petição">{docResult.body}</div>}
     <Source>Edite o texto e clique em Salvar revisão. Advogado responsável deve conferir antes de aprovar ou protocolar.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
    <section className="inf-panel"><h2>Peças registradas</h2><div className="office-records">{documents.map(x=><article className="office-record" key={x.id}><strong>{x.title}</strong><p>{x.kind} · {x.status} · {dateLabel(x.created_at)}</p><div className="office-action-row">
      <button className="inf-btn" onClick={()=>setDocResult({id:x.id,body:x.body,title:x.title})}>Abrir minuta</button>
@@ -285,13 +295,13 @@ function OfficeUI({area,db,session}){
       <Source>Envio exige conexão oficial, mensagem recebida nas últimas 24 horas e clique humano. Fora da janela, somente templates aprovados — não implementados aqui.</Source>
      </>:<div className="office-list-empty">Selecione uma conversa para responder.</div>}</section></div>
   </>}
-  {area==='agents'&&<><div className="inf-panel"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
+  {area==='agents'&&<><BlackholeHermesAgent db={db} session={session}/><div className="inf-panel"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
     <div className="office-action-row"><button className="inf-btn primary" onClick={runMini} disabled={busy}><Bot size={14}/> Executar triagem</button></div>
     {miniResult&&<div className="inf-note"><strong>{miniResult.asOf} · {miniResult.actions.length} ações sugeridas</strong><div className="office-records">{miniResult.actions.map((x,i)=><article key={x.kind+x.id+i} className="office-record">{x.kind} · {x.title} · {dateLabel(x.date)}</article>)}</div>
      <small>{miniResult.notes.join(' ')}</small></div>}
    </div>
    <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><article className="office-agent-card" key={x.id}><span className="inf-badge">{x.mode}</span><strong style={{marginTop:9}}>{x.name}</strong><p>{x.role}</p>
-    <Link className="inf-btn" href={x.id==='mini'?'/agentes':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link></article>)}</div>
+    <Link className="inf-btn" href={x.id==='mini'?'/agentes':x.id==='hermes'?'/scanner':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link></article>)}</div>
    <section className="inf-panel" style={{marginTop:15}}><h2>Execuções registradas</h2>{runs.slice(0,15).map(r=><article className="office-record" key={r.id}><strong>{r.agent} · {r.task}</strong><small>{dateLabel(r.created_at)} · {r.status} · {r.external_actions} ações externas</small></article>)}
     {!runs.length&&<div className="office-list-empty">Ainda não há execuções registradas.</div>}</section>
   </>}

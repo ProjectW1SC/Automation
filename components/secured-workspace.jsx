@@ -6,9 +6,10 @@ import ProfessionalAuth from './professional-auth';
 import {getClient} from '../lib/supabase-client';
 import {useCrmAccess} from '../lib/use-crm-access';
 import {getRememberOfficeSession,setRememberOfficeSession} from '../lib/supabase-office-storage.mjs';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 export default function SecuredWorkspace({active,children}){
  const db=useMemo(()=>getClient(),[]);
- const [session,setSession]=useState(null),[loading,setLoading]=useState(true);
+ const [session,setSession]=useState(null),[loading,setLoading]=useState(true),[authFault,setAuthFault]=useState('');
  const [email,setEmail]=useState(''),[password,setPassword]=useState('');
  const [error,setError]=useState(''),[busy,setBusy]=useState(false);
  const [recovery,setRecovery]=useState(false),[newPassword,setNewPassword]=useState('');
@@ -18,12 +19,28 @@ export default function SecuredWorkspace({active,children}){
  useEffect(()=>{setRemember(getRememberOfficeSession())},[]);
  useEffect(()=>{
   if(!db){setLoading(false);return}
-  let alive=true;
-  const {data:{subscription}}=db.auth.onAuthStateChange((event,s)=>{
-   if(alive){setSession(s);setLoading(false);if(event==='PASSWORD_RECOVERY')setRecovery(true)}
-  });
-  db.auth.getSession().then(({data})=>{if(alive){setSession(data.session);setLoading(false)}}).catch(()=>setLoading(false));
-  return()=>{alive=false;subscription.unsubscribe()}
+  let alive=true,subscription=null;
+  async function initialize(){
+   try{
+    // Aguarda o SDK terminar a recuperação do token ANTES de registrar o listener.
+    // Registrá-lo enquanto o cliente está inicializando pode travar o Web Lock.
+    const {data,error}=await withAuthDeadline(db.auth.getSession(),9000);
+    if(!alive)return;
+    if(error)throw error;
+    setSession(data?.session||null);setAuthFault('');setLoading(false);
+    const subscribed=db.auth.onAuthStateChange((event,s)=>{
+      if(!alive)return;
+      setSession(s);setAuthFault('');setLoading(false);
+      if(event==='PASSWORD_RECOVERY')setRecovery(true);
+    });
+    subscription=subscribed.data.subscription;
+    if(!alive)subscription.unsubscribe();
+   }catch(e){
+    if(alive){setAuthFault(e?.message||'A conexão demorou a responder.');setLoading(false)}
+   }
+  }
+  initialize();
+  return()=>{alive=false;subscription?.unsubscribe()}
  },[db]);
  function setModeTo(next){setMode(next);setError('');setShowPassword(false);setPassword('')}
  async function login(e){e.preventDefault();if(!db||busy)return;setBusy(true);setError('');
@@ -56,6 +73,22 @@ export default function SecuredWorkspace({active,children}){
   setError(err?'Não foi possível atualizar: '+err.message:'Senha atualizada.');if(!err){setRecovery(false);setNewPassword('')}
   setBusy(false);
  }
+ function resetLocalSession(){
+  // A chave é derivada somente do projeto atual; não altera outras contas/apps Supabase.
+  try{
+    const project=new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0];
+    const key='sb-'+project+'-auth-token';
+    window.localStorage.removeItem(key);window.sessionStorage.removeItem(key);
+  }catch{}
+  window.location.reload();
+ }
+ if(authFault||access.error)return <main className="reference-auth blackhole-auth-fault" role="alert">
+   <strong>BLACKHOLE · conexão de acesso interrompida</strong>
+   <p>{authFault||access.error}</p>
+   <p>A autenticação não foi presumida. Seus dados permanecem preservados.</p>
+   <div className="office-action-row"><button className="inf-btn primary" type="button" onClick={()=>window.location.reload()}>Tentar novamente</button>
+   <button className="inf-btn" type="button" onClick={resetLocalSession}>Entrar novamente (encerrar sessão local)</button></div>
+  </main>;
  if(!db)return <main className="reference-auth">A conexão segura do Supabase não está configurada.</main>;
  if(loading||access.loading)return <main className="reference-auth">Verificando sessão e permissões do escritório...</main>;
  if(!session&&mode!=='recover'&&!recovery){

@@ -16,6 +16,7 @@ function Console({db,session}){
  const [tab,setTab]=useState('nova'),[expanded,setExpanded]=useState(false);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
  const [engine,setEngine]=useState('evidencias');
+ const [externalAiConsent,setExternalAiConsent]=useState(false);
  const load=useCallback(async()=>{
   const {data,error}=await db.from('office_agent_runs').select('id,task,result,created_at,status').eq('owner_id',session.user.id)
    .eq('agent','superagente').order('created_at',{ascending:false}).limit(45);
@@ -27,29 +28,29 @@ function Console({db,session}){
   {role:'user',content:row.task},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null}
  ]);setTab('nova');setNotice('Conversa recuperada do histórico do CRM.')}
  function chooseAction(q){setPrompt(q);setTab('nova')}
- async function ask(e){e?.preventDefault();const q=prompt.trim();if(q.length<6||busy)return;
+ async function ask(e){e?.preventDefault();const q=prompt.trim();if(!q||busy)return;
   setBusy(true);setNotice('');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
    const response=await fetch('/api/superagente',{method:'POST',
     headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-    body:JSON.stringify({prompt:q})});
-   const payload=await response.json();if(!payload?.ok||!payload.review)throw Error(payload.error||'Não foi possível analisar');
-   const answer=String(payload.review.answer||'').trim();if(!answer)throw Error('O motor não produziu análise válida.');
-   setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review}]);
+    body:JSON.stringify({prompt:q,externalAiConsent,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
+   const payload=await response.json();if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload.error||'Não foi possível responder');
+   const answer=payload.reply.trim();if(!answer)throw Error('Nenhuma resposta foi produzida.');
+   setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null}]);
    setPrompt('');
    const saved=await db.from('office_agent_runs').insert({
     owner_id:session.user.id,agent:'superagente',task:q.slice(0,300),mode:'manual',status:'review',
-    result:{answer,review:payload.review,engine:'motor-de-evidencias'},sources:(payload.review.source_status||[]).map(x=>({source:x})),
+    result:{answer,review:payload.review||null,engine:payload.model},sources:(payload.review?.source_status||[]).map(x=>({source:x})),
     external_actions:0
    });
-   setNotice(saved.error?'Análise concluída, mas o histórico não foi salvo: '+saved.error.message:
-    'Análise de evidências registrada; nenhuma ação externa foi executada.');
+   setNotice(saved.error?'Resposta concluída, mas o histórico não foi salvo: '+saved.error.message:
+    (payload.notice||'Resposta registrada; nenhuma ação externa foi executada.'));
    if(!saved.error)await load();
   }catch(e){setNotice(e.message)}finally{setBusy(false)}
  }
  const activeTab=tab==='nova'?null:tab;
- return <main className="office-ai-console" aria-label="Superagente jurídico ProjectW1SC">
+ return <main className="office-ai-console" aria-label="BLACKHOLE · Superagente jurídico">
   <aside className={'office-ai-rail '+(expanded?'expanded':'')} aria-label="Ferramentas do agente">
    <div className="office-ai-rail-brand">
     <span className="office-ai-infinity" aria-hidden="true">∞</span>
@@ -59,7 +60,7 @@ function Console({db,session}){
    <div className="office-ai-rail-bottom"><Link href="/processos" title="Casos do escritório" aria-label="Processos"><BriefcaseBusiness size={17}/>{expanded&&<span>Processos</span>}</Link><Link href="/integracoes" title="Integrações" aria-label="Integrações"><PlugZap size={17}/>{expanded&&<span>Integrações</span>}</Link></div>
   </aside>
   <div className="office-ai-main">
-   <header className="office-ai-header"><div><small>W1 CAPITAL · SUPERAGENTE JURÍDICO</small><strong>Inteligência para Advocacia</strong></div>
+   <header className="office-ai-header"><div><small>BLACKHOLE · INTELIGÊNCIA JURÍDICA</small><strong>Assistente jurídico</strong></div>
     <span className="office-ai-engine"><span/> Motor de evidências · sem custo de tokens</span></header>
    {activeTab?<div className="office-ai-content">
     {tab==='historico'&&<><h1>Buscar conversas</h1><p>Atividades que foram efetivamente registradas na carteira privada.</p>
@@ -79,7 +80,7 @@ function Console({db,session}){
    <div className={'office-ai-content '+(!messages.length?'office-ai-empty':'')}>
     {!messages.length?<div className="office-ai-welcome">
       <span className="office-ai-orbit"><Bot size={24}/></span>
-      <h1>O que você deseja analisar?</h1><p>Um assistente jurídico baseado nas informações autorizadas do seu escritório.</p>
+      <h1>O que você quer conversar ou analisar?</h1><p>Um assistente jurídico baseado nas informações autorizadas do seu escritório.</p>
       <div className="office-ai-action-cards">{ACTIONS.map(a=>{const Icon=a.icon;return <button key={a.label} type="button" onClick={()=>chooseAction(a.prompt)}><Icon size={19}/><span>{a.label}</span></button>})}</div>
      </div>:
      <div className="office-ai-messages" role="log" aria-live="polite">{messages.map((m,i)=><article key={i} className={'office-ai-message '+m.role}>
@@ -89,13 +90,14 @@ function Console({db,session}){
    </div>}
    <div className="office-ai-bottom">
     {notice&&<p className="office-ai-notice" role="status">{notice}</p>}
-    <form onSubmit={ask} className="office-ai-composer"><textarea required minLength={6} maxLength={1800} rows={2} value={prompt}
+    <form onSubmit={ask} className="office-ai-composer"><textarea required minLength={1} maxLength={3500} rows={2} value={prompt}
       onChange={e=>setPrompt(e.target.value)}
       onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();ask()}}}
-      placeholder="Descreva uma tarefa jurídica, um número CNJ ou um relatório..."/>
-      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> Somente informações autorizadas</span><button type="submit" disabled={busy||prompt.trim().length<6}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
+      placeholder="Envie uma mensagem, uma tarefa ou um número CNJ..."/>
+      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {externalAiConsent?'IA remota autorizada, se configurada':'Somente motor local'}</span><button type="submit" disabled={busy||!prompt.trim()}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
     </form>
-    <p className="office-ai-disclaimer">Pode haver erros e lacunas. Consulte documentos e fontes oficiais antes de atuar.</p>
+    <label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Permitir envio das mensagens a um modelo externo, somente se configurado</label>
+    <p className="office-ai-disclaimer">BLACKHOLE pode errar. Confirme informações judiciais na fonte oficial antes de agir.</p>
    </div>
   </div>
  </main>;

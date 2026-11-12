@@ -6,7 +6,7 @@ test('superagente abre chat sem simular modelo remoto ou ações externas',()=>{
  assert.match(ui,/office_agent_runs/);assert.match(ui,/external_actions:0/);
  assert.match(ui,/history|historico/);
  assert.match(ui,/Habilidades/);assert.match(ui,/Conectores/);
- assert.match(ui,/motor-de-evidencias/);
+ assert.match(ui,/payload\.model|motor local/);
 });
 test('interface leve desativa animações intensas quando solicitado',()=>{
  const css=read('app/office-superagent.css');
