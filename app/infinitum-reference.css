@@ -1,0 +1,90 @@
+/* Linguagem visual reconstituída dos arquivos PART 2/3/4/5:
+   superfícies stone, bordas finas, navegação compacta, tabela e Kanban.
+   Especificamente escopada: preserva os outros temas pessoais existentes. */
+html[data-crm-theme="infinitum"]{background:#fafaf9;color:#1c1917;font-family:Nunito,Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+html[data-crm-theme="infinitum"] .app-shell{background:#fafaf9;color:#1c1917}
+html[data-crm-theme="infinitum"] .app-sidebar{background:#fff!important;color:#44403c!important;border-right:1px solid #e7e5e4!important;box-shadow:none!important}
+html[data-crm-theme="infinitum"] .app-sidebar .app-section-name{color:#a8a29e!important;font-size:10px;letter-spacing:.13em}
+html[data-crm-theme="infinitum"] .app-sidebar .app-nav-link{color:#57534e!important;border-radius:8px!important;font-weight:600;font-size:13px}
+html[data-crm-theme="infinitum"] .app-sidebar .app-nav-link:hover{background:#f5f5f4!important;color:#1c1917!important}
+html[data-crm-theme="infinitum"] .app-sidebar .app-nav-link.active{background:#e7e5e4!important;color:#1c1917!important;box-shadow:none!important}
+html[data-crm-theme="infinitum"] .app-sidebar .app-sidebar-toggle{color:#44403c!important}
+html[data-crm-theme="infinitum"] .app-sidebar .app-nav-footer{border-color:#e7e5e4!important;color:#78716c!important}
+html[data-crm-theme="infinitum"] .app-content{background:#fafaf9!important;color:#1c1917!important}
+html[data-crm-theme="infinitum"] .reference-top-tools{background:#fff!important;border-bottom:1px solid #e7e5e4!important}
+html[data-crm-theme="infinitum"] .reference-dashboard,
+html[data-crm-theme="infinitum"] .task-main{background:#fafaf9!important;color:#1c1917!important}
+html[data-crm-theme="infinitum"] .reference-header h1{font-size:27px;font-weight:800;letter-spacing:-.04em;color:#1c1917!important}
+html[data-crm-theme="infinitum"] .reference-header p{color:#78716c!important}
+html[data-crm-theme="infinitum"] .reference-overline{color:#78716c!important;letter-spacing:.16em}
+html[data-crm-theme="infinitum"] .reference-panel,
+html[data-crm-theme="infinitum"] .efferd-kpi,
+html[data-crm-theme="infinitum"] .metric,
+html[data-crm-theme="infinitum"] .panel{background:#fff!important;border:1px solid #e7e5e4!important;border-radius:12px!important;box-shadow:0 2px 6px rgba(28,25,23,.025)!important;color:#1c1917!important}
+html[data-crm-theme="infinitum"] .efferd-kpi-value{color:#1c1917!important}
+html[data-crm-theme="infinitum"] .reference-outline{background:#fff!important;color:#292524!important;border:1px solid #d6d3d1!important;border-radius:8px!important}
+html[data-crm-theme="infinitum"] .reference-outline:hover{background:#f5f5f4!important}
+html[data-crm-theme="infinitum"] .reference-panel-title h2{color:#292524!important}
+html[data-crm-theme="infinitum"] input,
+html[data-crm-theme="infinitum"] select,
+html[data-crm-theme="infinitum"] textarea{border-color:#d6d3d1;border-radius:8px}
+html[data-crm-theme="infinitum"] input:focus-visible,
+html[data-crm-theme="infinitum"] select:focus-visible,
+html[data-crm-theme="infinitum"] button:focus-visible,
+html[data-crm-theme="infinitum"] a:focus-visible{outline:2px solid #57534e;outline-offset:2px}
+.inf-studio{padding:28px 30px;max-width:1600px;margin:auto;min-height:calc(100vh - 64px)}
+.inf-studio *{box-sizing:border-box}
+.inf-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.inf-heading small{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#78716c;font-weight:800}
+.inf-heading h1{font-size:29px;letter-spacing:-.04em;margin:6px 0 5px;font-weight:850;color:#1c1917}
+.inf-heading p{font-size:13px;color:#78716c;max-width:730px;margin:0}
+.inf-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.inf-btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;background:#fff;color:#292524;border:1px solid #d6d3d1;border-radius:8px;padding:9px 13px;min-height:37px;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer}
+.inf-btn.primary{background:#1c1917;border-color:#1c1917;color:#fff}
+.inf-btn.primary:hover{background:#44403c}
+.inf-btn:hover:not(.primary){background:#f5f5f4}
+.inf-btn:disabled{opacity:.45;cursor:not-allowed}
+.inf-btn:focus-visible{outline:2px solid #78716c;outline-offset:2px}
+.inf-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.inf-stat{border:1px solid #e7e5e4;border-radius:12px;background:#fff;padding:18px}
+.inf-stat label{display:block;font-size:12px;font-weight:650;color:#78716c}
+.inf-stat strong{display:block;font-size:26px;letter-spacing:-.04em;color:#1c1917;margin-top:6px}
+.inf-panel{border:1px solid #e7e5e4;border-radius:12px;background:#fff;padding:20px;margin-bottom:15px}
+.inf-panel h2{font-size:15px;color:#292524;margin:0 0 8px}
+.inf-panel p{font-size:13px;color:#78716c;margin:0 0 11px}
+.inf-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.inf-fields label,.inf-field{display:grid;gap:5px;font-weight:650;color:#57534e;font-size:12px}
+.inf-fields input,.inf-fields select,.inf-fields textarea,.inf-field input,.inf-field textarea,.inf-field select,.inf-search{width:100%;min-height:38px;padding:9px 11px;border:1px solid #d6d3d1;border-radius:8px;background:#fff;color:#1c1917;font:inherit;font-size:13px}
+.inf-fields textarea,.inf-field textarea{resize:vertical;min-height:76px}
+.inf-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.inf-search{max-width:350px}
+.inf-tabs{display:flex;gap:4px;border-radius:9px;border:1px solid #e7e5e4;padding:3px;background:#f5f5f4}
+.inf-tabs button{padding:7px 10px;border:0;background:transparent;border-radius:7px;font-size:12px;color:#78716c;font-weight:700;cursor:pointer}
+.inf-tabs button[aria-pressed="true"]{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);color:#1c1917}
+.inf-table-wrap{overflow:auto;border:1px solid #e7e5e4;border-radius:10px}
+.inf-table{width:100%;border-collapse:collapse;font-size:12px;min-width:690px;white-space:normal}
+.inf-table th{background:#fafaf9;color:#78716c;font-size:10px;letter-spacing:.10em;text-transform:uppercase;font-weight:800;text-align:left;padding:12px;border-bottom:1px solid #e7e5e4}
+.inf-table td{padding:12px;border-bottom:1px solid #f5f5f4;color:#44403c;vertical-align:top}
+.inf-table tbody tr:last-child td{border-bottom:0}
+.inf-table tbody tr:hover td{background:#fafaf9}
+.inf-badge{display:inline-block;background:#f5f5f4;border:1px solid #e7e5e4;padding:4px 9px;border-radius:100px;color:#57534e;font-size:10px;font-weight:800}
+.inf-badge.positive{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+.inf-badge.alert{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.inf-kanban{display:grid;grid-template-columns:repeat(6,minmax(180px,1fr));gap:10px;overflow-x:auto;padding-bottom:12px}
+.inf-kanban-col{background:#f5f5f4;border:1px solid #e7e5e4;border-radius:10px;padding:10px;min-height:170px}
+.inf-kanban-header{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:12px;font-weight:800;color:#57534e;padding:4px 2px 12px}
+.inf-kanban-card{padding:12px;background:#fff;border:1px solid #e7e5e4;border-radius:8px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.035)}
+.inf-kanban-card strong{color:#292524;font-size:12px}
+.inf-kanban-card p{color:#78716c;font-size:11px;margin:5px 0}
+.inf-kanban-card select{font-size:11px;border:1px solid #d6d3d1;border-radius:6px;padding:5px;width:100%}
+.inf-empty{padding:25px;text-align:center;font-size:12px;color:#78716c}
+.inf-note{background:#fafaf9;color:#57534e;border:1px solid #e7e5e4;border-radius:9px;padding:12px;margin:12px 0;font-size:12px;line-height:1.5}
+.inf-note.error{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.inf-source-row{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0}
+.inf-source-row a{font-size:12px;font-weight:650;color:#44403c;text-decoration:underline;text-underline-offset:2px}
+.inf-chat-output{white-space:pre-wrap;font-family:inherit;line-height:1.65;font-size:13px;color:#292524;background:#fafaf9;padding:18px;border-radius:9px;border:1px solid #e7e5e4;overflow-wrap:anywhere}
+.inf-row-end{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.inf-2col{display:grid;grid-template-columns:minmax(260px,1fr) minmax(350px,1.35fr);gap:14px}
+@media(max-width:1100px){.inf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.inf-kanban{grid-template-columns:repeat(6,215px)}}
+@media(max-width:760px){.inf-studio{padding:16px}.inf-2col{grid-template-columns:1fr}.inf-fields{grid-template-columns:1fr}.inf-heading h1{font-size:23px}.inf-grid{gap:7px}.inf-stat{padding:12px}.inf-stat strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.inf-studio *,html[data-crm-theme="infinitum"] .app-shell *{transition:none!important;animation:none!important}}
