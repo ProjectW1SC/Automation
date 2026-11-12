@@ -18,5 +18,6 @@ import './infinitum-login.css';
 import './integrations-console.css';
 import './office-superagent.css';
 import './blackhole-theme.css';
+import './blackhole-infinitum-studio.css';
 export const metadata={title:'BLACKHOLE • Inteligência Jurídica',description:'BLACKHOLE — gestão jurídica com processos, prazos, peças, agentes e integrações',icons:{icon:'/branding/blackhole-symbol.svg'}};
 export default function RootLayout({children}){return <html lang="pt-BR"><body>{children}</body></html>}
