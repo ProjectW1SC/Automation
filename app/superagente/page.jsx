@@ -53,7 +53,7 @@ function Console({db,session}){
    setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null}]);
    setPrompt('');
    const saved=await db.from('office_agent_runs').insert({
-    owner_id:session.user.id,agent:'superagente',task:q.slice(0,300),mode:'manual',status:'review',
+    owner_id:session.user.id,agent:'superagente',task:q.length<3?'Pergunta: '+q:q.slice(0,300),mode:'manual',status:'review',
     result:{answer,review:payload.review||null,engine:payload.model},sources:(payload.review?.source_status||[]).map(x=>({source:x})),
     external_actions:0
    });
