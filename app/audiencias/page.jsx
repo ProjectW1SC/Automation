@@ -1,2 +1,3 @@
-import JudicialIntelligence from '../../components/judicial-intelligence';
-export default function AudienciasPage(){return <JudicialIntelligence mode="audiencias"/>;}
+'use client';
+import OfficeConsole from '../../components/office-console';
+export default function Page(){return <OfficeConsole area="audiencias"/>}
