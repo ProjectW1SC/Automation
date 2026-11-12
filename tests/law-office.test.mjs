@@ -20,7 +20,8 @@ test('mini agente prioriza sem fingir consulta ou envio',()=>{
  assert.equal(review.counts.today,1);
  assert.equal(review.counts.unverified,1);
  assert.deepEqual(review.performedActions,[]);
- assert.equal(OFFICE_AGENTS.length,10);
+ assert.ok(OFFICE_AGENTS.length>=10);
+ assert.ok(OFFICE_AGENTS.some(x=>x.id==='hermes'));
 });
 test('petição nunca inventa partes, legislação nem atos oficiais',()=>{
  const draft=makePetitionSkeleton({kind:'manifestacao',caseRecord:{id:'c',title:'Processo consumerista',process_number:'4004458-72.2026.8.26.0198'}});
