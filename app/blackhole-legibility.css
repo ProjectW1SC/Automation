@@ -1,0 +1,114 @@
+/* BLACKHOLE: correção de acessibilidade e hierarquia dos componentes em tema claro.
+   Mantém o motor de interface sem overlay escuro, não depende do tema legado. */
+html[data-crm-theme="blackhole"]{
+ --crm-page:#fff;--crm-surface:#fff;--crm-ink:#1b1c1f;--crm-muted:#626976;
+ --crm-accent:#222;--crm-accent-ink:#fff;--crm-border:#e4e6e9;
+ --crm-tint:#f4f5f7;--crm-tint-ink:#24252a;
+ --bh-ink:#1b1c1f;--bh-muted:#5a6270;--studio-text:#202124;--studio-soft:#616774;
+ color-scheme:light!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading h1,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel h2,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel h3{
+ color:#1c1e22!important;text-shadow:none!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading p,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-heading small,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat label,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat small{
+ color:#636974!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-stat strong{
+ color:#17191f!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-table th{
+ background:#f5f6f8!important;color:#444b55!important;
+ border-bottom:1px solid #dde1e7!important;text-shadow:none!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-table td{
+ background:#fff!important;color:#282e36!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-table tbody tr:hover td{background:#f7f8fa!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-note,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-list-empty{
+ color:#505865!important;background:#f8fafc!important;border-color:#e4e8ef!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-note.error{color:#9d202e!important;background:#fef1f2!important}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-panel,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .inf-fields label,
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-form-col label{
+ color:#282b31!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console,
+html[data-crm-theme="blackhole"] .office-ai-main,
+html[data-crm-theme="blackhole"] .office-ai-content,
+html[data-crm-theme="blackhole"] .office-ai-bottom{
+ background:#fff!important;color:#23262b!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-header{
+ background:#fff!important;border-color:#e8eaee!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-header strong,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-welcome h1,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-content h1{
+ color:#23262b!important;opacity:1!important;text-shadow:none!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-header small,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-welcome p,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-content>p{
+ color:#5d6370!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-message-body{
+ color:#24272e!important;opacity:1!important;filter:none!important;text-shadow:none!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-author{
+ color:#4c5666!important;font-weight:700!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-message.user .office-ai-message-body{
+ background:#182336!important;color:#fff!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-message-tools,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-message-tools button,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-consent,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-disclaimer{
+ color:#575e6d!important;opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-notice,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-progress{color:#3f4e64!important;opacity:1!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-composer{
+ background:#fff!important;border:1px solid #c9d0d9!important;box-shadow:0 3px 14px #10182811!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-composer textarea{
+ color:#24272e!important;background:#fff!important;min-height:52px!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-composer textarea::placeholder{color:#727b89!important;opacity:1!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-composer-foot span{color:#505d70!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-composer-foot button{background:#111827!important;color:#fff!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-engine{color:#4d5a69!important;opacity:1!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-rail{
+ background:#151719!important;color:#fff!important;border-color:#2b2f35!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-rail button,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-rail a{color:#dce0e6!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-rail button.selected,
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-rail button:hover{background:#323946!important;color:#fff!important}
+html[data-crm-theme="blackhole"] .blackhole-chat-models{
+ display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap;
+ max-width:850px;margin:9px auto 3px;
+}
+html[data-crm-theme="blackhole"] .blackhole-chat-models button{
+ background:#fff!important;border:1px solid #d5dae2!important;border-radius:999px!important;
+ color:#424c59!important;font-size:11px!important;padding:7px 11px!important;cursor:pointer;
+}
+html[data-crm-theme="blackhole"] .blackhole-chat-models button[aria-pressed="true"]{
+ background:#182336!important;color:#fff!important;border-color:#182336!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-model-choice button[aria-pressed="true"]{
+ background:#19243a!important;color:#fff!important;
+}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-consent{display:flex;align-items:center;justify-content:center;gap:8px;max-width:850px;margin:8px auto 0;font-size:11px}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-consent input{width:auto!important}
+html[data-crm-theme="blackhole"] .office-ai-console .office-ai-progress{text-align:center;font-size:11px;margin:7px 0}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar{transition:none!important}
+}
