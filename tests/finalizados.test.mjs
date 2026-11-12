@@ -5,7 +5,7 @@ import {CRM_AREAS,areaFromQuery,crmAreaHref} from '../lib/crm-navigation.mjs';
 import {isFinalizedClient,finalizedClients,reopenClientPatch} from '../lib/finalizados.mjs';
 const read=(file)=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 test('Finalizados replaces Revisar in the only shared navigation',()=>{
- assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Processos','Finalizados','Instituições','Minhas atividades','Relatórios','Configurações']);
+ assert.deepEqual(CRM_AREAS.map(x=>x.label),['Visão geral','Tarefas','Clientes','Processos','Audiências','Veredito','Finalizados','Instituições','Minhas atividades','Relatórios','Configurações']);
  assert.equal(CRM_AREAS.some(x=>x.label==='Revisar'),false);
  assert.equal(crmAreaHref('Finalizados'),'/?aba=finalizados');
  assert.equal(areaFromQuery('?aba=finalizados'),'Finalizados');
