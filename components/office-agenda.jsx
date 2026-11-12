@@ -52,7 +52,7 @@ function Agenda({db,session}){
  const eventsByDate=useMemo(()=>{const map=new Map();for(const date of week)map.set(date,visible.filter(e=>e.date===date));return map},[week,visible]);
  const periodLabel=view==='day'?fmt(selectedDate,{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):
   fmt(week[0],{day:'2-digit',month:'short'})+' — '+fmt(week[6],{day:'2-digit',month:'long',year:'numeric'});
- function movePeriod(direction){const amount=view==='day'?direction:direction*7;const next=shift(anchor,amount);setAnchor(next);if(view==='day')setSelectedDate(next)}
+ function movePeriod(direction){const base=view==='day'?selectedDate:anchor;const amount=view==='day'?direction:direction*7;const next=shift(base,amount);setAnchor(next);if(view==='day')setSelectedDate(next)}
  function todayClick(){setAnchor(today);setSelectedDate(today)}
  function openEvent(event){setSelected(event)}
  async function saveEvent(e){

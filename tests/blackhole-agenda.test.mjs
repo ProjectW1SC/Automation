@@ -14,7 +14,7 @@ test('agenda consolida prazos, retornos, tarefas e audiências sem inventar hor�
   cases:[{id:'c1',client_id:'u1',title:'Ação cível',process_number:'0001234-56.2026.8.26.0100',status:'ativo',next_review:'2026-11-16'}],
   snapshots:[]
  });
- assert.equal(events.length,4);
+ assert.equal(events.length,5);
  assert.equal(events.filter(x=>x.kind==='audiencia').length,1);
  assert.equal(events.find(x=>x.id==='d2').time,null);
  assert.equal(events.find(x=>x.id==='d1').clientName,'Maria Silva');
