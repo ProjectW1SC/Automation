@@ -14,7 +14,7 @@ test('o modo IA indisponível não descarta minuta baseada no processo',()=>{
  const s=read('components/office-console.jsx');
  assert.match(s,/avisoAi/);assert.match(s,/estrutura-verificavel/);assert.match(s,/Minuta estruturada salva/);
 });
-test('a página aplica o BLACKHOLE antes da hidratação, ignorando tema antigo do ProjectW1SC',()=>{
+test('a página aplica Infinitum antes da hidratação e respeita a seleção persistente de tema',()=>{
  const a=read('app/layout.jsx'),b=read('components/crm-shell.jsx');
- assert.match(a,/data-crm-theme="blackhole"/);assert.match(b,/BLACKHOLE fixo/);
+ assert.match(a,/data-crm-theme="infinitum"/);assert.match(b,/localStorage.getItem/);assert.doesNotMatch(b,/BLACKHOLE fixo/);
 });

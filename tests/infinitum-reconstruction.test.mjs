@@ -36,7 +36,7 @@ test('login reproduz ações reais: mostrar senha, acesso pendente, Google e lem
  assert.match(login,/setRememberOfficeSession/);
  assert.match(login,/showPassword/);
  assert.match(auth,/w1-auth-hero/);assert.match(auth,/w1-auth-panel/);
- assert.match(auth,/Entre no horizonte/);
+ assert.match(auth,/Seu escritório/);
  assert.match(css,/prefers-reduced-motion/);
 });
 test('segredos do Infinitum ficam no servidor e só existe conector público autorizado',()=>{
