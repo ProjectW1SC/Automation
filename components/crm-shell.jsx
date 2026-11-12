@@ -5,8 +5,8 @@ import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRoun
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
-import {PROFILE_BUCKET,ownerAvatarPath} from '../lib/profile-settings.mjs';
-import {APPEARANCE_BUCKET,applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
+
+import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
@@ -34,16 +34,18 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request||error||!data?.user)return;
    const user=data.user,metadata=user.user_metadata||{};
    setProfile({display_name:String(metadata.display_name||metadata.full_name||''),avatar_path:String(metadata.avatar_path||'')});
-   const backgroundPath=String(metadata.crm_background_path||'');
-   const safePath=backgroundPath.startsWith(user.id+'/background-')&&/\.(png|jpg|webp)$/.test(backgroundPath)?backgroundPath:'';
+   const {data:{session}}=await db.auth.getSession();
+   const headers=session?.access_token?{Authorization:'Bearer '+session.access_token}:{};
    const [photo,background]=await Promise.all([
-    ownerAvatarPath(user.id,metadata.avatar_path)?db.storage.from(PROFILE_BUCKET).createSignedUrl(metadata.avatar_path,3600):Promise.resolve({data:null}),
-    safePath?db.storage.from(APPEARANCE_BUCKET).createSignedUrl(safePath,3600):Promise.resolve({data:null})
+    metadata.avatar_path?fetch('/api/profile/media?type=avatar',{headers,cache:'no-store'}):Promise.resolve(null),
+    metadata.crm_background_path?fetch('/api/profile/media?type=background',{headers,cache:'no-store'}):Promise.resolve(null)
    ]);
    if(!alive||current!==request)return;
-   setAvatarUrl(photo.error?'':photo.data?.signedUrl||'');
+   const [photoUrl,backgroundUrl]=await Promise.all([photo?.ok?photo.blob().then(URL.createObjectURL):Promise.resolve(''),background?.ok?background.blob().then(URL.createObjectURL):Promise.resolve('')]);
+   if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
+   setAvatarUrl(photoUrl);
    const colors=metadata.crm_colors&&typeof metadata.crm_colors==='object'?metadata.crm_colors:{};
-   appearanceRef.current={colors,backgroundUrl:background?.data?.signedUrl||''};
+   appearanceRef.current={colors,backgroundUrl};
    const currentTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'blackhole');
    try{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),colors,appearanceRef.current.backgroundUrl)}
    catch{applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===currentTheme),{},appearanceRef.current.backgroundUrl)}
