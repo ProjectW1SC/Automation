@@ -27,6 +27,19 @@ function Generator({db,session}){
    const endpoint=sourceMode==='datajud'?'/api/gerador-processos/datajud':'/api/gerador-processos';
    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify(form)});
    const data=await response.json();
+   if(!data.ok&&sourceMode==='djen'&&response.status===503){
+    setNotice('A API DJEN bloqueou a conexão do servidor. Tentando a rota pública pelo seu navegador...');
+    const browserResult=await browseOfficialDjenSearch(form);
+    let saved=true,saveError='';
+    if(browserResult.items.length){
+     const write=await db.from('crm_process_candidates').upsert(browserResult.items.map(row=>({...row,owner_id:session.user.id})),
+      {onConflict:'owner_id,process_number,query_term'});
+     if(write.error){saved=false;saveError=write.error.message}
+    }
+    if(saved)await load();else setRows(browserResult.items.map((x,i)=>({...x,id:'temp-'+i,created_at:browserResult.checkedAt})));
+    setStatus('ok');setNotice(browserResult.notice+(saveError?' · Resultados mantidos nesta tela, mas não salvos: '+saveError:'')+' · Consulta feita pelo navegador.');
+    return;
+   }
    if(!data.ok)throw Error(data.error||'Falha na consulta oficial.');
    setStatus('ok');setNotice(data.notice+(data.saveError?' '+data.saveError:'')+(data.limited?' · Resultados limitados pela consulta.':''));
    await load();
