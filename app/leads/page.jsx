@@ -8,6 +8,7 @@ const stamp=t=>t?new Date(t).toLocaleDateString('pt-BR'):'—';
 function LeadsBoard({db,session}){
  const [items,setItems]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [form,setForm]=useState(empty()),[showForm,setShowForm]=useState(false);
+ const [visibleCount,setVisibleCount]=useState(100);
  const [filter,setFilter]=useState(''),[origin,setOrigin]=useState('todos'),[view,setView]=useState('tabela'),[importSource,setImportSource]=useState('w1');
  const load=useCallback(async()=>{
   setBusy(true);
@@ -20,6 +21,7 @@ function LeadsBoard({db,session}){
  useEffect(()=>{load()},[load]);
  const results=useMemo(()=>items.filter(x=>(origin==='todos'||x.source===origin)&&
   (x.name+' '+(x.company||'')+' '+(x.interest||'')).toLocaleLowerCase('pt-BR').includes(filter.toLocaleLowerCase('pt-BR'))),[items,filter,origin]);
+ const visible=results.slice(0,visibleCount);
  const count=stage=>items.filter(x=>x.stage===stage).length;
  async function add(e){
   e.preventDefault();setBusy(true);
@@ -92,16 +94,17 @@ function LeadsBoard({db,session}){
    <select aria-label="Filtrar por origem" className="inf-search" style={{maxWidth:180}} value={origin} onChange={e=>setOrigin(e.target.value)}><option value="todos">Todas as fontes</option>{LEAD_SOURCES.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>
    <div className="inf-tabs"><button aria-pressed={view==='tabela'} onClick={()=>setView('tabela')}><Table2 size={14}/> Tabela</button><button aria-pressed={view==='kanban'} onClick={()=>setView('kanban')}><Columns3 size={14}/> Kanban</button></div></div>
    {!results.length?<div className="inf-empty">Nenhum lead nesta visualização. Cadastre ou importe registros reais.</div>:
-   view==='kanban'?<div className="inf-kanban">{LEAD_STAGES.map(stage=><div key={stage} className="inf-kanban-col"><div className="inf-kanban-header"><span>{stage}</span><span>{results.filter(x=>x.stage===stage).length}</span></div>
-    {results.filter(x=>x.stage===stage).map(x=><article key={x.id} className="inf-kanban-card"><strong>{x.name}</strong><p>{x.company||'Sem organização'} · {x.source.toUpperCase()}</p><p>Score {x.score}</p>
+   view==='kanban'?<div className="inf-kanban">{LEAD_STAGES.map(stage=><div key={stage} className="inf-kanban-col"><div className="inf-kanban-header"><span>{stage}</span><span>{visible.filter(x=>x.stage===stage).length}</span></div>
+    {visible.filter(x=>x.stage===stage).map(x=><article key={x.id} className="inf-kanban-card"><strong>{x.name}</strong><p>{x.company||'Sem organização'} · {x.source.toUpperCase()}</p><p>Score {x.score}</p>
       <select aria-label={'Etapa de '+x.name} value={x.stage} onChange={e=>move(x.id,e.target.value)}>{LEAD_STAGES.map(s=><option key={s}>{s}</option>)}</select>
      </article>)}</div>)}</div>:
    <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>Lead</th><th>Empresa</th><th>Fonte</th><th>Contato</th><th>Score</th><th>Etapa</th><th>Registrado</th></tr></thead><tbody>
-    {results.map(x=><tr key={x.id}><td><strong>{x.name}</strong>{x.source_url&&<div><a href={x.source_url} target="_blank" rel="noreferrer">Origem pública <ExternalLink size={11}/></a></div>}</td>
+    {visible.map(x=><tr key={x.id}><td><strong>{x.name}</strong>{x.source_url&&<div><a href={x.source_url} target="_blank" rel="noreferrer">Origem pública <ExternalLink size={11}/></a></div>}</td>
      <td>{x.company||'—'}</td><td><span className="inf-badge">{x.source.toUpperCase()}</span></td>
      <td>{x.email||x.phone||'Não informado'}</td><td>{x.score}</td><td><select aria-label={'Etapa de '+x.name} value={x.stage} onChange={e=>move(x.id,e.target.value)}>{LEAD_STAGES.map(s=><option key={s}>{s}</option>)}</select></td><td>{stamp(x.created_at)}</td></tr>)}
     </tbody></table></div>}
-   {items.length>=1000&&<p>Mostrando até mil registros por página. Buscas amplas exigem paginação.</p>}
+   {visible.length<results.length&&<div className="inf-row-end"><button type="button" className="inf-btn" onClick={()=>setVisibleCount(n=>Math.min(n+100,1000))}>Mostrar mais {Math.min(100,results.length-visible.length)} leads</button></div>}
+   {items.length>=1000&&<p>Consulta limitada aos mil registros mais recentes; filtros e paginação adicionais podem ser necessários.</p>}
   </section>
  </main>;
 }

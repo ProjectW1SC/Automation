@@ -48,7 +48,13 @@ export default function CrmShell({active='Visão geral',email='',onNavigate,onSi
   const sidebarRef=useRef(null);
  useEffect(()=>{
   function applyStoredTheme(){
-   let stored='vinho';
+   // Na primeira visita desta refatoração, coloca a referência visual solicitada.
+   // O seletor de temas continua editável e suas escolhas posteriores são preservadas.
+   try{if(!window.localStorage.getItem('projectw1sc.infinitum-refactor-v1')){
+     window.localStorage.setItem('projectw1sc.crm-theme','infinitum');
+     window.localStorage.setItem('projectw1sc.infinitum-refactor-v1','1');
+   }}catch{}
+   let stored='infinitum';
    try{stored=window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
    const id=resolveTheme(stored);
    setTheme(id);document.documentElement.dataset.crmTheme=id;

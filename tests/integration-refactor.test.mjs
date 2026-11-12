@@ -9,6 +9,7 @@ test('W1/W2 import de CSV/JSON com deduplicação e não mistura organizações'
  assert.equal(parseLeadImport(csv,'leads.csv','w1').valid.length,1);
  assert.equal(parseLeadImport(JSON.stringify([{name:'Clínica X',email:'b@empresa.test'}]),'w2.json','w2').valid[0].source,'w2');
  assert.throws(()=>normalizeLead({name:'Sem origem'},'w3'),/URL|contato|organização/i);
+ assert.equal(normalizeLead({name:'Cliente Teste',company:'Empresa Teste',stage:'qualificado'},'w1').stage,'qualificado');
  assert.equal(LEAD_SOURCES.length,4);
 });
 test('superagente do Lexis classifica tarefas sem inventar consultas ou envios',()=>{
