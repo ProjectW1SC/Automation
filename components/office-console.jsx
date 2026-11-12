@@ -3,7 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
-import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion} from '../lib/office-core.mjs';
+import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
 const LOADED={
  dashboard:['clients','cases','deadlines','leads','messages','runs'],
@@ -30,6 +30,7 @@ function OfficeUI({area,db,session}){
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [showForm,setShowForm]=useState(false),[query,setQuery]=useState('');
  const [client,setClient]=useState(emptyClient()),[caseForm,setCaseForm]=useState(emptyCase()),[deadlineForm,setDeadlineForm]=useState(emptyDeadline());
+ const [editClientId,setEditClientId]=useState(null),[editCaseId,setEditCaseId]=useState(null),[editDeadlineId,setEditDeadlineId]=useState(null);
  const [selectedCase,setSelectedCase]=useState(''),[consulting,setConsulting]=useState(''),[checkResult,setCheckResult]=useState(null);
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
@@ -61,19 +62,36 @@ function OfficeUI({area,db,session}){
   finally{setBusy(false)}
  };
  const save=(table,row)=>async()=>{const r=await db.from(table).insert(row);if(r.error)throw r.error;};
- async function createClient(e){e.preventDefault();const row={...client,name:client.name.trim(),phone:client.phone||null,email:client.email||null,document:client.document||null,next_return:client.next_return||null};
-  await act(save('office_clients',row),'Cliente jurídico registrado.');setClient(emptyClient());
+ useEffect(()=>{if(area==='documents')setSelectedCase(new URLSearchParams(window.location.search).get('case')||'')},[area]);
+ async function createClient(e){e.preventDefault();
+  const row={name:client.name.trim(),phone:client.phone||null,email:client.email||null,document:client.document||null,
+   notes:client.notes||null,responsible:client.responsible||null,next_return:client.next_return||null};
+  if(editClientId)row.status=client.status||'ativo';
+  await act(async()=>{const r=editClientId?await db.from('office_clients').update({...row,updated_at:new Date().toISOString()}).eq('id',editClientId):
+   await db.from('office_clients').insert(row);if(r.error)throw r.error;},editClientId?'Cadastro jurídico atualizado.':'Cliente jurídico registrado.');
+  setClient(emptyClient());setEditClientId(null);
  }
  async function createCase(e){e.preventDefault();let number;
   try{number=normalizeOfficeCNJ(caseForm.process_number)}catch(e){setNotice(e.message);return}
-  const row={...caseForm,process_number:number,client_id:caseForm.client_id||null,next_review:caseForm.next_review||null};
-  await act(save('office_cases',row),'Processo jurídico registrado.');setCaseForm(emptyCase());
+  const row={title:caseForm.title,process_number:number,client_id:caseForm.client_id||null,next_review:caseForm.next_review||null,
+   tribunal:caseForm.tribunal||null,subject:caseForm.subject||null,lawyer:caseForm.lawyer||null,notes:caseForm.notes||null};
+  if(editCaseId)row.status=caseForm.status||'ativo';
+  await act(async()=>{const r=editCaseId?await db.from('office_cases').update({...row,updated_at:new Date().toISOString()}).eq('id',editCaseId):
+   await db.from('office_cases').insert(row);if(r.error)throw r.error;},editCaseId?'Processo atualizado.':'Processo jurídico registrado.');
+  setCaseForm(emptyCase());setEditCaseId(null);
  }
  async function createDeadline(e){e.preventDefault();
   try{validateOfficeDay(deadlineForm.due_on)}catch(e){setNotice(e.message);return}
-  const row={...deadlineForm,case_id:deadlineForm.case_id||null,client_id:deadlineForm.client_id||null,source:deadlineForm.source||null,source_url:deadlineForm.source_url||null};
-  await act(save('office_deadlines',row),'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');setDeadlineForm(emptyDeadline());
+  const row={title:deadlineForm.title,due_on:deadlineForm.due_on,kind:deadlineForm.kind,priority:deadlineForm.priority,
+   case_id:deadlineForm.case_id||null,client_id:deadlineForm.client_id||null,verified:!!deadlineForm.verified,
+   source:deadlineForm.source||null,source_url:deadlineForm.source_url||null,responsible:deadlineForm.responsible||null,notes:deadlineForm.notes||null};
+  await act(async()=>{const r=editDeadlineId?await db.from('office_deadlines').update({...row,updated_at:new Date().toISOString()}).eq('id',editDeadlineId):
+   await db.from('office_deadlines').insert(row);if(r.error)throw r.error;},editDeadlineId?'Prazo atualizado; confira a origem judicial.':'Prazo/tarefa cadastrado. A data deve ser conferida no documento de origem.');
+  setDeadlineForm(emptyDeadline());setEditDeadlineId(null);
  }
+ function startEditClient(x){setClient({...emptyClient(),...x,next_return:x.next_return||''});setEditClientId(x.id);setShowForm(true);}
+ function startEditCase(x){setCaseForm({...emptyCase(),...x,client_id:x.client_id||'',next_review:x.next_review||'',process_number:x.process_number||''});setEditCaseId(x.id);setShowForm(true);}
+ function startEditDeadline(x){setDeadlineForm({...emptyDeadline(),...x,case_id:x.case_id||'',client_id:x.client_id||'',source:x.source||'',source_url:x.source_url||''});setEditDeadlineId(x.id);setShowForm(true);}
  async function markDeadline(row){await act(async()=>{
   const r=await db.from('office_deadlines').update({status:'concluido',completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',row.id);
   if(r.error)throw r.error;
@@ -88,6 +106,7 @@ function OfficeUI({area,db,session}){
    setCheckResult({...p,number:row.process_number});setNotice((p.fromCache?'Cache oficial anterior consultado. ':'')+(p.notice||'Consulta concluída.'));
   }catch(e){setNotice('Consulta não confirmada: '+e.message)}finally{setConsulting('')}
  }
+ async function saveEditedDocument(){if(!docResult?.id)return;setBusy(true);const r=await db.from('office_documents').update({body:docResult.body,status:'revisao',updated_at:new Date().toISOString()}).eq('id',docResult.id);setBusy(false);setNotice(r.error?'Minuta não salva: '+r.error.message:'Minuta atualizada e encaminhada para revisão.');if(!r.error)await load();}
  const download=(body,filename)=>{
   const blob=new Blob([body],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=u;a.download=filename.replace(/[^a-z0-9._-]/gi,'_');a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)
@@ -134,7 +153,7 @@ function OfficeUI({area,db,session}){
   setBusy(true);setNotice('');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada');
-   const r=await fetch('/api/office/whatsapp/send',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({phone:selectedPhone,text:reply.trim()})});
+   const r=await fetch('/api/office/whatsapp/send',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({phone:selectedPhone,text:reply.trim(),approved:true})});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Provedor recusou');
    setReply('');setNotice(p.warning||'WhatsApp confirmou o envio.');await load();
   }catch(e){setNotice('Mensagem não enviada: '+e.message)}finally{setBusy(false)}
@@ -169,35 +188,38 @@ function OfficeUI({area,db,session}){
     </section></div><Source>Iniciamos uma carteira jurídica limpa: os 206 registros financeiros legados não foram migrados e permanecem isolados no banco até eventual arquivamento definitivo.</Source>
   </>}
   {area==='clients'&&<><div className="inf-grid"><Stat label="Total na carteira jurídica" value={clients.length} href="/clientes"/><Stat label="Ativos" value={clients.filter(x=>x.status==='ativo').length} href="/clientes"/><Stat label="Com processo" value={new Set(cases.filter(x=>x.client_id).map(x=>x.client_id)).size} href="/processos"/><Stat label="Retornos cadastrados" value={clients.filter(x=>x.next_return).length} href="/prazos"/></div>
-   {showForm&&<section className="inf-panel"><h2>Cadastrar cliente jurídico</h2><form className="office-form-col" onSubmit={createClient}>
+   {showForm&&<section className="inf-panel"><h2>{editClientId?'Editar cliente jurídico':'Cadastrar cliente jurídico'}</h2><form className="office-form-col" onSubmit={createClient}>
     <div className="inf-fields"><label>Nome completo<input required minLength={2} value={client.name} onChange={e=>setClient({...client,name:e.target.value})}/></label>
      <label>Telefone<input value={client.phone} onChange={e=>setClient({...client,phone:e.target.value})}/></label>
      <label>E-mail<input type="email" value={client.email} onChange={e=>setClient({...client,email:e.target.value})}/></label>
      <label>Documento (opcional)<input value={client.document} onChange={e=>setClient({...client,document:e.target.value})}/></label>
-     <label>Responsável<input value={client.responsible} onChange={e=>setClient({...client,responsible:e.target.value})}/></label>
+     <label>Responsável<input value={client.responsible||''} onChange={e=>setClient({...client,responsible:e.target.value})}/></label>
+     {editClientId&&<label>Situação<select value={client.status||'ativo'} onChange={e=>setClient({...client,status:e.target.value})}><option value="ativo">Ativo</option><option value="arquivado">Arquivado</option></select></label>}
      <label>Próximo retorno (data informada)<input type="date" value={client.next_return} onChange={e=>setClient({...client,next_return:e.target.value})}/></label>
      <label style={{gridColumn:'1/-1'}}>Observações<textarea value={client.notes} onChange={e=>setClient({...client,notes:e.target.value})}/></label>
-    </div><div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>Salvar cliente</button></div>
+    </div><div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>{editClientId?"Salvar alterações":"Salvar cliente"}</button></div>
     </form></section>}
    <section className="inf-panel"><h2>Carteira jurídica</h2><div className="inf-toolbar"><input className="inf-search" aria-label="Filtrar clientes" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Nome, telefone ou responsável"/></div>
-    <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>Cliente</th><th>Contato</th><th>Responsável</th><th>Processos</th><th>Próximo retorno</th><th>Situação</th></tr></thead><tbody>{clients.filter(x=>match([x.name,x.phone,x.responsible])).slice(0,300).map(x=><tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.email||x.phone||'—'}</td><td>{x.responsible||'—'}</td><td>{cases.filter(p=>p.client_id===x.id).length}</td><td>{dateLabel(x.next_return)}</td><td><span className="inf-badge">{x.status}</span></td></tr>)}</tbody></table></div>
+    <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>Cliente</th><th>Contato</th><th>Responsável</th><th>Processos</th><th>Próximo retorno</th><th>Situação</th><th>Ação</th></tr></thead><tbody>{clients.filter(x=>match([x.name,x.phone,x.responsible])).slice(0,300).map(x=><tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.email||x.phone||'—'}</td><td>{x.responsible||'—'}</td><td>{cases.filter(p=>p.client_id===x.id).length}</td><td>{dateLabel(x.next_return)}</td><td><span className="inf-badge">{x.status}</span></td><td><button type="button" className="inf-btn" onClick={()=>startEditClient(x)}>Editar</button></td></tr>)}</tbody></table></div>
     {!clients.length&&<div className="inf-empty">Nenhum cliente jurídico cadastrado. A carteira anterior de quitações não foi importada.</div>}
    </section></>}
   {area==='cases'&&<><div className="inf-grid"><Stat label="Processos da carteira" value={cases.length} href="/processos"/><Stat label="Ativos" value={cases.filter(x=>x.status==='ativo').length} href="/processos"/><Stat label="Com número CNJ" value={cases.filter(x=>x.process_number).length} href="/processos"/><Stat label="Com revisão agendada" value={cases.filter(x=>x.next_review).length} href="/prazos"/></div>
-   {showForm&&<section className="inf-panel"><h2>Cadastrar processo</h2><form onSubmit={createCase} className="office-form-col"><div className="inf-fields">
+   {showForm&&<section className="inf-panel"><h2>{editCaseId?'Editar processo':'Cadastrar processo'}</h2><form onSubmit={createCase} className="office-form-col"><div className="inf-fields">
       <label>Assunto / identificação<input required minLength={3} value={caseForm.title} onChange={e=>setCaseForm({...caseForm,title:e.target.value})}/></label>
       <label>Número CNJ (se houver)<input value={caseForm.process_number} onChange={e=>setCaseForm({...caseForm,process_number:e.target.value})} placeholder="0000000-00.0000.0.00.0000"/></label>
       <label>Cliente<select value={caseForm.client_id} onChange={e=>setCaseForm({...caseForm,client_id:e.target.value})}><option value="">Não vinculado</option>{clients.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
       <label>Tribunal<input value={caseForm.tribunal} onChange={e=>setCaseForm({...caseForm,tribunal:e.target.value})}/></label>
       <label>Área / matéria<input value={caseForm.subject} onChange={e=>setCaseForm({...caseForm,subject:e.target.value})}/></label>
-      <label>Advogado responsável<input value={caseForm.lawyer} onChange={e=>setCaseForm({...caseForm,lawyer:e.target.value})}/></label>
+      <label>Advogado responsável<input value={caseForm.lawyer||''} onChange={e=>setCaseForm({...caseForm,lawyer:e.target.value})}/></label>
+      {editCaseId&&<label>Situação<select value={caseForm.status||'ativo'} onChange={e=>setCaseForm({...caseForm,status:e.target.value})}>{['ativo','suspenso','encerrado'].map(k=><option key={k}>{k}</option>)}</select></label>}
       <label>Próxima revisão<input type="date" value={caseForm.next_review} onChange={e=>setCaseForm({...caseForm,next_review:e.target.value})}/></label>
       <label style={{gridColumn:'1/-1'}}>Notas<textarea value={caseForm.notes} onChange={e=>setCaseForm({...caseForm,notes:e.target.value})}/></label>
     </div><div className="inf-row-end"><button disabled={busy} className="inf-btn primary">Salvar processo</button></div></form></section>}
    <section className="inf-panel"><h2>Processos e consultas oficiais</h2><input className="inf-search" aria-label="Filtrar processos" placeholder="Buscar CNJ, matéria, advogado ou cliente" value={query} onChange={e=>setQuery(e.target.value)}/>
     <div className="office-records" style={{marginTop:15}}>{cases.filter(x=>match([x.title,x.process_number,x.subject,x.lawyer,getClientName(x.client_id)])).slice(0,250).map(x=><article key={x.id} className="office-record">
       <span className="inf-badge">{x.status}</span><strong>{x.title}</strong><p>{x.process_number||'Sem CNJ'} · {x.tribunal||'Tribunal não informado'}</p><small>{getClientName(x.client_id)} · {x.lawyer||'Sem advogado designado'}</small>
-      <div className="office-action-row"><button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'datajud')}>DataJud</button>
+      <div className="office-action-row"><button className="inf-btn" onClick={()=>startEditCase(x)}>Editar cadastro</button>
+       <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'datajud')}>DataJud</button>
        <button className="inf-btn" disabled={!!consulting||!x.process_number} onClick={()=>courtSearch(x,'djen')}>DJEN</button>
        <Link className="inf-btn" href={'/pecas?case='+encodeURIComponent(x.id)}><FileText size={14}/> Criar petição</Link>
       </div></article>)}
@@ -207,7 +229,7 @@ function OfficeUI({area,db,session}){
      <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
    </section></>}
   {['deadlines','audiencias'].includes(area)&&<><div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
-   {showForm&&<section className="inf-panel"><h2>Novo prazo, audiência ou retorno</h2><form onSubmit={createDeadline}><div className="inf-fields">
+   {showForm&&<section className="inf-panel"><h2>{editDeadlineId?'Editar prazo ou audiência':'Novo prazo, audiência ou retorno'}</h2><form onSubmit={createDeadline}><div className="inf-fields">
      <label>Descrição<input required minLength={3} value={deadlineForm.title} onChange={e=>setDeadlineForm({...deadlineForm,title:e.target.value})}/></label>
      <label>Data<input required type="date" value={deadlineForm.due_on} onChange={e=>setDeadlineForm({...deadlineForm,due_on:e.target.value})}/></label>
      <label>Tipo<select value={deadlineForm.kind} onChange={e=>setDeadlineForm({...deadlineForm,kind:e.target.value})}>{['prazo','audiencia','retorno','tarefa'].map(k=><option key={k} value={k}>{k}</option>)}</select></label>
@@ -227,7 +249,8 @@ function OfficeUI({area,db,session}){
       <p>{dateLabel(x.due_on)} · {x.kind} · {x.priority} · {x.responsible||'Sem responsável'}</p>
       <small>{getCaseTitle(x.case_id)} · Fonte: {x.source||'não informada'} · {x.verified?'Conferida':'Sem confirmação documental'}</small>
       <div className="office-action-row">{x.source_url&&<a className="inf-btn" href={x.source_url} target="_blank" rel="noreferrer">Fonte <ExternalLink size={12}/></a>}
-       {x.status==='aberto'&&<button className="inf-btn" disabled={busy} onClick={()=>markDeadline(x)}><CheckCircle2 size={14}/> Concluir</button>}</div>
+       {x.status==='aberto'&&<><button className="inf-btn" onClick={()=>startEditDeadline(x)}>Editar</button>
+       <button className="inf-btn" disabled={busy} onClick={()=>markDeadline(x)}><CheckCircle2 size={14}/> Concluir</button></>}</div>
     </article>)}{!deadlines.length&&<div className="office-list-empty">Nenhum prazo cadastrado.</div>}</div>
    </section></>}
   {area==='documents'&&<><div className="office-panel-grid"><section className="inf-panel"><h2>Gerar peça ou petição</h2>
@@ -239,9 +262,9 @@ function OfficeUI({area,db,session}){
     <button className="inf-btn primary" disabled={busy||!selectedCase}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
     <Source>Sem API de IA configurada, o sistema gera estrutura editável com lacunas explícitas. Nenhuma fundamentação ou documento inexistente será inventado. Não há peticionamento automático.</Source>
    </form></section>
-   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button></div>
+   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
-    <Source>Alterações na pré-visualização ainda não são salvas. A versão registrada encontra-se na lista abaixo.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
+    <Source>Edite o texto e clique em Salvar revisão. Advogado responsável deve conferir antes de aprovar ou protocolar.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
    <section className="inf-panel"><h2>Peças registradas</h2><div className="office-records">{documents.map(x=><article className="office-record" key={x.id}><strong>{x.title}</strong><p>{x.kind} · {x.status} · {dateLabel(x.created_at)}</p><div className="office-action-row">
      <button className="inf-btn" onClick={()=>setDocResult({id:x.id,body:x.body,title:x.title})}>Abrir minuta</button>
      <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
@@ -254,7 +277,7 @@ function OfficeUI({area,db,session}){
     <section className="inf-panel"><h2>Atendimento {selectedPhone||''}</h2>{selectedPhone?<><div className="office-whatsapp-messages">{currentThread.map(m=><div key={m.id} className={'office-bubble '+m.direction}><small className="office-hint">{m.direction==='inbound'?'Cliente':'Escritório'} · {dateLabel(m.received_at)}</small><div>{m.body}</div></div>)}</div>
       <form onSubmit={sendWhatsApp} className="office-form-col" style={{marginTop:15}}><label>Resposta revisada pelo operador<textarea value={reply} maxLength={1000} onChange={e=>setReply(e.target.value)}/></label>
        <div className="office-action-row"><button type="button" className="inf-btn" onClick={()=>setReply(buildWhatsAppSuggestion(lastInbound||{}))}>Mini Agent: sugerir resposta</button>
-       <button type="submit" disabled={!reply.trim()||busy||!whatsappStatus?.configured} className="inf-btn primary">Enviar pela API oficial</button></div></form>
+       <button type="submit" disabled={!reply.trim()||busy||!whatsappStatus?.configured||!lastInbound||!canReplyWhatsApp(lastInbound.received_at)} className="inf-btn primary">Confirmar e enviar pela API oficial</button></div></form>
       <Source>Envio exige conexão oficial, mensagem recebida nas últimas 24 horas e clique humano. Fora da janela, somente templates aprovados — não implementados aqui.</Source>
      </>:<div className="office-list-empty">Selecione uma conversa para responder.</div>}</section></div>
   </>}

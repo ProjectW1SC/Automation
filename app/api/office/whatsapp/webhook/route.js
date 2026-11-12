@@ -1,5 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
-import {signMetaBody,verifyMetaBody,validMetaPhone} from '../../../../../lib/whatsapp-guard.mjs';
+import {verifyMetaBody,validMetaPhone} from '../../../../../lib/whatsapp-guard.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=30;
 const plain=(str,status=200)=>new Response(str,{status,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}});
 export async function GET(request){
@@ -29,7 +29,7 @@ export async function POST(request){
     const person=(value.contacts||[]).find(x=>x.wa_id===m.from);
     const name=String(person?.profile?.name||'').slice(0,120);
     const text=m.type==='text'?String(m.text?.body||'').slice(0,4000):'[Mídia recebida: conferir no canal oficial]';
-    const received_at=/^\d{10,13}$/.test(String(m.timestamp||''))?new Date(Number(m.timestamp)*1000).toISOString():new Date().toISOString();
+    const received_at=/^\d{10}$/.test(String(m.timestamp||''))?new Date(Number(m.timestamp)*1000).toISOString():new Date().toISOString();
     records.push({owner_id:null,phone,direction:'inbound',display_name:name,body:text,
      provider_message_id:m.id,received_at,status:'received',provider_status:'webhook'});
    }
