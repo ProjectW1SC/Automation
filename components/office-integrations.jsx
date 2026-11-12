@@ -10,6 +10,7 @@ const SERVICES=[
  {name:'Agenda',icon:CalendarDays,subtitle:'Audiências e compromissos',route:'/audiencias'},
  {name:'Meta',icon:PlugZap,subtitle:'Captação e campanhas',route:'/leads'},
  {name:'IA jurídica',icon:Bot,subtitle:'Provedores configuráveis',route:'/pecas'},
+ {name:'Fontes dos tribunais',icon:CalendarDays,subtitle:'Pautas e plenários oficiais (28 fontes)',route:'#courts'},
  {name:'Infinitum (opcional)',icon:CodeXml,subtitle:'Conector externo de leitura',route:'#api'}
 ];
 const asRows=obj=>{
@@ -23,6 +24,7 @@ function Body({db}){
  const [organizations,setOrganizations]=useState([]),[pops,setPops]=useState([]),[phases,setPhases]=useState([]),[cards,setCards]=useState([]);
  const [org,setOrg]=useState(''),[pop,setPop]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [event,setEvent]=useState({title:'',date:'',description:''});
+ const [courtSources,setCourtSources]=useState([]),[showAllCourts,setShowAllCourts]=useState(false);
  const query=useCallback(async(resource,params={})=>{
   const {data:{session}}=await db.auth.getSession();
   if(!session?.access_token)throw Error('Sessão expirada.');
@@ -31,16 +33,28 @@ function Body({db}){
   const p=await r.json();if(!p.ok)throw Error(p.error||'Consulta não concluída.');
   return p;
  },[db]);
- useEffect(()=>{let alive=true;async function status(){
-  try{const {data:{session}}=await db.auth.getSession();if(!session)return;
-   const [r,w]=await Promise.all([
-    query('organizations'),
-    fetch('/api/office/whatsapp/status',{headers:{Authorization:'Bearer '+session.access_token}}).then(x=>x.json())
-   ]);
-   if(!alive)return;
-   setState({configured:r.configured});setWhatsapp(w);if(r.configured)setOrganizations(asRows(r.data));
-  }catch(e){if(alive)setNotice('Integração não confirmada: '+e.message)}
- }status();return()=>{alive=false}},[db,query]);
+ useEffect(()=>{let alive=true;
+ async function status(){
+  const {data:{session}}=await db.auth.getSession();
+  if(!alive||!session?.access_token)return;
+  // Não deixar Infinitum opcional quebrar a verificação independente de
+  // WhatsApp/tribunais: são provedores diferentes.
+  const [orgState,w,official]=await Promise.allSettled([
+   query('organizations'),
+   fetch('/api/office/whatsapp/status',{headers:{Authorization:'Bearer '+session.access_token}}).then(x=>x.json()),
+   fetch('/api/office/courts',{headers:{Authorization:'Bearer '+session.access_token}}).then(x=>x.json())
+  ]);
+  if(!alive)return;
+  if(orgState.status==='fulfilled'){
+   setState({configured:!!orgState.value.configured});
+   if(orgState.value.configured)setOrganizations(asRows(orgState.value.data));
+  }else setState({configured:false});
+  if(w.status==='fulfilled')setWhatsapp(w.value||{configured:false});
+  if(official.status==='fulfilled'&&official.value?.ok)setCourtSources(official.value.items||[]);
+ }
+ status().catch(e=>{if(alive)setNotice('Falha temporária ao conferir integrações: '+e.message)});
+ return()=>{alive=false};
+ },[db,query]);
  async function load(resource,params){
   setBusy(true);setNotice('');
   try{
@@ -58,7 +72,7 @@ function Body({db}){
     <p>Use alternativas gratuitas onde for possível. Serviços opcionais exigem credenciais próprias e nunca são exibidos como conectados sem verificação.</p></div>
    <Link href="/agentes" className="inf-btn"><Bot size={15}/> Agentes do escritório</Link>
   </header>
-  <div className="office-integration-cards">{SERVICES.map(s=>{const Icon=s.icon;const active=s.name==='Infinitum (opcional)'?state.configured:s.name==='WhatsApp'?whatsapp.configured:false;
+  <div className="office-integration-cards">{SERVICES.map(s=>{const Icon=s.icon;const active=s.name==='Fontes dos tribunais'?courtSources.length>0:s.name==='Infinitum (opcional)'?state.configured:s.name==='WhatsApp'?whatsapp.configured:false;
    return <Link href={s.route} key={s.name} className="office-integration-card">
     <div className="office-integration-icon"><Icon size={23}/></div><strong>{s.name}</strong><p>{s.subtitle}</p><small className={active?'configured':'pending'}>{active?'Configurado':'Requer configuração'}</small>
    </Link>
@@ -83,6 +97,22 @@ function Body({db}){
      <div className="inf-row-end"><button className="inf-btn primary" type="submit">Baixar evento .ics</button></div>
     </form>
    </div>
+  </section>
+  <section className="inf-panel" id="courts">
+   <div className="office-toolbar"><div><h2>Fontes dos tribunais e plenários</h2>
+    <p>Endereços oficiais reaproveitados do LexisPredict. São pautas e sessões públicas, não APIs de acesso automático aos autos e nem confirmação de audiências individuais.</p></div>
+    <Link href="/scanner" className="inf-btn">Scanner DataJud + DJEN</Link></div>
+   {courtSources.length?<><p>{courtSources.length} fontes oficiais configuradas nesta instalação.</p>
+    <div className="office-integration-cards">
+     {courtSources.slice(0,showAllCourts?courtSources.length:9).map(item=>
+      <a key={item.id} className="office-integration-card" href={item.url} target="_blank" rel="noopener noreferrer">
+       <strong>{item.label}</strong><p>{item.url.replace(/^https:\/\//,'').slice(0,100)}</p>
+       <small className="configured">Abrir site oficial</small>
+      </a>)}
+    </div>
+    {courtSources.length>9&&<button className="inf-btn" type="button" onClick={()=>setShowAllCourts(x=>!x)}>
+     {showAllCourts?'Exibir menos':'Mostrar todas as '+courtSources.length+' fontes'}</button>}
+    </>:<div className="inf-note">Nenhuma fonte de pautas cadastrada. O scanner DataJud/DJEN continua independente desses links.</div>}
   </section>
   <section className="inf-panel" id="api">
    <div className="office-toolbar"><div><h2><CodeXml size={17}/> Conector opcional Infinitum</h2><p>Organizações, procedimentos (POP), fases e cards. Integração REST documentada, não acesso ao backend privado.</p></div>
