@@ -77,6 +77,6 @@ test('profile in shell uses stored display name and private signed avatar',()=>{
  const shell=file('components/crm-shell.jsx');
  assert.match(shell,/display_name/);
  assert.match(shell,/avatar_path/);
- assert.match(shell,/api\\/profile\\/media\\?type=avatar/);
+ assert.ok(shell.includes('/api/profile/media?type=avatar'));
  assert.match(shell,/Configurações/);
 });
