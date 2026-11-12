@@ -21,7 +21,8 @@ test('escritório compartilhado usa auth e único sidebar',()=>{
  assert.match(read('app/page.jsx'),/OfficeConsole/);
  assert.match(read('app/processos/page.jsx'),/OfficeConsole/);
  assert.match(read('components/office-console.jsx'),/SecuredWorkspace/);
- assert.match(read('components/secured-workspace.jsx'),/useCrmAccess/);
+ assert.match(read('components/secured-workspace.jsx'),/useWorkspaceSession/);
+ assert.match(read('components/workspace-session-provider.jsx'),/useCrmAccess/);
  assert.match(read('components/crm-shell.jsx'),/aria-label="Navegação principal"/);
  assert.doesNotMatch(read('components/crm-shell.jsx'),/Quitações/);
 });
