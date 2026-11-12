@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from 'react';
 import {FileSearch,RefreshCw,Search,Plus,ExternalLink,ShieldCheck} from 'lucide-react';
 import {normalizeOfficeCNJ} from '../../lib/office-core.mjs';
+import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const initialStart=()=>{const d=new Date();d.setDate(d.getDate()-14);return d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})};
@@ -30,6 +31,23 @@ function Generator({db,session}){
    await load();
    if(!data.persisted)setRows(data.items.map((x,i)=>({...x,id:'temp-'+i,created_at:data.checkedAt})));
   }catch(e){setStatus('error');setNotice(e.message)}finally{setBusy(false)}
+ }
+ async function consultDjenBrowser(){
+  if(busy)return;setBusy(true);setStatus('running');setNotice('Consultando a API pública DJEN a partir do navegador...');
+  try{
+   const result=await browseOfficialDjenSearch(form);
+   let saved=true,saveError='';
+   if(result.items.length){
+    const r=await db.from('crm_process_candidates').upsert(result.items.map(row=>({...row,owner_id:session.user.id})),
+      {onConflict:'owner_id,process_number,query_term'});
+    if(r.error){saved=false;saveError=r.error.message}
+   }
+   if(saved)await load();
+   else setRows(result.items.map((x,i)=>({...x,id:'temp-'+i,created_at:result.checkedAt})));
+   setStatus('ok');
+   setNotice(result.notice+(saveError?' Resultados obtidos mas não persistidos: '+saveError:''));
+  }catch(e){setStatus('error');setNotice('DJEN via navegador não confirmado: '+e.message)}
+  finally{setBusy(false)}
  }
  async function addManual(e){
   e.preventDefault();if(busy)return;setBusy(true);setNotice('');
@@ -72,7 +90,8 @@ function Generator({db,session}){
      <label>Tribunal<select value={form.court} onChange={e=>setForm({...form,court:e.target.value})}><option value="">{sourceMode==='datajud'?'Selecione um tribunal':'Todos'}</option>{['TJSP','TJRJ','TJMG','TJPR','TJBA','TJRS','TJSC','TJPE','TRT2','TRT3','TRT4','TRF1','TRF2','TRF3','STJ','TST'].map(x=><option key={x}>{x}</option>)}</select></label>
      {sourceMode==='djen'&&<><label>Data inicial da publicação<input type="date" required value={form.start} onChange={e=>setForm({...form,start:e.target.value})}/></label>
      <label>Data final da publicação<input type="date" required value={form.end} onChange={e=>setForm({...form,end:e.target.value})}/></label></>}
-    </div><div className="inf-row-end"><button className="inf-btn primary" type="submit" disabled={busy}><Search size={15}/> {busy?'Consultando...':'Buscar candidatos oficiais'}</button></div>
+    </div><div className="inf-row-end"><button className="inf-btn primary" type="submit" disabled={busy}><Search size={15}/> {busy?'Consultando...':'Buscar candidatos oficiais'}</button>
+    {sourceMode==='djen'&&<button className="inf-btn" type="button" disabled={busy} onClick={consultDjenBrowser}>Pesquisar DJEN pelo meu navegador</button>}</div>
    </form>
    <div className="inf-note">DataJud: pesquisa por classe/assunto em um tribunal, até 20 candidatos por consulta; a data exibida é a de ajuizamento, não de publicação. DJEN: pesquisa de publicações em janela de até 31 dias. Erros 403/429 indicam bloqueio real, não ausência de processos.</div>
   </section>

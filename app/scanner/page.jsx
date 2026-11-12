@@ -4,6 +4,9 @@ import Link from 'next/link';
 import {Radar,RefreshCw,ScanSearch,ShieldCheck,PauseCircle,CalendarDays,Scale,AlertTriangle,CheckCircle2,BookOpen} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
 import {formatProcessNumber} from '../../lib/processos-oficiais.mjs';
+import {shrinkOfficialResult} from '../../lib/judicial-triage.mjs';
+import {buildScannerReview,sourceSummary} from '../../lib/blackhole-office-scanner.mjs';
+import {browseOfficialDjenNumber} from '../../lib/blackhole-public-djen-browser.mjs';
 import {withAuthDeadline} from '../../lib/auth-deadline.mjs';
 const label={confirmed:'Consulta confirmada',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite atingido (429)',
  cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Indisponível'};
@@ -12,7 +15,7 @@ function Scanner({db,session}){
  const [cases,setCases]=useState([]),[history,setHistory]=useState([]),[loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
  const [query,setQuery]=useState(''),[progress,setProgress]=useState({done:0,total:0}),[live,setLive]=useState([]);
- const [auto,setAuto]=useState(false),[scanBatch,setScanBatch]=useState('4');
+ const [auto,setAuto]=useState(false),[scanBatch,setScanBatch]=useState('4'),[directCNJ,setDirectCNJ]=useState('');
  const active=useRef(false),aborter=useRef(null),autoRef=useRef(false),casesRef=useRef([]);
  const read=useCallback(async()=>{
   setLoading(true);
@@ -74,6 +77,31 @@ function Scanner({db,session}){
    await read();
   }catch(e){setError(e.message)}finally{active.current=false;setBusy(false);aborter.current=null}
  },[db,read]);
+ async function directDjen(){
+  if(active.current)return;
+  let number;try{number=formatProcessNumber(directCNJ||filtered[0]?.process_number)}catch{setError('Escolha um CNJ cadastrado.');return}
+  if(!cases.some(x=>x.process_number===number)){setError('CNJ não consta na carteira autorizada.');return}
+  active.current=true;setBusy(true);setError('');setNotice('');
+  try{
+   const result=await browseOfficialDjenNumber({number});
+   const review=buildScannerReview([{process_number:number,source:'djen',checked_at:result.checkedAt,payload:{items:result.items}}],{
+    today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
+   const sources={...sourceSummary({datajud:{ok:false,error:'Não consultado nesta operação.'},djen:result}),via:'navegador'};
+   const saved=await db.from('crm_judicial_snapshots').upsert({
+    actor_id:session.user.id,process_number:number,source:'djen',query_key:'default:default',
+    checked_at:result.checkedAt,found:result.found,payload:shrinkOfficialResult(result)
+   },{onConflict:'actor_id,process_number,source,query_key'});
+   if(saved.error)throw Error('Consulta recebida mas não registrada como snapshot: '+saved.error.message);
+   const audit=await db.from('office_scan_runs').insert({actor_id:session.user.id,process_number:number,
+    trigger_mode:'manual',source_status:sources,review});
+   setLive(old=>[{number,title:cases.find(x=>x.process_number===number)?.title||'Processo',
+    ok:true,sourceStatus:sources,review,persisted:!audit.error,saveError:audit.error?.message||null},...old].slice(0,35));
+   setNotice('DJEN consultado diretamente na API pública pelo navegador, com '+result.items.length+' publicação(ões). DataJud NÃO foi consultado nesta operação.'+
+    (audit.error?' A trilha não foi gravada: '+audit.error.message:''));
+   await read();
+  }catch(e){setError('Consulta DJEN pelo navegador não confirmada: '+e.message)}
+  finally{active.current=false;setBusy(false)}
+ }
  const runNext=()=>run(filtered.slice(0,Number(scanBatch)),'manual');
  const runAll=()=>run(filtered,'manual');
  useEffect(()=>{
@@ -119,6 +147,19 @@ function Scanner({db,session}){
     <button type="button" className="inf-btn" disabled={busy||!filtered.length||loading} onClick={runAll}>Varrer toda a carteira carregada</button>
     {busy&&<button type="button" className="inf-btn" onClick={()=>aborter.current?.abort()}><PauseCircle size={14}/> Interromper</button>}
    </div>
+   <div className="office-action-row blackhole-scanner-browser">
+    <label>DJEN por consulta pública no navegador
+     <select value={directCNJ} onChange={e=>setDirectCNJ(e.target.value)} aria-label="Processo para DJEN pelo navegador">
+      <option value="">Primeiro CNJ do filtro</option>
+      {filtered.slice(0,100).map(c=><option key={c.process_number} value={c.process_number}>{c.process_number} · {String(c.title||'').slice(0,45)}</option>)}
+     </select>
+    </label>
+    <button type="button" className="inf-btn" onClick={directDjen} disabled={busy||!filtered.length}>
+     Consultar DJEN pelo meu navegador
+    </button>
+    <a className="inf-btn" href="https://comunica.pje.jus.br/" target="_blank" rel="noopener noreferrer">Portal oficial Comunica PJe</a>
+   </div>
+   <p className="office-hint">Consulta pública direta inspirada no LexisPredict. O navegador pode ter acesso quando a infraestrutura de nuvem recebe 403; depende do CORS e das permissões oficiais. Não contorna CAPTCHA ou bloqueios.</p>
    <label className="blackhole-scanner-opt"><input type="checkbox" checked={auto} onChange={e=>updateAuto(e.target.checked)}/>
     <span>Verificar automaticamente até 2 processos pendentes a cada 15 minutos <strong>enquanto esta aba estiver aberta</strong></span>
    </label>
