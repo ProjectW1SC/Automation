@@ -19,5 +19,6 @@ import './integrations-console.css';
 import './office-superagent.css';
 import './blackhole-theme.css';
 import './blackhole-infinitum-studio.css';
+import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'BLACKHOLE • Inteligência Jurídica',description:'BLACKHOLE — gestão jurídica com processos, prazos, peças, agentes e integrações',icons:{icon:'/branding/blackhole-symbol.svg'}};
-export default function RootLayout({children}){return <html lang="pt-BR"><body>{children}</body></html>}
+export default function RootLayout({children}){return <html lang="pt-BR"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
