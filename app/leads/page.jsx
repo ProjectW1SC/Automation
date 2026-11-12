@@ -6,16 +6,20 @@ import {LEAD_SOURCES,LEAD_STAGES,normalizeLead,parseLeadImport} from '../../lib/
 const empty=()=>({name:'',company:'',email:'',phone:'',source:'manual',source_url:'',interest:'',source_detail:'',score:'0',stage:'novo'});
 const stamp=t=>t?new Date(t).toLocaleDateString('pt-BR'):'—';
 function LeadsBoard({db,session}){
- const [items,setItems]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [items,setItems]=useState([]),[intake,setIntake]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [form,setForm]=useState(empty()),[showForm,setShowForm]=useState(false);
  const [visibleCount,setVisibleCount]=useState(100);
  const [filter,setFilter]=useState(''),[origin,setOrigin]=useState('todos'),[view,setView]=useState('tabela'),[importSource,setImportSource]=useState('w1');
  const load=useCallback(async()=>{
   setBusy(true);
-  const r=await db.from('crm_leads').select('id,name,company,phone,email,source,source_key,source_url,source_detail,interest,stage,score,created_at,updated_at')
-   .order('created_at',{ascending:false}).limit(1000);
-  if(r.error)setNotice('Falha ao consultar Leads: '+r.error.message);
-  else setItems(r.data||[]);
+  const [r,q]=await Promise.all([
+   db.from('crm_leads').select('id,name,company,phone,email,source,source_key,source_url,source_detail,interest,stage,score,created_at,updated_at')
+    .order('created_at',{ascending:false}).limit(1000),
+   db.from('office_intake').select('id,name,email,phone,practice_area,message,consent_at,created_at,converted_at')
+    .order('created_at',{ascending:false}).limit(100)
+  ]);
+  if(r.error)setNotice('Falha ao consultar Leads: '+r.error.message);else setItems(r.data||[]);
+  if(q.error)setNotice('Falha ao consultar solicitações do site: '+q.error.message);else setIntake(q.data||[]);
   setBusy(false)
  },[db]);
  useEffect(()=>{load()},[load]);
@@ -39,6 +43,19 @@ function LeadsBoard({db,session}){
   if(r.error)setNotice('Não foi possível atualizar o lead: '+r.error.message);
   else setItems(list=>list.map(x=>x.id===id?{...x,stage}:x))
  }
+ async function importIntake(row){
+  setBusy(true);setNotice('');
+  try{
+   const lead=normalizeLead({name:row.name,email:row.email,phone:row.phone,source_detail:row.message||'Solicitação voluntária do site',
+    interest:row.practice_area,consent_at:String(row.consent_at||'').slice(0,10),consent_source:'formulario_publico',status:'novo'},'manual');
+   const r=await db.from('crm_leads').upsert({...lead,owner_id:session.user.id,updated_at:new Date().toISOString()},{onConflict:'source_key'});
+   if(r.error)throw r.error;
+   const x=await db.from('office_intake').update({converted_at:new Date().toISOString()}).eq('id',row.id);
+   if(x.error)throw x.error;
+   setNotice('Solicitação recebida do site transferida para o funil, sem enviar mensagens automaticamente.');
+   await load()
+  }catch(e){setNotice('Não foi possível transferir o lead: '+e.message)}finally{setBusy(false)}
+ }
  async function importFile(e){
   const file=e.currentTarget.files?.[0];if(!file)return;
   if(file.size>2_000_000){setNotice('Arquivo acima do limite de 2 MB. Divida em lotes.');return}
@@ -60,7 +77,7 @@ function LeadsBoard({db,session}){
  }
  return <main className="inf-studio">
   <header className="inf-heading"><div><small>CRM / W1 CAPITAL / CAPTAÇÃO</small><h1>Leads</h1>
-   <p>Pipeline unificado de origens verificáveis. Importa exportações W1 e W2, além de registros públicos autorizados da pesquisa W3.</p></div>
+   <p>Captação jurídica: solicitações voluntárias pelo site e importação de contatos autorizados W1/W2. Sem envio automático de mensagens.</p></div>
    <div className="inf-actions"><button className="inf-btn" onClick={load} disabled={busy}><RefreshCw size={15}/> Atualizar</button><button className="inf-btn primary" onClick={()=>setShowForm(x=>!x)}><Plus size={15}/> Novo lead</button></div></header>
   <div className="inf-grid">
    <div className="inf-stat"><label>Leads da carteira</label><strong>{items.length}</strong></div>
@@ -69,6 +86,13 @@ function LeadsBoard({db,session}){
    <div className="inf-stat"><label>Convertidos</label><strong>{count('convertido')}</strong></div>
   </div>
   {notice&&<div className={'inf-note '+(/falha|interromp|erro|rejeitad|não foi/i.test(notice)?'error':'')} role="status">{notice}</div>}
+  <section className="inf-panel"><div className="office-toolbar"><h2>Solicitações pela landing page jurídica</h2><a className="inf-btn primary" href="/captacao" target="_blank" rel="noreferrer">Abrir página de captação <ExternalLink size={12}/></a></div>
+   <p>Contato recebido com autorização de retorno e validação antispam. Revise antes de enviar ao funil.</p>
+   <div className="office-records">{intake.filter(x=>!x.converted_at).map(x=><article className="office-record" key={x.id}>
+    <strong>{x.name}</strong><p>{x.practice_area} · {x.email||x.phone||'Sem contato'} · {stamp(x.created_at)}</p>
+    <p>{x.message||'Sem descrição'}</p><button type="button" className="inf-btn" disabled={busy} onClick={()=>importIntake(x)}>Adicionar ao funil</button>
+   </article>)}{!intake.some(x=>!x.converted_at)&&<div className="office-list-empty">Nenhum pedido de contato pendente do site.</div>}</div>
+  </section>
   <section className="inf-panel"><h2>Fontes e geradores conectados ao fluxo</h2>
    <p>W1 Leadcheck exporta CSV; W2 LEADCHECKIN exporta dados CSV/JSON. W3 God’s Eye é uma ferramenta geográfica, não uma API de geração automática de leads.</p>
    <div className="inf-source-row">{LEAD_SOURCES.filter(s=>s.href).map(x=><a key={x.id} href={x.href} target="_blank" rel="noreferrer">{x.label} <ExternalLink size={11}/></a>)}</div>

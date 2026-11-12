@@ -4,8 +4,8 @@ import {ShieldCheck,ChartNoAxesCombined,History,LockKeyhole} from 'lucide-react'
 export default function ProfessionalAuth({eyebrow='ÁREA RESTRITA',title='Bem-vindo de volta',description='Entre com seu acesso autorizado.',children}){
  return <main className="w1-auth-screen"><div className="w1-auth-frame">
   <section className="w1-auth-hero" aria-label="Apresentação ProjectW1SC">
-   <div className="w1-auth-hero-top"><img className="w1-auth-hero-logo" src="/branding/projectw1sc-wordmark.svg" alt="ProjectW1SC — Negociações e CRM" width="390" height="120"/><div className="w1-auth-hero-tag"><i/> PLATAFORMA OPERACIONAL</div></div>
-   <div className="w1-auth-hero-content"><span>UM AMBIENTE. TODA A OPERAÇÃO.</span><h2>Mais clareza em cada decisão.</h2><p>Clientes, negociações e retornos organizados em um espaço pensado para tornar o trabalho mais simples.</p>
+   <div className="w1-auth-hero-top"><img className="w1-auth-hero-logo" src="/branding/projectw1sc-wordmark.svg" alt="ProjectW1SC — Gestão jurídica" width="390" height="120"/><div className="w1-auth-hero-tag"><i/> PLATAFORMA OPERACIONAL</div></div>
+   <div className="w1-auth-hero-content"><span>UM AMBIENTE. TODA A OPERAÇÃO.</span><h2>Mais clareza em cada decisão.</h2><p>Clientes, processos, prazos e atendimentos organizados para a rotina de um escritório de advocacia.</p>
     <div className="w1-auth-capabilities">
      <div><span><ChartNoAxesCombined size={19}/></span><div><strong>Visão inteligente</strong><small>Indicadores e prioridades em um só lugar</small></div></div>
      <div><span><History size={19}/></span><div><strong>Histórico organizado</strong><small>Informações e atendimentos rastreáveis</small></div></div>

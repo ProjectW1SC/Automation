@@ -12,13 +12,13 @@ test('client details never render an undefined UserRound icon',()=>{
 });
 test('report is a single authenticated area in the ProjectW1SC shell',()=>{
  assert.equal(CRM_AREAS.filter(x=>x.label==='Relatórios').length,1);
- assert.equal(CRM_AREAS.find(x=>x.label==='Relatórios').path,'/report');
- const page=read('app/report/page.jsx');
- assert.match(page,/CrmShell/);
- assert.match(page,/getClient/);
- assert.match(page,/crm_activities/);
- assert.match(page,/crm_completed_activities/);
- assert.match(page,/buildReport/);
+ assert.equal(CRM_AREAS.find(x=>x.label==='Relatórios').path,'/relatorios');
+ const page=read('app/relatorios/page.jsx');
+ assert.match(page,/OfficeConsole/);
+ const console=read('components/office-console.jsx');
+ assert.match(console,/office_deadlines/);
+ assert.match(console,/office_agent_runs/);
+ assert.match(console,/officeMiniReview/);
 });
 test('sidebar has responsive compact rail and accessible expansion controls',()=>{
  const component=read('components/crm-shell.jsx');

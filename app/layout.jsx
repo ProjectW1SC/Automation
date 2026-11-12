@@ -13,5 +13,6 @@ import './anime-immersive.css';
 import './anime-header-banners.css';
 import './brand-auth.css';
 import './infinitum-reference.css';
-export const metadata={title:'ProjectW1SC • CRM',description:'Intermediação de quitações e negociações'};
+import './office-console.css';
+export const metadata={title:'ProjectW1SC • Gestão de escritório jurídico',description:'CRM jurídico com processos, prazos, clientes, peças, agentes e WhatsApp'};
 export default function RootLayout({children}){return <html lang="pt-BR"><body>{children}</body></html>}

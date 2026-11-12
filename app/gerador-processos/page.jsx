@@ -28,9 +28,12 @@ function Generator({db,session}){
  }
  async function add(row){
   setBusy(true);
-  const r=await db.from('crm_processes').upsert({actor_id:session.user.id,process_number:row.process_number,process_type:'comum'},{onConflict:'actor_id,process_number'});
+  const r=await db.from('office_cases').insert({owner_id:session.user.id,process_number:row.process_number,
+    title:'DJEN · '+String(row.headline||'Candidato processual').slice(0,180),tribunal:row.tribunal||null,
+    subject:row.query_term||null,status:'ativo',
+    notes:'Candidato identificado em publicação DJEN; conferir dados e vínculo antes de prosseguir.'});
   setBusy(false);
-  setNotice(r.error?'Não foi possível cadastrar CNJ: '+r.error.message:'Processo '+row.process_number+' adicionado à carteira como tipo comum (reclassificável após conferência).');
+  setNotice(r.error?'Não foi possível cadastrar CNJ: '+r.error.message:'Processo '+row.process_number+' adicionado à carteira jurídica para validação.');
  }
  return <main className="inf-studio"><header className="inf-heading"><div>
   <small>LexisPredict / GERADOR DE PROCESSOS</small><h1>Gerador de processos</h1>
