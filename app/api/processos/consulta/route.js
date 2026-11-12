@@ -67,13 +67,14 @@ export async function GET(request){
   const source=params.get('fonte');
   if(!['datajud','djen'].includes(source))return json({ok:false,error:'Escolha DataJud ou DJEN.'},400);
   // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
-  const [registry,activities]=await Promise.all([
+  const [registry,activities,officeCase]=await Promise.all([
    db.from('crm_processes').select('id').eq('process_number',number).limit(1),
-   db.from('crm_completed_activities').select('id').eq('actor_id',user.id).eq('process_number',number).is('deleted_at',null).limit(1)
+   db.from('crm_completed_activities').select('id').eq('actor_id',user.id).eq('process_number',number).is('deleted_at',null).limit(1),
+   db.from('office_cases').select('id').eq('process_number',number).limit(1)
   ]);
-  if(registry.error||activities.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
-  if(!registry.data?.length&&!activities.data?.length)
-   return json({ok:false,error:'Salve o número CNJ em Processos ou em Minhas atividades antes da consulta.'},403);
+  if(registry.error||activities.error||officeCase.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
+  if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length)
+   return json({ok:false,error:'Cadastre o CNJ no escritório antes de consultar a fonte oficial.'},403);
   const queryKey=snapshotQueryKey(source,params);
   const {data:cached}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
    .eq('actor_id',user.id).eq('process_number',number).eq('source',source).eq('query_key',queryKey).maybeSingle();

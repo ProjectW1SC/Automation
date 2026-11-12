@@ -17,10 +17,10 @@ export async function POST(request){
   const {prompt}=await request.json();
   if(typeof prompt!=='string'||prompt.trim().length<6||prompt.length>1800)return json({ok:false,error:'Informe uma tarefa de 6 a 1.800 caracteres.'},400);
   const number=targetCNJ(prompt),formatted=number?formatProcessNumber(number):null;
-  let processQ=db.from('crm_processes').select('process_number,process_type,client_id').limit(formatted?5:250);
+  let processQ=db.from('office_cases').select('process_number,process_type,client_id').limit(formatted?5:250);
   if(formatted)processQ=processQ.eq('process_number',formatted);
   const [p,c,l]=await Promise.all([
-   processQ,db.from('crm_clients').select('id').limit(100),
+   processQ,db.from('office_clients').select('id').limit(100),
    db.from('crm_leads').select('id').limit(100)
   ]);
   const errors=[p,c,l].filter(x=>x.error).map(x=>x.error.message);
