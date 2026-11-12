@@ -11,13 +11,17 @@ export default function SecuredWorkspace({active,children}){
  const [error,setError]=useState(''),[busy,setBusy]=useState(false);
  const [recovery,setRecovery]=useState(false),[newPassword,setNewPassword]=useState('');
  const [mode,setMode]=useState('login'),[showPassword,setShowPassword]=useState(false);
- const [remember,setRemember]=useState(true);
+ const [remember,setRemember]=useState(true);const [googleEnabled,setGoogleEnabled]=useState(null);
  useEffect(()=>{
   try{if(window.sessionStorage.getItem('blackhole-password-recovery')==='1'){
    setRecovery(true);window.sessionStorage.removeItem('blackhole-password-recovery');
   }}catch{}
  },[session]);
  useEffect(()=>{setRemember(getRememberOfficeSession())},[]);
+ useEffect(()=>{let alive=true;const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if(url&&key)fetch(url+'/auth/v1/settings',{headers:{apikey:key},cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(alive&&typeof j?.external?.google==='boolean')setGoogleEnabled(j.external.google)}).catch(()=>{});
+  return()=>{alive=false};
+ },[]);
  function setModeTo(next){setMode(next);setError('');setShowPassword(false);setPassword('')}
  async function login(e){e.preventDefault();if(!db||busy)return;setBusy(true);setError('');
   setRememberOfficeSession(remember);
@@ -32,8 +36,13 @@ export default function SecuredWorkspace({active,children}){
   else setError(data?.session?'Conta criada. O acesso à carteira depende de aprovação do administrador.':'Confira seu e-mail para confirmar a conta. O acesso ao escritório depende de aprovação.');
   setBusy(false);setPassword('');
  }
+ async function magicLink(){if(!db||busy)return;
+  if(!email.trim()||!email.includes('@')){setError('Informe seu e-mail acima para receber um link de acesso.');return}
+  setBusy(true);setError('');const {error:err}=await db.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.origin+'/'}});
+  setError(err?'Não foi possível enviar o link: '+err.message:'Se o e-mail estiver autorizado, receberá um link de acesso. Confira também a caixa de spam.');setBusy(false);
+ }
  async function google(){
-  if(!db||busy)return;setBusy(true);setError('');
+  if(!db||busy)return;if(googleEnabled===false){setError('Google não foi habilitado neste Supabase. Use e-mail e senha ou link de acesso.');return}setBusy(true);setError('');
   setRememberOfficeSession(remember);
   const {error:err}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});
   if(err){setError('Google indisponível: '+err.message);setBusy(false)}
@@ -87,10 +96,10 @@ export default function SecuredWorkspace({active,children}){
     <p className="office-auth-switch">{registration?'Já tem conta?':'Não tem conta?'} <button type="button" onClick={()=>setModeTo(registration?'login':'signup')}>{registration?'Fazer login':'Cadastre-se'}</button></p>
    </form>
    <div className="office-social-divider"><span>OU</span></div>
-   <button type="button" className="office-google-btn" onClick={google} disabled={busy}>
+   <button type="button" className="office-google-btn" onClick={google} disabled={busy||googleEnabled===false}>
     <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M21.35 12.2c0-.7-.07-1.36-.18-2H12v3.8h5.25a4.5 4.5 0 0 1-1.94 2.96v2.45h3.14c1.84-1.69 2.9-4.19 2.9-7.21Z"/><path fill="#34A853" d="M12 21.5c2.62 0 4.83-.87 6.44-2.35l-3.14-2.45c-.87.58-1.98.92-3.3.92-2.53 0-4.67-1.7-5.44-3.98H3.3v2.51A9.75 9.75 0 0 0 12 21.5Z"/><path fill="#FBBC05" d="M6.56 13.64a5.86 5.86 0 0 1 0-3.28V7.84H3.3a9.76 9.76 0 0 0 0 8.32l3.26-2.52Z"/><path fill="#EA4335" d="M12 6.38c1.4 0 2.65.48 3.64 1.43l2.8-2.8C16.8 3.47 14.62 2.5 12 2.5a9.75 9.75 0 0 0-8.7 5.34l3.26 2.52C7.33 8.08 9.47 6.38 12 6.38Z"/></svg>
-    Continuar com Google
-   </button>
+    {googleEnabled===false?'Google ainda não configurado':'Continuar com Google'}
+   </button>{!registration&&<button type="button" className="crm-magic-link-btn" onClick={magicLink} disabled={busy}>Receber link de acesso por e-mail (grátis)</button>}
   </ProfessionalAuth>;
  }
  if(recovery||mode==='recover'){
