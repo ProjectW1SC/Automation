@@ -386,12 +386,12 @@ function OfficeUI({area,db,session}){
     <Link className="inf-btn" href={x.id==='mini'?'/agentes#mini-triagem':x.id==='hermes'?'/scanner':x.id==='pecas'||x.id==='pesquisa'?'/pecas':x.id==='tribunais'?'/processos':x.id==='prazos'||x.id==='audiencias'?'/prazos':x.id==='whatsapp'||x.id==='posvenda'?'/whatsapp':x.id==='leads'?'/leads':'/relatorios'}>Abrir área</Link>
    </article>)}</div>
    <BlackholeHermesAgent db={db} session={session}/>
-   <div className="inf-panel" id="mini-triagem"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
+   <div className="inf-panel" id="mini-triagem"><h2>Mini Agent · análise operacional automática</h2><p>O Supabase executa uma triagem diária sem computador aberto, guardando pendências e retornos na trilha de auditoria. Use o botão para uma revisão adicional sob demanda.</p>
     <div className="office-action-row"><button className="inf-btn primary" onClick={runMini} disabled={busy}><Bot size={14}/> Executar triagem</button></div>
     {miniResult&&<div className="inf-note"><strong>{miniResult.asOf} · {miniResult.actions.length} ações sugeridas</strong><div className="office-records">{miniResult.actions.map((x,i)=><article key={x.kind+x.id+i} className="office-record">{x.kind} · {x.title} · {dateLabel(x.date)}</article>)}</div>
      <small>{miniResult.notes.join(' ')}</small></div>}
    </div>
-   <section className="inf-panel" style={{marginTop:15}}><h2>Execuções registradas</h2>{runs.slice(0,15).map(r=><article className="office-record" key={r.id}><strong>{r.agent} · {r.task}</strong><small>{dateLabel(r.created_at)} · {r.status} · {r.external_actions} ações externas</small></article>)}
+   <section className="inf-panel" style={{marginTop:15}}><h2>Execuções registradas</h2>{runs.slice(0,15).map(r=><article className="office-record" key={r.id}><strong>{r.agent} · {r.task}</strong><small>{dateLabel(r.created_at)} · {r.mode==='scheduled'?'Agendado automaticamente':'Manual'} · {r.status} · {r.external_actions} ações externas</small></article>)}
     {!runs.length&&<div className="office-list-empty">Ainda não há execuções registradas.</div>}</section>
   </>}
   {area==='reports'&&<><div className="inf-grid"><Stat label="Clientes do escritório" value={clients.length} href="/clientes"/><Stat label="Casos cadastrados" value={cases.length} href="/processos"/><Stat label="Prazos vencidos" value={mini.counts.overdue} href="/prazos"/><Stat label="Leads na carteira" value={leads.length} href="/leads"/></div>
