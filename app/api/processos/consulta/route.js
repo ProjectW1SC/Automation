@@ -1,3 +1,4 @@
+import {consultBothOfficialSources} from '../../../../lib/combined-judicial-history.mjs';
 import {snapshotIsFresh,snapshotQueryKey,shrinkOfficialResult} from '../../../../lib/judicial-triage.mjs';
 import {consultJudicialWithFallback,officialBackoffDuration,officialBackoffActive} from '../../../../lib/judicial-source-recovery.mjs';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
@@ -27,7 +28,7 @@ async function datajud(number){
  const digits=number.replace(/\D/g,'');
  const key=process.env.DATAJUD_API_KEY||PUBLIC_DATAJUD_KEY;
  const payload=await fetchJson(url,{method:'POST',headers:{Authorization:'APIKey '+key,'Content-Type':'application/json',Accept:'application/json'},
-  body:JSON.stringify({size:2,query:{bool:{should:[{match:{numeroProcesso:digits}},{match:{numeroProcesso:number}}],minimum_should_match:1}}})});
+  body:JSON.stringify({size:2,query:{bool:{should:[{term:{numeroProcesso:digits}},{match:{numeroProcesso:digits}}],minimum_should_match:1}}})});
  if(!Array.isArray(payload?.hits?.hits))throw new Error('O DataJud não retornou um resultado processual reconhecível.');
  const match=payload.hits.hits.find(h=>h?._source&&String(h._source.numeroProcesso||'').replace(/\D/g,'')===digits)?._source;
  const parsed=normalizeDataJud(match,number);
@@ -94,6 +95,7 @@ export async function GET(request){
    ]);
    if(localPause.error||globalPause.error||platformPause.error)throw Object.assign(new Error('Controle de indisponibilidade judicial não pôde ser consultado.'),{status:503});
    const paused=[localPause.data,globalPause.data,platformPause.data].find(entry=>officialBackoffActive(entry));
+   if(paused&&cached?.payload)return {...cached.payload,stale:true,fromCache:true,notice:'Fonte oficial temporariamente bloqueada. Exibindo consulta anterior ('+cached.checked_at+'), sem atualização em tempo real.'};
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
    let result;
@@ -125,7 +127,7 @@ export async function GET(request){
     'A consulta foi concluída, mas o histórico não pôde ser armazenado.':undefined};
   }
   if(source==='auto'){
-   const result=await consultJudicialWithFallback({djen:()=>consultOne('djen'),datajud:()=>consultOne('datajud')});
+   const result=await consultBothOfficialSources({djen:()=>consultOne('djen'),datajud:()=>consultOne('datajud')});
    return json(result,result.ok?200:502);
   }
   return json(await consultOne(source));

@@ -114,12 +114,12 @@ function OfficeUI({area,db,session}){
   const r=await db.from('office_deadlines').update({status:'concluido',completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',row.id);
   if(r.error)throw r.error;
  },'Item concluído por operador.')}
- async function courtSearch(row,fonte){
+ async function courtSearch(row,fonte,period={}){
   if(!row.process_number)return setNotice('Informe um número CNJ para consultar o tribunal.');
   setConsulting(row.id+fonte);setCheckResult(null);setNotice('');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada');
-   const r=await fetch('/api/processos/consulta?'+new URLSearchParams({numero:row.process_number,fonte}),{headers:{Authorization:'Bearer '+s.access_token}});
+   const r=await fetch('/api/processos/consulta?'+new URLSearchParams({numero:row.process_number,fonte,...(period?.inicio?{inicio:period.inicio}:{}),...(period?.fim?{fim:period.fim}:{})}),{headers:{Authorization:'Bearer '+s.access_token}});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Fonte indisponível');
    setCheckResult({...p,number:row.process_number});setNotice((p.fromCache?'Cache oficial anterior consultado. ':'')+(p.notice||'Consulta concluída.'));
   }catch(e){setNotice('Consulta não confirmada: '+e.message)}finally{setConsulting('')}
@@ -230,7 +230,7 @@ function OfficeUI({area,db,session}){
      {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
      {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
      <p>{checkResult.notice}</p><small>Consulta: {display(checkResult.checkedAt)}{checkResult.fromCache?' · reutilizada do cache':''}</small>
-     <div className="office-records">{(checkResult.items||[]).slice(0,10).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
+     <div className="office-records">{(checkResult.items||[]).slice(0,300).map((i,n)=><div key={n} className="office-record">{safeText(i.title||i.description||i.texto||JSON.stringify(i),500)}</div>)}</div></div>}
 </>}
   {['deadlines','audiencias'].includes(area)&&<>{area==='audiencias'&&<BlackholeOfficialHearings db={db}/>}<div className="inf-grid"><Stat label="Pendentes" value={mini.counts.deadlines} href="/prazos"/><Stat label="Vencidos" value={mini.counts.overdue} href="/prazos?status=vencidos"/><Stat label="Hoje" value={mini.counts.today} href="/prazos?status=hoje"/><Stat label="Próximos 7 dias" value={mini.counts.week} href="/prazos"/></div>
    {showForm&&<section className="inf-panel"><h2>{editDeadlineId?'Editar prazo ou audiência':'Novo prazo, audiência ou retorno'}</h2><form onSubmit={createDeadline}><div className="inf-fields">
