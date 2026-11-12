@@ -1,0 +1,181 @@
+/* BLACKHOLE — identidade cinematográfica, baseada na imagem fornecida e paletas do tema IDE.
+   Overrides escopados: respeita-se a escolha manual de outros temas. Animação mínima para PCs fracos. */
+html[data-crm-theme="blackhole"]{
+ --bh-void:#050710;--bh-panel:#0d1220;--bh-panel-raised:#121a2b;--bh-edge:#334059;
+ --bh-ink:#f4f7ff;--bh-muted:#b7c4d8;--bh-blue:#78ccf4;--bh-rose:#e3a1d6;
+ --crm-page:#070b13;--crm-surface:#101725;--crm-ink:#f4f7ff;--crm-muted:#b7c4d8;
+ --crm-accent:#8bdefd;--crm-accent-ink:#081321;--crm-border:#34405a;
+ color-scheme:dark;background:#050710;color:var(--bh-ink);
+}
+html[data-crm-theme="blackhole"] body{background:#050710!important;color:var(--bh-ink)}
+html[data-crm-theme="blackhole"] .app-shell,
+html[data-crm-theme="blackhole"] .app-content{background:radial-gradient(ellipse at 96% 7%,#24345531,transparent 38%),linear-gradient(160deg,#070915,#090d17 60%,#080811)!important;color:var(--bh-ink)!important}
+html[data-crm-theme="blackhole"] .app-sidebar{
+ background:linear-gradient(180deg,#080914 0%,#0b0e1c 68%,#05070f)!important;
+ border-right:1px solid #343b58!important;color:#edf5ff!important;box-shadow:none!important;
+}
+html[data-crm-theme="blackhole"] .app-identity,
+html[data-crm-theme="blackhole"] .app-nav-footer{background:transparent!important}
+html[data-crm-theme="blackhole"] .app-brand-link{background:transparent!important;border:0!important;box-shadow:none!important}
+html[data-crm-theme="blackhole"] .app-brand-link img{filter:drop-shadow(0 0 12px #a4dbff18)}
+html[data-crm-theme="blackhole"] .app-section-name{color:#8fa2ba!important}
+html[data-crm-theme="blackhole"] .app-nav-link{color:#c5d5e8!important}
+html[data-crm-theme="blackhole"] .app-nav-link svg{color:#8fa3bd!important}
+html[data-crm-theme="blackhole"] .app-nav-link:hover{background:#19253a!important;color:#fff!important}
+html[data-crm-theme="blackhole"] .app-nav-link.active,
+html[data-crm-theme="blackhole"] .app-nav-link[aria-current="page"]{
+ background:linear-gradient(98deg,#22334e,#172135)!important;color:#f6fbff!important;
+ border:1px solid #547c9b6b;box-shadow:inset 3px 0 #88d7fa30!important
+}
+html[data-crm-theme="blackhole"] .app-nav-link.active svg{color:#9edffc!important}
+html[data-crm-theme="blackhole"] .app-private,
+html[data-crm-theme="blackhole"] .app-copyright,
+html[data-crm-theme="blackhole"] .app-account-email,
+html[data-crm-theme="blackhole"] .app-nav-footer small{color:#a5b2c9!important}
+html[data-crm-theme="blackhole"] .reference-top-tools{background:#080c18!important;color:#cbd8ed!important;border-bottom:1px solid #303d54!important}
+html[data-crm-theme="blackhole"] .crm-theme-picker,
+html[data-crm-theme="blackhole"] .reference-top-tools a{color:#d4e3f5!important}
+html[data-crm-theme="blackhole"] .reference-dashboard,
+html[data-crm-theme="blackhole"] .task-main,
+html[data-crm-theme="blackhole"] .inf-studio,
+html[data-crm-theme="blackhole"] .office-workflow-screen{background:transparent!important;color:#e7f1fe!important}
+html[data-crm-theme="blackhole"] .inf-heading h1,
+html[data-crm-theme="blackhole"] .inf-panel h2,
+html[data-crm-theme="blackhole"] .reference-header h1,
+html[data-crm-theme="blackhole"] .reference-panel-title h2,
+html[data-crm-theme="blackhole"] .office-record strong,
+html[data-crm-theme="blackhole"] .office-agent-card strong,
+html[data-crm-theme="blackhole"] h1,
+html[data-crm-theme="blackhole"] h2{color:#f2f7ff!important}
+html[data-crm-theme="blackhole"] p,
+html[data-crm-theme="blackhole"] .inf-heading p,
+html[data-crm-theme="blackhole"] .inf-heading small,
+html[data-crm-theme="blackhole"] .inf-panel p,
+html[data-crm-theme="blackhole"] .inf-stat label,
+html[data-crm-theme="blackhole"] .office-record p,
+html[data-crm-theme="blackhole"] .office-hint,
+html[data-crm-theme="blackhole"] .inf-badge,
+html[data-crm-theme="blackhole"] .muted{color:#b7c4d8!important}
+html[data-crm-theme="blackhole"] .inf-panel,
+html[data-crm-theme="blackhole"] .inf-stat,
+html[data-crm-theme="blackhole"] .office-agent-card,
+html[data-crm-theme="blackhole"] .office-record,
+html[data-crm-theme="blackhole"] .reference-panel,
+html[data-crm-theme="blackhole"] .efferd-kpi,
+html[data-crm-theme="blackhole"] .panel,
+html[data-crm-theme="blackhole"] .metric,
+html[data-crm-theme="blackhole"] .office-integration-card,
+html[data-crm-theme="blackhole"] .office-ai-model-choice{
+ background:linear-gradient(165deg,#101826,#0d1220)!important;color:#eaf3ff!important;
+ border:1px solid #31415b!important;box-shadow:0 8px 26px #0002!important
+}
+html[data-crm-theme="blackhole"] .inf-stat strong,
+html[data-crm-theme="blackhole"] .efferd-kpi-value{color:#eff8ff!important}
+html[data-crm-theme="blackhole"] .inf-btn,
+html[data-crm-theme="blackhole"] .reference-outline,
+html[data-crm-theme="blackhole"] button:not(.office-login-primary):not(.app-sidebar-toggle):not(.office-ai-composer-foot button){
+ color:#e2efff;background:#172339;border-color:#3e526f
+}
+html[data-crm-theme="blackhole"] .inf-btn:hover,
+html[data-crm-theme="blackhole"] .reference-outline:hover{background:#203650!important;color:#fff!important}
+html[data-crm-theme="blackhole"] .inf-btn.primary,
+html[data-crm-theme="blackhole"] button.primary,
+html[data-crm-theme="blackhole"] .office-ai-composer-foot button{background:linear-gradient(120deg,#326b8d,#5f3a81)!important;border:1px solid #6ba1c5!important;color:#fff!important}
+html[data-crm-theme="blackhole"] .inf-badge,
+html[data-crm-theme="blackhole"] .office-badge,
+html[data-crm-theme="blackhole"] .pill{background:#24314a!important;color:#dbeafb!important;border:1px solid #476282}
+html[data-crm-theme="blackhole"] .inf-note{background:#121e30!important;color:#c2d5ec!important;border:1px solid #37516d!important}
+html[data-crm-theme="blackhole"] .inf-note.error{background:#402336!important;color:#ffd9e4!important;border-color:#84425a!important}
+html[data-crm-theme="blackhole"] input:not([type="checkbox"]),
+html[data-crm-theme="blackhole"] select,
+html[data-crm-theme="blackhole"] textarea,
+html[data-crm-theme="blackhole"] .inf-search{
+ color:#eef6ff!important;background:#0b1220!important;border:1px solid #43516c!important;border-radius:9px
+}
+html[data-crm-theme="blackhole"] input::placeholder,
+html[data-crm-theme="blackhole"] textarea::placeholder{color:#94a6bf!important;opacity:1}
+html[data-crm-theme="blackhole"] label,
+html[data-crm-theme="blackhole"] .inf-fields label{color:#cad7e9!important}
+html[data-crm-theme="blackhole"] .inf-table-wrap,
+html[data-crm-theme="blackhole"] .inf-table th,
+html[data-crm-theme="blackhole"] .inf-table td{border-color:#304058!important}
+html[data-crm-theme="blackhole"] .inf-table th{background:#162236!important;color:#b4c8e4!important}
+html[data-crm-theme="blackhole"] .inf-table td{background:#0f1828!important;color:#e1ebf7!important}
+html[data-crm-theme="blackhole"] .inf-table tbody tr:hover td{background:#203049!important}
+html[data-crm-theme="blackhole"] .office-kanban-column,
+html[data-crm-theme="blackhole"] .inf-kanban-col{background:#0b1220!important;border:1px solid #35425b!important}
+html[data-crm-theme="blackhole"] .office-kanban-card,
+html[data-crm-theme="blackhole"] .inf-kanban-card{background:#172238!important;border:1px solid #3b4c69!important;color:#f5f7fb!important}
+html[data-crm-theme="blackhole"] .office-kanban-card strong,
+html[data-crm-theme="blackhole"] .inf-kanban-card strong{color:#f4f6ff!important}
+html[data-crm-theme="blackhole"] .office-kanban-card p,
+html[data-crm-theme="blackhole"] .office-kanban-head small{color:#b9cadf!important}
+html[data-crm-theme="blackhole"] .office-kanban-head strong,
+html[data-crm-theme="blackhole"] .office-kanban-line{color:#e8efff!important}
+html[data-crm-theme="blackhole"] .office-integration-icon,
+html[data-crm-theme="blackhole"] .office-ai-orbit{background:#19283e!important;color:#afdbff!important}
+html[data-crm-theme="blackhole"] .office-ai-console{background:#070c16!important;color:#e7eefc!important}
+html[data-crm-theme="blackhole"] .office-ai-main,
+html[data-crm-theme="blackhole"] .office-ai-bottom,
+html[data-crm-theme="blackhole"] .office-ai-composer{background:#080e1b!important;color:#e7eefc!important}
+html[data-crm-theme="blackhole"] .office-ai-header{background:#0e1524!important;border-color:#293954!important}
+html[data-crm-theme="blackhole"] .office-ai-rail{background:#060710!important;border-right:1px solid #29374b!important}
+html[data-crm-theme="blackhole"] .office-ai-rail button.selected,
+html[data-crm-theme="blackhole"] .office-ai-rail button:hover,
+html[data-crm-theme="blackhole"] .office-ai-rail a:hover{background:#23344e!important}
+html[data-crm-theme="blackhole"] .office-ai-header strong,
+html[data-crm-theme="blackhole"] .office-ai-author,
+html[data-crm-theme="blackhole"] .office-ai-welcome h1,
+html[data-crm-theme="blackhole"] .office-ai-message-body{color:#eff7ff!important}
+html[data-crm-theme="blackhole"] .office-ai-message.user .office-ai-message-body,
+html[data-crm-theme="blackhole"] .office-ai-model-choice button,
+html[data-crm-theme="blackhole"] .office-ai-history button{background:#1b2a42!important;color:#eaf4ff!important;border-color:#425571!important}
+html[data-crm-theme="blackhole"] .office-ai-composer{border:1px solid #475e78!important;box-shadow:0 0 35px #6480b10f!important}
+html[data-crm-theme="blackhole"] .office-ai-composer textarea{border:0!important;background:transparent!important;box-shadow:none!important}
+html[data-crm-theme="blackhole"] .office-ai-action-cards button{background:#131e32!important;color:#cfe6ff!important;border:1px solid #354a69!important}
+html[data-crm-theme="blackhole"] .office-ai-action-cards button:hover{border-color:#8bc7ee!important}
+html[data-crm-theme="blackhole"] .office-ai-consent{font-size:11px;color:#a9bbd3!important;display:flex;justify-content:center;align-items:center;gap:6px;padding:7px 0 0}
+html[data-crm-theme="blackhole"] .office-ai-consent input{accent-color:#8ee0ff}
+html[data-crm-theme="blackhole"] .office-document{background:#ffffff!important;color:#181d26!important;border:1px solid #ced4dd!important;font-family:Georgia,serif!important;line-height:1.65!important}
+html[data-crm-theme="blackhole"] .office-document-preview{
+ width:min(100%,210mm);min-height:297mm;background:#fff!important;color:#131820!important;
+ padding:25mm 20mm;box-shadow:0 8px 26px #0008;white-space:pre-wrap;
+ font:12pt/1.6 Georgia,'Times New Roman',serif;margin:20px auto;text-align:justify
+}
+html[data-crm-theme="blackhole"] .office-document-preview h1{color:#18202d!important}
+html[data-crm-theme="blackhole"] :is(a,button,input,select,textarea):focus-visible{outline:2px solid #87d6f5!important;outline-offset:2px}
+html[data-crm-theme="blackhole"] .app-brand-full,
+html[data-crm-theme="blackhole"] .app-brand-compact{object-fit:contain}
+html[data-crm-theme="blackhole"] .reference-top-alert,
+html[data-crm-theme="blackhole"] .reference-top-avatar{color:#edf8ff!important}
+.blackhole-auth-fault{max-width:580px;margin:18vh auto;padding:28px;border:1px solid #50627e;border-radius:16px;background:#101728;color:#e2edff!important;line-height:1.6}
+.blackhole-auth-fault p{color:#bdcce0!important}
+.blackhole-loading{display:grid;place-items:center;min-height:100dvh;background:#070a13;color:#e0ecff;text-align:center;gap:10px}
+.blackhole-loading img{width:160px;max-width:60vw}
+.w1-auth-screen[data-office-login="infinitum-reference"]{background:#050711!important;color:#f6f7ff!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{background:#080b14!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{background:#0b101b!important;color:#f3f7ff!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{color:#f3f8ff!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{color:#b7c8de!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{background:#030307!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero:before{background:url('/branding/blackhole-symbol.svg') center/cover no-repeat!important;opacity:.92!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-mark{color:#a2dfff!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form label{color:#d4e3f6!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form input:not([type="checkbox"]){background:#111a2a!important;color:#e6f1ff!important;border-color:#41516c!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary{background:linear-gradient(115deg,#387f9b,#6e4c8c)!important;border-color:#6e93b1!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-google-btn{background:#142139!important;color:#daeafb!important;border-color:#425779!important}
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-auth-switch button,
+.w1-auth-screen[data-office-login="infinitum-reference"] .office-forgot{color:#a5e5ff!important}
+@page{size:210mm 297mm;margin:20mm 18mm}
+@media print{
+ html,body{background:#fff!important;color:#000!important}
+ .app-sidebar,.reference-top-tools,.office-ai-rail,.office-ai-bottom,.office-document-controls{display:none!important}
+ .office-document-preview{box-shadow:none!important;padding:0!important;width:100%!important;min-height:0!important;color:#000!important}
+}
+@media(max-width:700px){
+ html[data-crm-theme="blackhole"] .office-document-preview{min-height:0;padding:13mm}
+ html[data-crm-theme="blackhole"] .app-sidebar{max-width:100vw}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="blackhole"] *, .w1-auth-screen[data-office-login="infinitum-reference"] *{animation:none!important;transition:none!important}
+}
