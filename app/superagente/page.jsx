@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {Plus,Search,BriefcaseBusiness,BookOpen,Layers3,PlugZap,Send,Copy,ShieldCheck,Bot,PanelLeftClose,PanelLeftOpen,FileText,Scale,Clock3} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
 import {OFFICE_AGENTS} from '../../lib/office-core.mjs';
+import {runBlackholeQwen,stopBlackholeQwen} from '../../lib/blackhole-local-llm.mjs';
 const ACTIONS=[
  {label:'Analisar processos',prompt:'Analise os processos cadastrados e indique pendências documentadas sem inventar movimentações.',icon:Scale},
  {label:'Revisar prazos',prompt:'Faça um relatório dos processos e consultas oficiais para orientar a conferência dos próximos prazos.',icon:Clock3},
@@ -17,6 +18,8 @@ function Console({db,session}){
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
  const [engine,setEngine]=useState('evidencias');
  const [externalAiConsent,setExternalAiConsent]=useState(false);
+ const [qwenConsent,setQwenConsent]=useState(false),[modelProgress,setModelProgress]=useState('');
+ useEffect(()=>()=>stopBlackholeQwen(),[]);
  const load=useCallback(async()=>{
   const {data,error}=await db.from('office_agent_runs').select('id,task,result,created_at,status').eq('owner_id',session.user.id)
    .eq('agent','superagente').order('created_at',{ascending:false}).limit(45);
@@ -29,13 +32,23 @@ function Console({db,session}){
  ]);setTab('nova');setNotice('Conversa recuperada do histórico do CRM.')}
  function chooseAction(q){setPrompt(q);setTab('nova')}
  async function ask(e){e?.preventDefault();const q=prompt.trim();if(!q||busy)return;
-  setBusy(true);setNotice('');
+  setBusy(true);setNotice('');setModelProgress('');
   try{
-   const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
-   const response=await fetch('/api/superagente',{method:'POST',
-    headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-    body:JSON.stringify({prompt:q,externalAiConsent,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
-   const payload=await response.json();if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload.error||'Não foi possível responder');
+   let payload;
+   if(engine==='qwen'){
+    const out=await runBlackholeQwen(q,messages.slice(-2).map(x=>({role:x.role,content:x.content})),progress=>{
+     setModelProgress(progress.status==='progress'?'Baixando Qwen: '+progress.progress+'%':String(progress.message||'Gerando resposta local...'));
+    },{consent:qwenConsent});
+    payload={ok:true,reply:out.reply,model:out.model,notice:'Resposta gerada no navegador com Qwen 0.5B (WebGPU). Não foi enviado conteúdo a APIs de IA.'};
+   }else{
+    if(engine==='online'&&!externalAiConsent)throw Error('Marque a autorização para enviar esta pergunta ao modelo online.');
+    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
+    const response=await fetch('/api/superagente',{method:'POST',
+     headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+     body:JSON.stringify({prompt:q,externalAiConsent:engine==='online'&&externalAiConsent,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
+    payload=await response.json();
+   }
+   if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload?.error||'Não foi possível responder');
    const answer=payload.reply.trim();if(!answer)throw Error('Nenhuma resposta foi produzida.');
    setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null}]);
    setPrompt('');
@@ -47,7 +60,7 @@ function Console({db,session}){
    setNotice(saved.error?'Resposta concluída, mas o histórico não foi salvo: '+saved.error.message:
     (payload.notice||'Resposta registrada; nenhuma ação externa foi executada.'));
    if(!saved.error)await load();
-  }catch(e){setNotice(e.message)}finally{setBusy(false)}
+  }catch(e){setNotice(e.message)}finally{setBusy(false);setModelProgress('')}
  }
  const activeTab=tab==='nova'?null:tab;
  return <main className="office-ai-console" aria-label="BLACKHOLE · Superagente jurídico">
@@ -61,7 +74,7 @@ function Console({db,session}){
   </aside>
   <div className="office-ai-main">
    <header className="office-ai-header"><div><small>BLACKHOLE · INTELIGÊNCIA JURÍDICA</small><strong>Assistente jurídico</strong></div>
-    <span className="office-ai-engine"><span/> Motor de evidências · sem custo de tokens</span></header>
+    <span className="office-ai-engine"><span/> {engine==='qwen'?'Qwen 0.5B · modelo local WebGPU':engine==='online'?'IA gratuita online · requer autorização':'Motor de evidências · sem custo de tokens'}</span></header>
    {activeTab?<div className="office-ai-content">
     {tab==='historico'&&<><h1>Buscar conversas</h1><p>Atividades que foram efetivamente registradas na carteira privada.</p>
      <input className="inf-search" aria-label="Pesquisar no histórico" placeholder="Buscar pedido" value={search} onChange={e=>setSearch(e.target.value)}/>
@@ -70,9 +83,11 @@ function Console({db,session}){
     {tab==='habilidades'&&<><h1>Habilidades e mini agentes</h1><p>Cada especialista encaminha seu pedido ao motor de análise verificável. Nenhuma ação é executada sem autorização.</p>
       <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><button className="office-agent-card" type="button" key={x.id} onClick={()=>chooseAction('Analise a carteira como especialista de '+x.name+'. Objetivo: '+x.role+'. Aponte somente o que estiver comprovado nos registros disponíveis.')}>
        <strong>{x.name}</strong><p>{x.role}</p><small>{x.mode}</small></button>)}</div></>}
-    {tab==='modelos'&&<><h1>Motor de análise</h1><p>O mecanismo atual lê os registros do CRM e os snapshots de consultas oficiais já salvas, sem baixar modelos pesados para seu computador.</p>
-      <div className="office-ai-model-choice"><button type="button" onClick={()=>setEngine('evidencias')} aria-pressed={engine==='evidencias'}><ShieldCheck size={18}/> Motor de evidências · ativo</button>
-       <p>Uma IA generativa externa pode ser configurada para minutas em Peças e petições, mas não está conectada a esta interface até a configuração das chaves e autorização de dados.</p>
+    {tab==='modelos'&&<><h1>Motores de IA disponíveis</h1><p>O mecanismo local rápido não baixa modelos. O Qwen exige WebGPU e autorização do download. A IA gratuita online só recebe mensagens após autorização explícita.</p>
+      <div className="office-ai-model-choice"><button type="button" onClick={()=>{setEngine('evidencias');setTab('nova')}} aria-pressed={engine==='evidencias'}><ShieldCheck size={18}/> Motor de evidências · imediato</button>
+       <button type="button" onClick={()=>{setEngine('qwen');setTab('nova')}} aria-pressed={engine==='qwen'}><Bot size={18}/> Qwen 0.5B · no navegador (WebGPU)</button>
+       <button type="button" onClick={()=>{setEngine('online');setTab('nova')}} aria-pressed={engine==='online'}><Layers3 size={18}/> IA online gratuita · OpenRouter</button>
+       <p>O modelo Qwen não será carregado automaticamente nem rodará na CPU se não existir GPU compatível. A primeira carga baixa centenas de megabytes de pesos.</p>
        <Link className="inf-btn" href="/pecas">Abrir elaboração de peças</Link></div></>}
     {tab==='conectores'&&<><h1>Conectores</h1><p>Fontes oficiais DataJud e DJEN, WhatsApp Cloud API e conector público Infinitum autorizado.</p>
       <div className="office-ai-links"><Link className="inf-btn" href="/integracoes">Integrações externas</Link><Link className="inf-btn" href="/processos">Consultas judiciais</Link><Link className="inf-btn" href="/whatsapp">WhatsApp</Link></div></>}
@@ -94,9 +109,16 @@ function Console({db,session}){
       onChange={e=>setPrompt(e.target.value)}
       onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();ask()}}}
       placeholder="Envie uma mensagem, uma tarefa ou um número CNJ..."/>
-      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {externalAiConsent?'IA remota autorizada, se configurada':'Somente motor local'}</span><button type="submit" disabled={busy||!prompt.trim()}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
+      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {engine==='qwen'?'Qwen 0.5B · WebGPU':engine==='online'?'IA online · somente com autorização':'Motor de evidências gratuito'}</span><button type="submit" disabled={busy||!prompt.trim()||(engine==='online'&&!externalAiConsent)||(engine==='qwen'&&!qwenConsent)}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
     </form>
-    <label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Permitir envio das mensagens a um modelo externo, somente se configurado</label>
+    <div className="blackhole-chat-models" role="group" aria-label="Selecionar o motor da conversa">
+      <button type="button" aria-pressed={engine==='evidencias'} onClick={()=>setEngine('evidencias')}>Respostas rápidas</button>
+      <button type="button" aria-pressed={engine==='online'} onClick={()=>setEngine('online')}>IA gratuita online</button>
+      <button type="button" aria-pressed={engine==='qwen'} onClick={()=>setEngine('qwen')}>Qwen 0.5B local</button>
+    </div>
+    {engine==='online'&&<label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Autorizo o envio desta conversa ao modelo online gratuito (pode haver limites e tratamento pelo provedor).</label>}
+    {engine==='qwen'&&<label className="office-ai-consent"><input type="checkbox" checked={qwenConsent} onChange={e=>setQwenConsent(e.target.checked)}/> Autorizo baixar os pesos do Qwen para este navegador. Exige WebGPU e memória suficiente; sem fallback CPU.</label>}
+    {modelProgress&&<p className="office-ai-progress" role="status">{modelProgress}</p>}
     <p className="office-ai-disclaimer">BLACKHOLE pode errar. Confirme informações judiciais na fonte oficial antes de agir.</p>
    </div>
   </div>
