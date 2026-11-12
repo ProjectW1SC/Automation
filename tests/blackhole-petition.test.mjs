@@ -13,6 +13,6 @@ test('não inventa lei ou processo para uma minuta avulsa',()=>{
 test('editor permite minuta avulsa, impressão e salvamento real',()=>{
  const ui=rd('components/office-console.jsx');
  assert.match(ui,/makeStandalonePetition/);
- assert.match(ui,/window\.print\(\)/);assert.match(ui,/office-document-preview/);
+ assert.match(ui,/window\.print\(\)/);assert.match(ui,/LegalStationery/);assert.match(rd('components/legal-stationery.jsx'),/office-document-preview/);
  assert.match(ui,/office_documents/);
 });

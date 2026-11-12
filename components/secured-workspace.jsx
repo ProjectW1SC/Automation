@@ -38,7 +38,7 @@ export default function SecuredWorkspace({active,children}){
  }
  async function magicLink(){if(!db||busy)return;
   if(!email.trim()||!email.includes('@')){setError('Informe seu e-mail acima para receber um link de acesso.');return}
-  setBusy(true);setError('');const {error:err}=await db.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.origin+'/'}});
+  setBusy(true);setError('');const {error:err}=await db.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.origin+'/',shouldCreateUser:false}});
   setError(err?'Não foi possível enviar o link: '+err.message:'Se o e-mail estiver autorizado, receberá um link de acesso. Confira também a caixa de spam.');setBusy(false);
  }
  async function google(){
