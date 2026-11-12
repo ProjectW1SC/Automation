@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
 import LegalStationery from './legal-stationery';
+import {downloadLegalDocx,printLegalPdf} from '../lib/legal-document-export.mjs';
 import {runBlackholeQwen} from '../lib/blackhole-local-llm.mjs';
 import PrestigeDashboard from './prestige-dashboard';
 import {PrestigeClients,PrestigeCases} from './prestige-office-lists';
@@ -149,10 +150,8 @@ function OfficeUI({area,db,session}){
   }catch(e){setQwenPetitionStatus('Qwen indisponível neste aparelho: '+e.message)}
  }
  async function saveEditedDocument(){if(!docResult?.id)return;setBusy(true);const r=await db.from('office_documents').update({body:docResult.body,status:'revisao',updated_at:new Date().toISOString()}).eq('id',docResult.id);setBusy(false);setNotice(r.error?'Minuta não salva: '+r.error.message:'Minuta atualizada e encaminhada para revisão.');if(!r.error)await load();}
- const download=(body,filename)=>{
-  const blob=new Blob([body],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=u;a.download=filename.replace(/[^a-z0-9._-]/gi,'_');a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)
- };
+ const exportWord=(body,id,title)=>{try{downloadLegalDocx(body,{id,title});setNotice('Documento Word (.docx) gerado com papel timbrado, margens A4 e assinatura para revisão.')}catch(e){setNotice('Não foi possível gerar Word: '+e.message)}};
+ const exportPdf=body=>{try{printLegalPdf(body);setNotice('Página A4 aberta para imprimir ou salvar PDF. Confira o documento antes de protocolar.')}catch(e){setNotice('Não foi possível abrir impressão: '+e.message)}};
  async function generateDocument(e){
   e.preventDefault();const caseRecord=selectedCase?cases.find(x=>x.id===selectedCase):null;
    if(selectedCase&&!caseRecord){setNotice('Processo informado não consta da carteira atual.');return}
@@ -290,9 +289,9 @@ function OfficeUI({area,db,session}){
     <button className="inf-btn primary" disabled={busy}><FileText size={14}/> {busy?'Preparando...':'Gerar e salvar minuta'}</button>
     <Source>Sem API de IA configurada, o sistema gera estrutura editável com lacunas explícitas. Nenhuma fundamentação ou documento inexistente será inventado. Não há peticionamento automático.</Source>
    </form></section>
-   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar office-document-controls"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>download(docResult.body,'minuta-'+docResult.id+'.txt')}><Download size={14}/> Exportar TXT</button>
+   <section className="inf-panel"><h2>Minuta gerada</h2>{docResult?<><div className="inf-toolbar office-document-controls"><span className="inf-badge">Rascunho · revisão obrigatória</span><button type="button" className="inf-btn" onClick={saveEditedDocument} disabled={busy}>Salvar revisão</button><button type="button" className="inf-btn" onClick={()=>exportWord(docResult.body,docResult.id,docResult.title)}><Download size={14}/> Baixar Word (.docx)</button>
       <button type="button" className="inf-btn" onClick={()=>setShowPreview(x=>!x)}>{showPreview?'Ocultar folha A4':'Visualizar folha A4'}</button>
-      <button type="button" className="inf-btn primary" onClick={()=>{setShowPreview(true);window.setTimeout(()=>window.print(),0)}}>Imprimir / Salvar PDF</button></div>
+      <button type="button" className="inf-btn primary" onClick={()=>exportPdf(docResult.body)}>Imprimir / Salvar PDF A4</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
      <section className="legal-qwen-panel"><label><input type="checkbox" checked={qwenPetitionConsent} onChange={e=>setQwenPetitionConsent(e.target.checked)}/> Autorizo baixar e executar o Qwen 0.5B local para sugerir ajustes de redação.</label>
       <button type="button" className="inf-btn" disabled={busy||!qwenPetitionConsent} onClick={askQwenPetition}>Revisar trecho com Qwen 0.5B</button>
@@ -303,7 +302,7 @@ function OfficeUI({area,db,session}){
     <Source>Edite o texto e clique em Salvar revisão. Advogado responsável deve conferir antes de aprovar ou protocolar.</Source></>:<div className="office-list-empty">Selecione um processo e gere uma minuta para revisão.</div>}</section></div>
    <section className="inf-panel"><h2>Peças registradas</h2><div className="office-records">{documents.map(x=><article className="office-record" key={x.id}><strong>{x.title}</strong><p>{x.kind} · {x.status} · {dateLabel(x.created_at)}</p><div className="office-action-row">
      <button className="inf-btn" onClick={()=>setDocResult({id:x.id,body:x.body,title:x.title})}>Abrir minuta</button>
-     <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
+     <button className="inf-btn" onClick={()=>exportWord(x.body,x.id,x.title)}><Download size={13}/> Word (.docx)</button></div></article>)}
     {!documents.length&&<div className="office-list-empty">Nenhuma peça cadastrada.</div>}</div></section>
   </>}
   {area==='whatsapp'&&<><div className="w1-whatsapp-head"><div><small>CENTRAL DE ATENDIMENTO</small><h2>WhatsApp no CRM</h2><p>Selecione uma conversa, consulte o histórico e responda aqui pela API oficial quando ela estiver configurada.</p></div><button type="button" className="inf-btn" onClick={()=>setShowManualWeb(x=>!x)}>{showManualWeb?'Ocultar acesso manual':'Usar WhatsApp Web manual'}</button></div>{showManualWeb&&<section className="inf-panel" aria-label="WhatsApp Web gratuito">
