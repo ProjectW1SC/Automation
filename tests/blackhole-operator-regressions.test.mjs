@@ -1,10 +1,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';
 import {tryArithmetic} from '../lib/blackhole-arithmetic.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-test('sidebar expande automaticamente em mouse/foco, recolhe ao sair e ao clicar fora',()=>{
+test('sidebar fixo no desktop, com recolhimento por botão e toque externo no mobile',()=>{
  const shell=read('components/crm-shell.jsx');
  assert.match(shell,/onMouseEnter=\{\(\)=>setSidebarExpanded\(true\)\}/);
- assert.match(shell,/onMouseLeave=\{shrinkIfUnfocused\}/);
+ assert.match(shell,/onMouseLeave/);
+ assert.match(shell,/window\.innerWidth<880/);
+ assert.match(shell,/useState\(true\)/);
  assert.match(shell,/onFocusCapture=\{\(\)=>setSidebarExpanded\(true\)\}/);
  assert.match(shell,/document\.addEventListener\('pointerdown',onPointerDown,true\)/);
 });
