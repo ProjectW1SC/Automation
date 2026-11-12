@@ -6,7 +6,7 @@ import SecuredWorkspace from './secured-workspace';
 import {createIcsEvent} from '../lib/blackhole-free-integrations.mjs';
 const OPTIONS=[
  {title:'Superagente',icon:Bot,desc:'Motor de evidências, Qwen 0.5B local sob demanda e IA gratuita opcional.',route:'/superagente',type:'ai'},
- {title:'WhatsApp Web',icon:MessageSquare,desc:'Abrir conversas gratuitamente no navegador. O envio é confirmado pelo usuário.',route:'/whatsapp',type:'web'},
+ {title:'WhatsApp integrado',icon:MessageSquare,desc:'Caixa de entrada e atendimento dentro do próprio CRM, com conexão por QR.',route:'/whatsapp',type:'web'},
  {title:'Leads',icon:Cloud,desc:'Cadastro, qualificação e importação de leads para seu escritório.',route:'/leads',type:'local'},
  {title:'Scanner judicial',icon:FileSearch,desc:'DataJud e DJEN públicos, sujeitas aos bloqueios reais dos tribunais.',route:'/scanner',type:'local'},
  {title:'Peças e petições',icon:Scale,desc:'Minutas estruturadas e IA online autorizada para aprimorar rascunhos.',route:'/pecas',type:'ai'},
@@ -53,11 +53,10 @@ function Body({db}){
     <small>{status(item.type)}</small>
    </Link>})}
   </div>
-  <section className="inf-panel"><h2><ShieldCheck size={16}/> WhatsApp sem API oficial</h2>
-   <p>Use gratuitamente o <a href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer">WhatsApp Web</a> pelo próprio aparelho conectado. O BLACKHOLE pode abrir uma conversa com texto preenchido, mas não pode ler sua sessão em outra aba nem confirmar envios sem um worker conectado.</p>
-   <div className="office-action-row"><Link href="/whatsapp" className="inf-btn primary">Abrir atendimento e conversa</Link>
-    <a href="https://web.whatsapp.com/" className="inf-btn" rel="noopener noreferrer" target="_blank">Abrir WhatsApp Web <ExternalLink size={13}/></a></div>
-   <p>WA.Auto do LexisPredict utiliza Baileys; Wechaty e Evolution também exigem uma sessão/serviço persistente. Nenhum deles está vinculado automaticamente ao BLACKHOLE. Conexão por QR não será indicada sem QR verdadeiro.</p>
+  <section className="inf-panel"><h2><ShieldCheck size={16}/> WhatsApp dentro do CRM</h2>
+   <p>Caixa de entrada nativa, histórico por telefone, vínculo com clientes, QR Code real e envio com revisão manual. A conexão usa um worker persistente e não depende da Meta Cloud API paga.</p>
+   <div className="office-action-row"><Link href="/whatsapp" className="inf-btn primary">Abrir caixa de entrada integrada</Link></div>
+   <p>O conector usa Baileys/WhatsApp Web como dispositivo vinculado. É uma integração não oficial, sujeita às regras e limites do WhatsApp; o CRM não envia respostas automáticas.</p>
   </section>
   <section className="inf-panel"><h2><Bot size={16}/> Motores de inteligência artificial</h2>
    <div className="office-panel-grid">
