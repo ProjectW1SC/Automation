@@ -20,6 +20,7 @@ import './office-superagent.css';
 import './blackhole-theme.css';
 import './blackhole-infinitum-studio.css';
 import './blackhole-legibility.css';
+import './crm-unified-2026.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
-export const metadata={title:'BLACKHOLE • Inteligência Jurídica',description:'BLACKHOLE — gestão jurídica com processos, prazos, peças, agentes e integrações',icons:{icon:'/branding/blackhole-symbol.svg'}};
-export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="blackhole"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
+export const metadata={title:'ProjectW1SC • CRM Jurídico',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
+export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}

@@ -40,6 +40,7 @@ function OfficeUI({area,db,session}){
  const [docKind,setDocKind]=useState('manifestacao'),[docInstructions,setDocInstructions]=useState(''),[docResult,setDocResult]=useState(null),[useAi,setUseAi]=useState(false),[showPreview,setShowPreview]=useState(true);
  const [selectedPhone,setSelectedPhone]=useState(''),[reply,setReply]=useState(''),[whatsappStatus,setWhatsappStatus]=useState(null);
  const [webPhone,setWebPhone]=useState(''),[webText,setWebText]=useState('');
+ const [showManualWeb,setShowManualWeb]=useState(false);
  const [miniResult,setMiniResult]=useState(null),[deadlineFilter,setDeadlineFilter]=useState('abertos');
  const [agentSearch,setAgentSearch]=useState(''),[agentFilter,setAgentFilter]=useState('todos');
  const need=LOADED[area]||LOADED.dashboard;
@@ -299,7 +300,7 @@ function OfficeUI({area,db,session}){
      <button className="inf-btn" onClick={()=>download(x.body,'peca-'+x.id+'.txt')}><Download size={13}/> Exportar</button></div></article>)}
     {!documents.length&&<div className="office-list-empty">Nenhuma peça cadastrada.</div>}</div></section>
   </>}
-  {area==='whatsapp'&&<><section className="inf-panel" aria-label="WhatsApp Web gratuito">
+  {area==='whatsapp'&&<><div className="w1-whatsapp-head"><div><small>CENTRAL DE ATENDIMENTO</small><h2>WhatsApp no CRM</h2><p>Selecione uma conversa, consulte o histórico e responda aqui pela API oficial quando ela estiver configurada.</p></div><button type="button" className="inf-btn" onClick={()=>setShowManualWeb(x=>!x)}>{showManualWeb?'Ocultar acesso manual':'Usar WhatsApp Web manual'}</button></div>{showManualWeb&&<section className="inf-panel" aria-label="WhatsApp Web gratuito">
     <h2>WhatsApp Web · atendimento sem API oficial</h2>
     <p>Abra uma conversa com seu aparelho já vinculado. Você confirma o destinatário e clica em Enviar no próprio WhatsApp; abrir a conversa não registra nem confirma atendimento.</p>
     <form className="office-form-col" onSubmit={e=>{e.preventDefault();try{
@@ -315,7 +316,7 @@ function OfficeUI({area,db,session}){
      </div>
      <div className="inf-row-end"><button className="inf-btn primary" type="submit">Abrir conversa no WhatsApp Web</button></div>
     </form>
-   </section><div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
+   </section>}<div className="inf-grid"><Stat label="Mensagens registradas" value={messages.length} href="/whatsapp"/><Stat label="Recebidas" value={messages.filter(m=>m.direction==='inbound').length} href="/whatsapp"/><Stat label="Conversas" value={threads.length} href="/whatsapp"/><Stat label="Clientes cadastrados" value={clients.length} href="/clientes"/></div>
    <Source>{whatsappStatus?.configured?'A API do WhatsApp Business está configurada. Respostas só serão enviadas mediante confirmação manual e janela válida.':'O envio e recebimento automáticos por QR dependem de um serviço persistente Baileys/WA.Auto vinculado. Enquanto isso, o WhatsApp Web manual acima funciona sem API.'} O agente apenas prepara rascunhos.</Source>
    <div className="office-panel-grid"><section className="inf-panel"><h2>Conversas recebidas</h2><div className="office-records">{threads.map(m=><button key={m.phone} type="button" className="office-record" style={{textAlign:'left',cursor:'pointer'}} onClick={()=>{setSelectedPhone(m.phone);setReply('')}}><strong>{m.display_name||m.phone}</strong><p>{m.phone} · {dateLabel(m.received_at)}</p><small>{safeText(m.body,130)}</small></button>)}
     {!threads.length&&<div className="office-list-empty">Nenhuma mensagem recebida pelo webhook oficial.</div>}</div></section>

@@ -18,12 +18,12 @@ export default function SettingsPage(){
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
  const [newMemberEmail,setNewMemberEmail]=useState(''),[newMemberPassword,setNewMemberPassword]=useState(''),[memberSaving,setMemberSaving]=useState(false);
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
- const [theme,setTheme]=useState('vinho'),[saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
+ const [theme,setTheme]=useState('infinitum'),[saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
  const [colors,setColors]=useState(()=>appearanceDefaults(CRM_THEMES[0]));
  const [backgroundFile,setBackgroundFile]=useState(null),[backgroundPreview,setBackgroundPreview]=useState(''),[backgroundUrl,setBackgroundUrl]=useState(''),[removeBackground,setRemoveBackground]=useState(false);
  const user=session?.user;
  useEffect(()=>{
-  let saved='vinho';try{saved=localStorage.getItem('projectw1sc.crm-theme')||'vinho'}catch{}
+  let saved='infinitum';try{saved=localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
   const selected=resolveTheme(saved);setTheme(selected);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)));
   if(!db){setLoading(false);return}
   let active=true;
@@ -34,7 +34,7 @@ export default function SettingsPage(){
  useEffect(()=>{
   if(!user)return;
   setDisplayName(String(user.user_metadata?.display_name||user.user_metadata?.full_name||''));
-  const t=CRM_THEMES.find(x=>x.id===resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'vinho'));
+  const t=CRM_THEMES.find(x=>x.id===resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum'));
   try{setColors(validateAppearance(user.user_metadata?.crm_colors||{},t))}
   catch{setColors(appearanceDefaults(t))}
   const path=user.user_metadata?.avatar_path;

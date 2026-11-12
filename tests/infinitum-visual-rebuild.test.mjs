@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('A escolha de tema permanece salva e nao e forçada para BLACKHOLE',()=>{const src=read('components/crm-shell.jsx');assert.match(src,/localStorage\.getItem\('projectw1sc\.crm-theme'\)/);assert.match(src,/aria-label="Tema visual do CRM"/);assert.doesNotMatch(src,/localStorage\.setItem\('projectw1sc\.crm-theme','blackhole'\)/)});
+test('Agenda possui mes, lista, CRUD de compromissos e filtro de audiencias futuras',()=>{const s=read('app/agenda/page.jsx');assert.match(s,/office_deadlines/);assert.match(s,/Novo compromisso/);assert.match(s,/setView\('list'\)/);assert.match(s,/x\.kind==='audiencia'&&x\.due_on<today\(\)/)});
+test('WhatsApp abre como central interna, com web manual opcional',()=>{const s=read('components/office-console.jsx');assert.match(s,/WhatsApp no CRM/);assert.match(s,/showManualWeb&&<section/);assert.match(s,/office-whatsapp-messages/)});
+test('Design system utiliza superficie e texto vinculados ao tema',()=>{const s=read('app/crm-unified-2026.css');for(const t of ['--ui-page','--ui-surface','--ui-ink','--ui-muted','--ui-border'])assert.ok(s.includes(t));assert.ok(read('app/layout.jsx').includes("'./crm-unified-2026.css'"))});

@@ -1,0 +1,183 @@
+/* ProjectW1SC - visual consistente em todas as páginas.
+   A folha é um design system nativo: cards, inputs, menu e controles são elementos reais. */
+html[data-crm-theme]{
+ --w1-page:var(--ui-page,#fafaf9);
+ --w1-card:var(--ui-surface,#fff);
+ --w1-ink:var(--ui-ink,#242424);
+ --w1-muted:var(--ui-muted,#60636a);
+ --w1-border:var(--ui-border,#e1e4e8);
+ --w1-tint:var(--ui-tint,#f4f5f7);
+ --w1-tint-ink:var(--ui-tint-ink,#2b2d31);
+ --w1-accent:var(--ui-accent,#262626);
+ --w1-accent-ink:var(--ui-accent-ink,#fff);
+}
+html[data-crm-theme] body{background:var(--w1-page)!important;color:var(--w1-ink)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell{display:block!important;min-height:100dvh!important;background:var(--w1-page)!important;color:var(--w1-ink)!important;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar{
+ position:fixed!important;inset:0 auto 0 0!important;display:flex!important;flex-direction:column!important;
+ background:#171923!important;color:#f5f5f7!important;border-right:1px solid #30323d!important;
+ width:72px!important;min-width:72px!important;height:100dvh!important;padding:14px 10px!important;
+ overflow:auto!important;z-index:100!important;box-shadow:none!important;
+ transition:width .22s cubic-bezier(.22,1,.36,1)!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{width:260px!important;box-shadow:10px 0 35px #11111127!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content{
+ background:var(--w1-page)!important;color:var(--w1-ink)!important;
+ width:calc(100% - 72px)!important;min-width:0!important;margin-left:72px!important;min-height:100dvh!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-identity{
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:0!important;
+ height:54px!important;min-height:54px!important;padding:0!important;margin:0 0 17px!important;background:transparent!important;border:0!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar-toggle{
+ display:grid!important;place-items:center!important;width:40px!important;height:40px!important;padding:0!important;
+ background:#242631!important;color:#f6f6f7!important;border:1px solid #353746!important;border-radius:12px!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-brand-link{display:none!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav{display:flex!important;flex-direction:column!important;gap:5px!important;flex:1!important;overflow:visible!important;padding:0!important;margin:0!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link{
+ width:48px!important;min-width:48px!important;height:44px!important;min-height:44px!important;
+ margin:0 auto!important;padding:0!important;display:flex!important;justify-content:center!important;
+ align-items:center!important;gap:13px!important;border:0!important;border-radius:11px!important;
+ color:#c9cad4!important;background:transparent!important;box-shadow:none!important;
+ transition:background .14s,color .14s!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link svg{width:19px!important;height:19px!important;color:inherit!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link span{display:none!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link{width:100%!important;max-width:none!important;justify-content:flex-start!important;padding:0 14px!important;margin:0!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link span{display:block!important;width:auto!important;opacity:1!important;white-space:nowrap!important;color:inherit!important;font-size:13px!important;font-weight:600!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link:hover{background:#2d3040!important;color:#fff!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link.active,
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link[aria-current="page"]{color:#fff!important;background:#414454!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-footer{display:none!important;background:transparent!important;color:#d5d5dc!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-footer{display:grid!important;border-color:#333847!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-account-actions button,
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-account-actions a,
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-footer small,
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-private{color:#d4d4db!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .reference-top-tools{
+ position:sticky!important;top:0!important;z-index:80!important;background:var(--w1-card)!important;
+ color:var(--w1-ink)!important;border-bottom:1px solid var(--w1-border)!important;
+ min-height:66px!important;height:auto!important;padding:10px clamp(16px,3vw,36px)!important;gap:12px!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+}
+html[data-crm-theme] .blackhole-shell-breadcrumb,
+html[data-crm-theme] .blackhole-shell-breadcrumb a,
+html[data-crm-theme] .blackhole-shell-breadcrumb strong{color:var(--w1-ink)!important}
+html[data-crm-theme] .blackhole-shell-crumb-sep{color:var(--w1-muted)!important}
+html[data-crm-theme] .blackhole-shell-tools{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:12px!important}
+html[data-crm-theme] .bh-theme-identity{display:none!important}
+.w1-theme-picker{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;background:var(--w1-tint);border:1px solid var(--w1-border);border-radius:10px;color:var(--w1-ink);min-height:38px}
+.w1-theme-picker select{background:transparent!important;border:0!important;max-width:155px;color:var(--w1-ink)!important;font-size:12px;font-weight:650;cursor:pointer}
+.w1-theme-picker select option{background:var(--w1-card);color:var(--w1-ink)}
+html[data-crm-theme] .reference-top-avatar{border:1px solid var(--w1-border)!important;background:var(--w1-tint)!important;color:var(--w1-ink)!important}
+html[data-crm-theme] .reference-dashboard,
+html[data-crm-theme] .inf-studio,
+html[data-crm-theme] .task-main,
+html[data-crm-theme] .report-dashboard,
+html[data-crm-theme] .app-content .main{background:var(--w1-page)!important;color:var(--w1-ink)!important}
+html[data-crm-theme] .inf-studio{max-width:1660px;padding:clamp(15px,2.2vw,36px)!important}
+html[data-crm-theme] .inf-heading h1,
+html[data-crm-theme] .reference-header h1,
+html[data-crm-theme] .inf-panel h2,
+html[data-crm-theme] .reference-panel-title h2{color:var(--w1-ink)!important;opacity:1!important;text-shadow:none!important}
+html[data-crm-theme] .inf-heading p,
+html[data-crm-theme] .inf-heading small,
+html[data-crm-theme] .reference-header p,
+html[data-crm-theme] .inf-panel p,
+html[data-crm-theme] .office-hint{color:var(--w1-muted)!important;opacity:1!important}
+html[data-crm-theme] .inf-stat,
+html[data-crm-theme] .inf-panel,
+html[data-crm-theme] .office-record,
+html[data-crm-theme] .office-agent-card,
+html[data-crm-theme] .reference-panel,
+html[data-crm-theme] .efferd-kpi,
+html[data-crm-theme] .metric,
+html[data-crm-theme] .panel{
+ background:var(--w1-card)!important;color:var(--w1-ink)!important;
+ border:1px solid var(--w1-border)!important;border-radius:15px!important;
+ box-shadow:0 3px 14px #13151a0a!important;
+}
+html[data-crm-theme] .inf-stat strong,
+html[data-crm-theme] .office-record strong,
+html[data-crm-theme] .office-agent-card strong,
+html[data-crm-theme] .inf-panel h3{color:var(--w1-ink)!important}
+html[data-crm-theme] .inf-stat label,
+html[data-crm-theme] .inf-stat small,
+html[data-crm-theme] .office-record p,
+html[data-crm-theme] .office-record small{color:var(--w1-muted)!important}
+html[data-crm-theme] .inf-table th,
+html[data-crm-theme] .reference-table th{background:var(--w1-tint)!important;color:var(--w1-tint-ink)!important}
+html[data-crm-theme] .inf-table td,
+html[data-crm-theme] .reference-table td{background:var(--w1-card)!important;color:var(--w1-ink)!important;border-color:var(--w1-border)!important}
+html[data-crm-theme] .inf-table tbody tr:hover td,
+html[data-crm-theme] .reference-table tbody tr:hover td{background:var(--w1-tint)!important}
+html[data-crm-theme] .inf-kanban-col{background:var(--w1-tint)!important;border:1px solid var(--w1-border)!important}
+html[data-crm-theme] .inf-kanban-card{background:var(--w1-card)!important;border:1px solid var(--w1-border)!important;color:var(--w1-ink)!important}
+html[data-crm-theme] .inf-kanban-card strong,
+html[data-crm-theme] .inf-kanban-header{color:var(--w1-ink)!important}
+html[data-crm-theme] .inf-kanban-card p{color:var(--w1-muted)!important}
+html[data-crm-theme] .inf-note,
+html[data-crm-theme] .office-list-empty{background:var(--w1-tint)!important;color:var(--w1-tint-ink)!important;border:1px solid var(--w1-border)!important}
+html[data-crm-theme] .inf-note.error{background:var(--ui-danger-bg,#fef2f2)!important;color:var(--ui-danger-ink,#991b1b)!important}
+html[data-crm-theme] .inf-studio input:not([type=checkbox]),
+html[data-crm-theme] .inf-studio textarea,
+html[data-crm-theme] .inf-studio select,
+html[data-crm-theme] .task-main input,
+html[data-crm-theme] .task-main select,
+html[data-crm-theme] .task-main textarea{
+ color:var(--w1-ink)!important;background:var(--w1-card)!important;border:1px solid var(--w1-border)!important;border-radius:9px!important;
+}
+html[data-crm-theme] input::placeholder,
+html[data-crm-theme] textarea::placeholder{color:var(--w1-muted)!important;opacity:.85}
+html[data-crm-theme] .inf-btn:not(.primary),
+html[data-crm-theme] .reference-outline{background:var(--w1-card)!important;color:var(--w1-ink)!important;border-color:var(--w1-border)!important}
+html[data-crm-theme] .inf-btn.primary,
+html[data-crm-theme] .reference-primary{background:var(--w1-accent)!important;color:var(--w1-accent-ink)!important;border-color:var(--w1-accent)!important}
+html[data-crm-theme] .inf-btn:hover:not(.primary){background:var(--w1-tint)!important}
+html[data-crm-theme] .inf-badge{background:var(--w1-tint)!important;color:var(--w1-tint-ink)!important;border:1px solid var(--w1-border)!important}
+html[data-crm-theme] .office-bubble.inbound{background:var(--w1-tint)!important;color:var(--w1-tint-ink)!important}
+html[data-crm-theme] .office-bubble.outbound{background:var(--ui-success-bg,#e7f3ec)!important;color:var(--ui-success-ink,#115e40)!important}
+.w1-whatsapp-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:0 0 20px;padding:24px;border-radius:16px;background:var(--w1-card);border:1px solid var(--w1-border)}
+.w1-whatsapp-head small{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--w1-muted)}
+.w1-whatsapp-head h2{font-size:24px;letter-spacing:-.035em;margin:5px 0;color:var(--w1-ink)}
+.w1-whatsapp-head p{font-size:13px;max-width:680px;color:var(--w1-muted)}
+html[data-crm-theme] :is(a,button,select,input,textarea):focus-visible{outline:2px solid var(--w1-accent)!important;outline-offset:3px}
+html[data-crm-theme] .w1-auth-screen[data-office-login="infinitum-reference"]{background:#f5f6f8!important;padding:clamp(12px,2vw,25px)!important}
+html[data-crm-theme] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{min-height:calc(100dvh - 50px);background:#fff;max-width:1440px;margin:auto;border-radius:23px;overflow:hidden;box-shadow:0 24px 60px #20242d13;gap:0!important;grid-template-columns:1.06fr .94fr;border:1px solid #e4e6eb}
+html[data-crm-theme] .w1-auth-screen .w1-auth-hero{border-radius:0!important;padding:clamp(28px,4vw,66px)!important;background:radial-gradient(circle at 12% 8%,#595b65,transparent 50%),linear-gradient(125deg,#141722,#232532)!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-hero:before{opacity:.26!important;animation:none!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-hero-top h2{font-size:clamp(30px,3.8vw,55px)!important;line-height:1.14!important;font-weight:650!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-panel{padding:clamp(24px,4vw,70px)!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-panel-center{width:min(410px,100%)!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-heading h1{font-size:clamp(27px,2.6vw,35px)!important;letter-spacing:-.04em!important;font-weight:700!important}
+html[data-crm-theme] .w1-auth-screen .office-login-primary{background:#22252d!important;border-color:#22252d!important;min-height:50px!important;font-size:13px!important}
+html[data-crm-theme] .w1-auth-screen .office-login-form input{height:48px!important;max-height:none!important;border-radius:10px!important;border-color:#d9dce3!important;color:#1f2937!important;background:#fff!important}
+html[data-crm-theme] .w1-auth-screen .office-login-form input::placeholder{color:#7d8591!important}
+html[data-crm-theme] .w1-auth-screen .w1-auth-panel-footer{color:#616975!important}
+.w1-calendar-shell{padding:clamp(16px,2.4vw,36px);max-width:1570px;margin:auto}
+.w1-calendar-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.w1-calendar-toolbar h1{color:var(--w1-ink);font-size:30px;letter-spacing:-.045em;margin:0}
+.w1-calendar-toolbar p{color:var(--w1-muted);font-size:13px;margin:4px 0}
+.w1-calendar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.w1-calendar-panel{background:var(--w1-card);border:1px solid var(--w1-border);border-radius:16px;padding:16px;box-shadow:0 3px 18px #0000000c}
+.w1-calendar-month{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:16px;color:var(--w1-ink);font-weight:800}
+.w1-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--w1-border);border-left:1px solid var(--w1-border)}
+.w1-calendar-day-name{padding:10px;text-align:center;font-size:11px;letter-spacing:.06em;color:var(--w1-muted);font-weight:800;border-bottom:1px solid var(--w1-border)}
+.w1-calendar-day{min-height:112px;border-bottom:1px solid var(--w1-border);border-right:1px solid var(--w1-border);padding:9px;background:var(--w1-card);min-width:0;color:var(--w1-ink)}
+.w1-calendar-day.outside{background:var(--w1-page);opacity:.5}
+.w1-calendar-day.today{box-shadow:inset 0 0 0 2px var(--w1-accent)}
+.w1-calendar-day-number{font-weight:800;color:var(--w1-ink);font-size:12px}
+.w1-calendar-event{display:block;text-align:left;width:100%;background:var(--w1-tint);color:var(--w1-tint-ink);border:1px solid var(--w1-border);border-radius:7px;margin:5px 0;padding:6px 7px;font-size:11px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.w1-calendar-event[aria-pressed="true"]{background:var(--w1-accent);color:var(--w1-accent-ink)}
+.w1-calendar-list{display:grid;gap:9px}
+.w1-calendar-list article{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--w1-card);border:1px solid var(--w1-border);border-radius:10px;padding:13px;color:var(--w1-ink)}
+.w1-calendar-list strong{display:block;font-size:13px;color:var(--w1-ink)}
+.w1-calendar-list small{font-size:11px;color:var(--w1-muted)}
+.w1-calendar-editor{margin-top:14px;display:grid;gap:12px;background:var(--w1-card);border:1px solid var(--w1-border);border-radius:14px;padding:18px}
+.w1-calendar-editor label{display:grid;gap:5px;color:var(--w1-ink);font-size:12px;font-weight:650}
+.w1-calendar-editor input,.w1-calendar-editor select,.w1-calendar-editor textarea{width:100%;background:var(--w1-card);border:1px solid var(--w1-border);color:var(--w1-ink);padding:10px;border-radius:9px}
+.w1-calendar-editor .form-row{margin:0}
+@media(max-width:900px){.w1-theme-picker select{max-width:96px}.w1-calendar-day{min-height:82px;padding:5px}.w1-calendar-event{font-size:10px;padding:4px}.w1-calendar-panel{padding:9px}}
+@media(max-width:680px){html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar{width:56px!important;min-width:56px!important;padding:8px 4px!important}html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content{margin-left:56px!important;width:calc(100% - 56px)!important}html[data-crm-theme] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{width:min(270px,85vw)!important}.w1-theme-picker{padding:6px}.w1-theme-picker select{max-width:105px}.w1-calendar-day{min-height:75px}.w1-calendar-event{max-width:100%;white-space:nowrap}.w1-calendar-panel{overflow:auto}.w1-calendar-grid{min-width:560px}.w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{display:flex!important;flex-direction:column!important;min-height:100dvh}.w1-auth-screen .w1-auth-hero{min-height:170px!important;max-height:220px!important;padding:25px!important}.w1-auth-screen .w1-auth-panel{min-height:60vh}}
+@media(prefers-reduced-motion:reduce){html[data-crm-theme] .app-sidebar,html[data-crm-theme] .app-nav-link{transition:none!important}}

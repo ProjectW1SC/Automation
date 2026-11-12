@@ -10,7 +10,7 @@ import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
- 'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Peças e petições':FileText,
+ 'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Agenda':CalendarDays,'Peças e petições':FileText,
  'WhatsApp':MessageSquare,'Leads':Target,'Gerador de processos':Radar,
  'Superagente':Bot,'Mini Agentes':UserRoundCheck,'Relatórios':BarChart3,
  'Integrações':PlugZap,'Configurações':Settings2
@@ -20,7 +20,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  const [navSearch,setNavSearch]=useState('');
  const navSearchRef=useRef(null);
  const matches=navSearch.trim()?CRM_AREAS.filter(x=>x.label.toLocaleLowerCase('pt-BR').includes(navSearch.trim().toLocaleLowerCase('pt-BR'))).slice(0,6):[];
- const [theme,setTheme]=useState('blackhole');
+ const [theme,setTheme]=useState('infinitum');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
  const [avatarUrl,setAvatarUrl]=useState('');
  const appearanceRef=useRef({colors:{},backgroundUrl:''});
@@ -45,8 +45,11 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
    if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);
    previousPhotoUrl=photoUrl;previousBackgroundUrl=backgroundUrl;setAvatarUrl(photoUrl);
+   const savedTheme=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum');
    appearanceRef.current={colors:{},backgroundUrl:''};
-   applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id==='blackhole'),{},'');
+   document.documentElement.dataset.crmTheme=savedTheme;
+   applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===savedTheme),{},'');
+   setTheme(savedTheme);
   }
   function scheduleRefresh(){if(refreshTimer)window.clearTimeout(refreshTimer);refreshTimer=window.setTimeout(refreshProfile,0)}
   const {data:{subscription}}=db.auth.onAuthStateChange(()=>{scheduleRefresh()});
@@ -56,13 +59,14 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
   return()=>{alive=false;if(refreshTimer)window.clearTimeout(refreshTimer);if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);subscription.unsubscribe();window.removeEventListener('projectw1sc:profile-change',scheduleRefresh);window.removeEventListener('projectw1sc:appearance-change',scheduleRefresh)};
  },[]);
   const sidebarRef=useRef(null);
- // BLACKHOLE fixo: não herdar a skin antiga do ProjectW1SC/Infinitum do localStorage.
+ // Preferência persistente, sem sobrescrever o tema selecionado em Configurações.
  useEffect(()=>{
-  document.documentElement.dataset.crmTheme='blackhole';
-  const current=CRM_THEMES.find(t=>t.id==='blackhole');
+  let selected='infinitum';
+  try{selected=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum')}catch{}
+  document.documentElement.dataset.crmTheme=selected;
+  const current=CRM_THEMES.find(t=>t.id===selected);
   applyAppearanceToDocument(document.documentElement,current,{},'');
-  try{window.localStorage.setItem('projectw1sc.crm-theme','blackhole')}catch{}
-  setTheme('blackhole');
+  setTheme(selected);
  },[]);
  function selectTheme(next){
   const id=resolveTheme(next);
@@ -117,14 +121,14 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <Link key={item.key} href={item.path} prefetch={false} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }} ><Icon size={17} aria-hidden="true"/><span>{item.label}</span></Link>;
     })}
    </nav>
    <footer className="app-nav-footer">
-    <div className="app-private"><span>Dados privados, rastreáveis e<br/>vinculados à origem.</span></div>
+    <div className="app-private"><span>Operação privada com trilha de auditoria.</span></div>
     <small className="app-account-email" title={email}><Mail size={14}/><span><strong className="app-profile-label">{profile.display_name||'Meu perfil'}</strong>{email}</span></small>
     <div className="app-account-actions">
      {onPassword?<button onClick={onPassword} type="button"><KeyRound size={14}/> Alterar senha</button>:<a href="/?senha=1"><KeyRound size={14}/> Alterar senha</a>}
@@ -134,11 +138,12 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    </footer>
   </aside>
   <div className="app-content"><div className="reference-top-tools">
-   <div className="blackhole-shell-breadcrumb"><img src="/branding/blackhole-symbol.svg" alt="" width="31" height="20"/><Link href="/" prefetch={false}>BLACKHOLE</Link><span className="blackhole-shell-crumb-sep">/</span><strong>{active}</strong></div>
+   <div className="blackhole-shell-breadcrumb"><img src="/branding/blackhole-symbol.svg" alt="" width="31" height="20"/><Link href="/" prefetch={false}>PROJECTW1SC</Link><span className="blackhole-shell-crumb-sep">/</span><strong>{active}</strong></div>
    <div className="blackhole-shell-tools">
     <div className="blackhole-shell-search"><Search size={15}/><input ref={navSearchRef} type="search" value={navSearch} onChange={e=>setNavSearch(e.target.value)} aria-label="Pesquisar abas do escritório" placeholder="Buscar uma área..."/><kbd><Command size={12}/> K</kbd>
      {!!navSearch.trim()&&<div className="blackhole-shell-search-results" role="listbox">{matches.length?matches.map(x=><Link key={x.key} href={x.path} prefetch={false} onClick={()=>setNavSearch('')}>{x.label}</Link>):<span>Nenhuma área encontrada.</span>}</div>}
     </div>
+   <label className="w1-theme-picker" title="Alternar tema sem sair da página"><Palette size={15}/><select aria-label="Tema visual do CRM" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
    <span className="bh-theme-identity" title="BLACKHOLE · horizonte de eventos"><img src="/branding/blackhole-symbol.svg" alt="" width="29" height="19"/> BLACKHOLE</span>
    <Link href="/prazos?status=vencidos" prefetch={false} aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</Link><span className="reference-top-divider"/><Link className="reference-top-avatar" href="/configuracoes" prefetch={false} title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</Link></div></div>{children}</div>
  </div>;
