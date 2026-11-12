@@ -1,2 +1,2 @@
-import OfficeWhatsApp from '../../components/office-whatsapp';
-export default function Page(){return <OfficeWhatsApp/>}
+import WaAutoInbox from '../../components/wa-auto-inbox';
+export default function Page(){return <WaAutoInbox/>}

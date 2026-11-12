@@ -31,7 +31,7 @@ function Inbox({db,session}){
  const refreshStatus=useCallback(async()=>{
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)return;
-   const r=await fetch('/api/office/whatsapp/bridge/status',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
+   const r=await fetch('/api/office/whatsapp/bridge?action=status',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
    const p=await r.json();if(p?.ok)setStatus(p);else setStatus(x=>({...x,status:'offline',error:p?.error||'Status indisponível'}));
   }catch(e){setStatus(x=>({...x,status:'offline',error:e.message}))}
  },[db]);
@@ -77,7 +77,7 @@ function Inbox({db,session}){
   setBusy(true);setNotice('Solicitando conexão ao serviço de WhatsApp...');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
-   const r=await fetch('/api/office/whatsapp/bridge/connect',{method:'POST',headers:{Authorization:'Bearer '+s.access_token}});
+   const r=await fetch('/api/office/whatsapp/bridge',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({action:'connect'})});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Não foi possível iniciar a conexão.');
    setStatus(p);setQrOpen(true);setNotice('Aguardando o QR Code do WhatsApp.');
    await refreshStatus();
@@ -89,8 +89,8 @@ function Inbox({db,session}){
   setBusy(true);setNotice('');
   try{
    const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
-   const r=await fetch('/api/office/whatsapp/bridge/send',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-    body:JSON.stringify({phone:selectedPhone,text:draft.trim(),approved:true})});
+   const r=await fetch('/api/office/whatsapp/send',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+    body:JSON.stringify({to:selectedPhone,message:draft.trim(),approved:true,client_id:client?.id||null})});
    const p=await r.json();if(!p.ok||!p.accepted)throw Error(p.error||'O WhatsApp não aceitou a mensagem.');
    setDraft('');setConfirmSend(false);setNotice(p.warning||'WhatsApp aceitou a mensagem. A entrega ainda depende da confirmação do aparelho.');
    await load();
@@ -154,9 +154,9 @@ function Inbox({db,session}){
     <button className="wa-qr-close" type="button" onClick={()=>setQrOpen(false)} aria-label="Fechar QR"><X size={18}/></button>
     <div className="wa-qr-icon"><QrCode size={23}/></div><h2 id="wa-qr-title">Conectar WhatsApp</h2>
     <p>Abra o WhatsApp no celular → Aparelhos conectados → Conectar aparelho. Escaneie o QR Code exibido abaixo.</p>
-    {status.qr?<img className="wa-qr-image" src={status.qr} alt="QR Code real de conexão do WhatsApp"/>:
-     <div className="wa-qr-wait"><RefreshCw size={22}/><strong>{status.status==='connecting'?'Iniciando sessão...':status.status==='ready'?'WhatsApp conectado':'Aguardando QR Code'}</strong><span>O código aparecerá aqui quando o serviço responder.</span></div>}
-    {status.error&&<p className="wa-qr-error">{status.error}</p>}
+    {(status.connection?.qr||status.qr)?<img className="wa-qr-image" src={status.connection?.qr||status.qr} alt="QR Code real de conexão do WhatsApp"/>:
+     <div className="wa-qr-wait"><RefreshCw size={22}/><strong>{status.connection?.status==='connecting'?'Iniciando sessão...':status.connected?'WhatsApp conectado':'Aguardando QR Code'}</strong><span>O código aparecerá aqui quando o serviço responder.</span></div>}
+    {(status.error||status.connection?.error)&&<p className="wa-qr-error">{status.error||status.connection?.error}</p>}
     <small>O QR Code é temporário e não deve ser compartilhado. A conexão utiliza um dispositivo vinculado.</small>
    </section>
   </div>}
