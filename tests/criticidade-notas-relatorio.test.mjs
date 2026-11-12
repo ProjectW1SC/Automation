@@ -78,9 +78,10 @@ test('client editing, attendance and note-taking support editable criticidade',(
  assert.match(tasks,/crm_add_client_note/);
  assert.match(tasks,/Anotação/);
  assert.match(tasks,/task-modal/);
- const clients=file('app/page.jsx');
- assert.match(clients,/Nível de criticidade/);
- assert.match(clients,/crm_add_client_note/);
+ const office=file('components/office-console.jsx');
+ assert.match(office,/office_deadlines/);
+ assert.match(office,/priority/);
+ assert.match(office,/notes/);
  const sql=file('supabase/migrations/20261109_013_criticidade_notas.sql');
  assert.match(sql,/security invoker/i);
  assert.match(sql,/crm_register_attendance_with_criticidade/);

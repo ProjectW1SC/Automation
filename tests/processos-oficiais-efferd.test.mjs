@@ -7,9 +7,9 @@ const number='1001218-36.2026.5.02.0040';
 test('Processos is a single route in the existing CRM sidebar',()=>{
  assert.equal(CRM_AREAS.filter(a=>a.label==='Processos').length,1);
  assert.equal(CRM_AREAS.find(a=>a.label==='Processos').path,'/processos');
- assert.match(read('app/processos/page.jsx'),/CrmShell/);
- assert.match(read('app/processos/page.jsx'),/crm_completed_activities/);
- assert.match(read('app/processos/page.jsx'),/crm_processes/);
+ assert.match(read('app/processos/page.jsx'),/OfficeConsole/);
+ assert.match(read('components/office-console.jsx'),/office_cases/);
+ assert.match(read('app/api/processos/consulta/route.js'),/office_cases/);
 });
 test('CNJ is validated and tribunal is resolved from its official identifier',()=>{
  assert.equal(formatProcessNumber(number),number);
@@ -37,9 +37,9 @@ test('DJEN records only official matching CNJ and strips unsafe HTML',()=>{
 test('timeline joins both sources without treating failed requests as empty',()=>{
  const merged=mergeEvents([{source:'DataJud',id:'A',date:'2026-11-07',title:'Movimento'},{source:'DJEN',id:'B',date:'2026-11-09',title:'Publicação'}]);
  assert.deepEqual(merged.map(x=>x.source),['DJEN','DataJud']);
- const page=read('app/processos/page.jsx');
- assert.match(page,/DataJud/);assert.match(page,/DJEN/);assert.match(page,/movimentaç/i);
- assert.match(page,/sourceStatus/);
+ const page=read('components/office-console.jsx');
+ assert.match(page,/DataJud/);assert.match(page,/DJEN/);assert.match(page,/courtSearch/);
+ assert.match(page,/checkResult/);
 });
 test('official lookup endpoint requires user token and saved CNJ',()=>{
  const route=read('app/api/processos/consulta/route.js');

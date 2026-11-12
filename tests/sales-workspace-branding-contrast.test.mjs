@@ -39,7 +39,7 @@ test('institution logo can use uploaded image instead of guessing brand, preserv
  const logo=file('components/institution-logo.jsx');
  assert.match(logo,/customUrl/);assert.match(logo,/reference-institution-fallback/);
  const ui=file('components/reference-pages.jsx');assert.match(ui,/onEditInstitution/);
- const home=file('app/page.jsx');assert.match(home,/crm-institution-logos/);
+ const legacy=file('components/reference-pages.jsx');assert.match(legacy,/InstitutionLogo/);
  assert.match(home,/logo_path/);
  const sql=file('supabase/migrations/20261109_014_branding_storage.sql');
  assert.match(sql,/logo_path/);assert.match(sql,/crm-institution-logos/);assert.match(sql,/create policy crm_institution_logos_select/);
