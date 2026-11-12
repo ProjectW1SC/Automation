@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import BlackholeHermesAgent from './blackhole-hermes-agent';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
@@ -293,7 +294,7 @@ function OfficeUI({area,db,session}){
       <Source>Envio exige conexão oficial, mensagem recebida nas últimas 24 horas e clique humano. Fora da janela, somente templates aprovados — não implementados aqui.</Source>
      </>:<div className="office-list-empty">Selecione uma conversa para responder.</div>}</section></div>
   </>}
-  {area==='agents'&&<><div className="inf-panel"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
+  {area==='agents'&&<><BlackholeHermesAgent db={db} session={session}/><div className="inf-panel"><h2>Mini Agent · análise operacional</h2><p>Uma execução por clique, com trilha auditável. Concentra o que vence hoje, atrasos e o que necessita conferir.</p>
     <div className="office-action-row"><button className="inf-btn primary" onClick={runMini} disabled={busy}><Bot size={14}/> Executar triagem</button></div>
     {miniResult&&<div className="inf-note"><strong>{miniResult.asOf} · {miniResult.actions.length} ações sugeridas</strong><div className="office-records">{miniResult.actions.map((x,i)=><article key={x.kind+x.id+i} className="office-record">{x.kind} · {x.title} · {dateLabel(x.date)}</article>)}</div>
      <small>{miniResult.notes.join(' ')}</small></div>}
