@@ -108,6 +108,21 @@ function OfficeUI({area,db,session}){
   if(saved){setDeadlineForm(emptyDeadline());setEditDeadlineId(null)}
  }
  function startEditClient(x){setClient({...emptyClient(),...x,next_return:x.next_return||''});setEditClientId(x.id);setShowForm(true);}
+ async function linkCaseClient(row,clientId,clientName){
+  if(busy)return;setBusy(true);setNotice('');
+  try{
+   let id=String(clientId||'').trim();const clean=String(clientName||'').trim();
+   if(!id&&clean.length>=2){
+    const prior=clients.find(x=>x.name.toLocaleLowerCase('pt-BR')===clean.toLocaleLowerCase('pt-BR'));
+    if(prior)id=prior.id;
+    else{const created=await db.from('office_clients').insert({owner_id:session.user.id,name:clean,notes:'Cadastro vinculado manualmente ao processo '+(row.process_number||row.title)+'; conferir identificação e documentos.'}).select('id').single();if(created.error||!created.data?.id)throw Error(created.error?.message||'O cliente não pôde ser registrado.');id=created.data.id}
+   }
+   if(!id)throw Error('Selecione um cliente ou informe um nome confirmado pelo operador.');
+   const attached=await db.from('office_cases').update({client_id:id,updated_at:new Date().toISOString()}).eq('id',row.id).select('id').maybeSingle();
+   if(attached.error||!attached.data?.id)throw Error(attached.error?.message||'Vínculo ao processo não foi confirmado.');
+   setNotice('Cliente vinculado ao processo. O nome foi informado/confirmado pelo operador, não presumido do DJEN.');await load();
+  }catch(e){setNotice('Vínculo não realizado: '+e.message)}finally{setBusy(false)}
+ }
  function startEditCase(x){setCaseForm({...emptyCase(),...x,client_id:x.client_id||'',next_review:x.next_review||'',process_number:x.process_number||''});setEditCaseId(x.id);setShowForm(true);}
  function startEditDeadline(x){setDeadlineForm({...emptyDeadline(),...x,case_id:x.case_id||'',client_id:x.client_id||'',source:x.source||'',source_url:x.source_url||''});setEditDeadlineId(x.id);setShowForm(true);}
  async function markDeadline(row){await act(async()=>{
@@ -225,7 +240,7 @@ function OfficeUI({area,db,session}){
       <label>Próxima revisão<input type="date" value={caseForm.next_review} onChange={e=>setCaseForm({...caseForm,next_review:e.target.value})}/></label>
       <label style={{gridColumn:'1/-1'}}>Notas<textarea value={caseForm.notes} onChange={e=>setCaseForm({...caseForm,notes:e.target.value})}/></label>
     </div><div className="inf-row-end"><button disabled={busy} className="inf-btn primary">Salvar processo</button></div></form></section>}
-   <PrestigeCases cases={cases} clients={clients} query={query} setQuery={setQuery} edit={startEditCase} court={courtSearch} consulting={consulting}/>
+   <PrestigeCases cases={cases} clients={clients} query={query} setQuery={setQuery} edit={startEditCase} court={courtSearch} consulting={consulting} linkClient={linkCaseClient}/>
     {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
      {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>Consulta parcial: outra fonte foi usada. Não confirma publicação no DJEN.</p>}
      {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}

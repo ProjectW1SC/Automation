@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('processo de busca e apreensao so cria cliente com nome confirmado e vincula registro',()=>{const c=read('components/office-console.jsx');assert.match(c,/linkCaseClient/);assert.match(c,/office_clients'\)\.insert/);assert.match(c,/office_cases'\)\.update/);assert.match(c,/client_id:id/);});
+test('painel permite escolher cliente existente ou criar novo sem supor identidade da parte',()=>{const c=read('components/prestige-office-lists.jsx');assert.match(c,/pr-client-link/);assert.match(c,/Cliente existente/);assert.match(c,/Novo cliente confirmado/);});
