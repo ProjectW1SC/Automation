@@ -365,3 +365,48 @@ html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-action-cards
  html[data-crm-theme="blackhole"] .blackhole-studio-shell .app-sidebar,
  html[data-crm-theme="blackhole"] .blackhole-agent-template{transition:none!important;transform:none!important}
 }
+
+/* Estúdio de agentes: hierarquia do vídeo de referência, sem cartões genéricos gigantes. */
+html[data-crm-theme="blackhole"] .blackhole-agents-header{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+ margin:8px 0 29px;flex-wrap:wrap;padding:2px 0 0;
+}
+html[data-crm-theme="blackhole"] .blackhole-agents-header>div:first-child{min-width:min(100%,420px);flex:1}
+html[data-crm-theme="blackhole"] .blackhole-agents-header small{
+ color:#94acc6;letter-spacing:.10em;font-size:10px;font-weight:700
+}
+html[data-crm-theme="blackhole"] .blackhole-agents-header h2{
+ font-size:26px!important;line-height:1.25;letter-spacing:-.035em;
+ margin:7px 0 5px;color:#f4f8ff;font-weight:750
+}
+html[data-crm-theme="blackhole"] .blackhole-agents-header p{
+ font-size:12px;line-height:1.6;color:#b4c3d5!important;max-width:660px;margin:0
+}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title{
+ display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+ margin:20px 0 11px;
+}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title strong{
+ font-size:13px;font-weight:750;color:#e5effb
+}
+html[data-crm-theme="blackhole"] .blackhole-agent-section-title small{
+ font-size:11px;color:#8ca1bd
+}
+html[data-crm-theme="blackhole"] .blackhole-agent-search label{
+ display:flex;align-items:center;gap:7px;border:1px solid #344357;
+ background:#131c2c;padding:5px 8px;border-radius:9px;color:#becde0;font-size:11px
+}
+html[data-crm-theme="blackhole"] .blackhole-agent-search select{
+ border:0!important;min-height:31px!important;background:#1a2a3c!important;
+ max-width:140px!important;font-size:11px!important;padding:5px!important
+}
+html[data-crm-theme="blackhole"] .blackhole-kanban-toolbar input{
+ max-width:150px;min-height:28px!important;height:28px!important;padding:5px 7px!important;
+ border:0!important;background:#1a2839!important;font-size:11px!important
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell .office-ai-rail-brand .office-ai-infinity{
+ color:#e5f5ff!important;text-shadow:0 0 15px #8dc4f055
+}
+@media(max-width:900px){
+ html[data-crm-theme="blackhole"] .blackhole-agents-header h2{font-size:23px!important}
+}
