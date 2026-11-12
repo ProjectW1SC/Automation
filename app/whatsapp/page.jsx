@@ -1,3 +1,2 @@
-'use client';
-import OfficeConsole from '../../components/office-console';
-export default function Page(){return <OfficeConsole area="whatsapp"/>}
+import OfficeWhatsApp from '../../components/office-whatsapp';
+export default function Page(){return <OfficeWhatsApp/>}
