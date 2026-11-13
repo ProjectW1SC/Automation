@@ -54,9 +54,9 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
    if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);
    previousPhotoUrl=photoUrl;previousBackgroundUrl=backgroundUrl;setAvatarUrl(photoUrl);
-   const savedTheme=preferredTheme();
+   const savedTheme=resolveTheme(user.user_metadata?.crm_theme||preferredTheme());
+   try{localStorage.setItem('projectw1sc.crm-theme',savedTheme)}catch{}
    appearanceRef.current={colors:{},backgroundUrl:''};
-   document.documentElement.dataset.crmTheme=savedTheme;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===savedTheme),{},'');
 
   }
@@ -72,7 +72,6 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  useEffect(()=>{
   function syncTheme(){
    const selected=preferredTheme();
-   document.documentElement.dataset.crmTheme=selected;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===selected),{},'');
 
   }
@@ -111,7 +110,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSidebarExpanded(false)}}>
    <div className="app-identity"><Link href="/" className="pr-brand" aria-label="INFINITUM — Painel jurídico"><span className="pr-brand-symbol" aria-hidden="true">∞</span><strong className="pr-brand-name">INFINITUM</strong><small className="pr-brand-sub">CRM | JURÍDICO</small></Link>
     <button type="button" className="app-sidebar-toggle" aria-label={sidebarExpanded?'Recolher menu lateral':'Expandir menu lateral'} aria-expanded={sidebarExpanded} onClick={()=>setSidebarExpanded(x=>!x)}>{sidebarExpanded?<PanelLeftClose size={19}/>:<PanelLeftOpen size={19}/>}</button>
-    <Link className="app-brand-link" href="/" aria-label="BLACKHOLE — Painel jurídico" title="Ir ao painel jurídico" prefetch={false}>
+    <Link className="app-brand-link" href="/" aria-label="INFINITUM — Painel jurídico" title="Ir ao painel jurídico" prefetch={false}>
      <img className="app-brand-compact" src="/branding/blackhole-symbol.svg" alt="" width="54" height="58"/>
      <img className="app-brand-full" src="/branding/blackhole-logo.svg" alt="" width="202" height="65"/>
     </Link>
@@ -138,7 +137,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
      {onPassword?<button onClick={onPassword} type="button"><KeyRound size={14}/> Alterar senha</button>:<a href="/?senha=1"><KeyRound size={14}/> Alterar senha</a>}
      <button onClick={onSignOut} type="button"><LogOut size={14}/> Sair</button>
     </div>
-    <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 BLACKHOLE · W1 Capital</small>
+    <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 INFINITUM · W1 Capital</small>
    </footer>
   </aside>
   <div className="app-content" key={pathname} data-route={pathname}><div className="reference-top-tools">
@@ -148,7 +147,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
      {!!navSearch.trim()&&<div className="blackhole-shell-search-results" role="listbox">{matches.length?matches.map(x=><Link key={x.key} href={x.path} prefetch={false} onClick={()=>setNavSearch('')}>{x.label}</Link>):<span>Nenhuma área encontrada.</span>}</div>}
     </div>
 
-   <span className="bh-theme-identity" title="BLACKHOLE · horizonte de eventos"><img src="/branding/blackhole-symbol.svg" alt="" width="29" height="19"/> BLACKHOLE</span>
+   <span className="bh-theme-identity" title="BLACKHOLE · horizonte de eventos"><img src="/branding/blackhole-symbol.svg" alt="" width="29" height="19"/> INFINITUM</span>
    <button type="button" className="crm-visible-signout" onClick={onSignOut} title="Sair da conta" aria-label="Sair da conta"><LogOut size={18}/><span>Sair</span></button><Link href="/prazos?status=vencidos" prefetch={false} aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</Link><span className="reference-top-divider"/><Link className="reference-top-avatar" href="/configuracoes" prefetch={false} title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</Link></div></div>{children}{mobileMenuOpen&&<div className="crm-mobile-more" role="dialog" aria-label="Todas as áreas do CRM"><header><strong>Todas as áreas</strong><button type="button" onClick={()=>setMobileMenuOpen(false)} aria-label="Fechar menu"><X size={19}/></button></header><div className="crm-mobile-more-links">{CRM_AREAS.map(item=>{const Icon=icons[item.label];return <Link href={item.path} key={item.key} prefetch={false} onClick={()=>setMobileMenuOpen(false)}><Icon size={17}/>{displayLabels[item.label]||item.label}</Link>})}</div><button type="button" className="crm-more-signout" onClick={onSignOut}><LogOut size={16}/> Sair da conta</button></div>}
    <nav className="crm-mobile-dock" aria-label="Navegação móvel">{[{href:'/',Icon:LayoutDashboard,name:'Início'},{href:'/clientes',Icon:Users,name:'Clientes'},{href:'/processos',Icon:Scale,name:'Processos'},{href:'/agenda',Icon:CalendarDays,name:'Agenda'},{href:'/whatsapp',Icon:MessageSquare,name:'Mensagens'}].map(({href,Icon,name})=><Link key={href} href={href} prefetch={false} title={name} aria-label={name}><Icon size={18}/><span>{name}</span></Link>)}<button type="button" aria-label="Todas as áreas" aria-expanded={mobileMenuOpen} onClick={()=>setMobileMenuOpen(x=>!x)}>{mobileMenuOpen?<X size={18}/>:<Menu size={18}/>}<span>Mais</span></button></nav></div>
  </div>;
