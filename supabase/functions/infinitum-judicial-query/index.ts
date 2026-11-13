@@ -1,7 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import {createClient} from "npm:@supabase/supabase-js@2";
+import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 import {formatCnj,resolveCourtAlias,normalizeDataJudSnapshot,normalizeDjenSnapshot} from "./core.mjs";
 import {validatePublicDataJudResponse,currentPublicKey} from "./official-datajud-response.mjs";
+import {authorizeJudicialCase} from "./access.mjs";
 
 // Only the signed-in ProjectW1SC user can query a CNJ already in their RLS-visible portfolio.
 // No service-role key, signed shared header, or user ID sent from a browser is trusted.
@@ -11,7 +12,7 @@ const fail=(message:string,status:number,code:string)=>Object.assign(new Error(m
 const isDate=(value:string)=>/^20\d{2}-\d\d-\d\d$/.test(value)&&new Date(value+"T12:00:00Z").toISOString().startsWith(value);
 function djenUrl(number:string,body:any){
  const now=new Date().toISOString().slice(0,10);
- const start=String(body.start||new Date(Date.now()-29*86400000).toISOString().slice(0,10));
+ const start=String(body.start||new Date(Date.now()-30*86400000).toISOString().slice(0,10));
  const end=String(body.end||now);
  if(!isDate(start)||!isDate(end)||start>end)throw fail("Intervalo de datas inválido.",400,"bad_dates");
  const days=(Date.parse(end+"T12:00:00Z")-Date.parse(start+"T12:00:00Z"))/86400000;
@@ -47,21 +48,13 @@ Deno.serve(async(req:Request)=>{
    auth:{persistSession:false,autoRefreshToken:false}});
   const {data:{user},error:authError}=await db.auth.getUser(jwt);
   if(authError||!user)return json({ok:false,error:"Sessão CRM inválida."},401);
-  const permission=await db.rpc("office_has_access");
-  if(permission.error||permission.data!==true)return json({ok:false,error:"Operador não autorizado."},403);
   const payload=await req.json().catch(()=>({}));
   const kind=String(payload.source||"");
   if(kind!=="djen"&&kind!=="datajud")return json({ok:false,error:"Fonte judicial inválida."},400);
   let number:string;try{number=formatCnj(payload.number)}catch{return json({ok:false,error:"CNJ inválido."},400)}
-  // Match authorization rules in the Vercel route; RLS permits only the signed-in operator's rows.
-  const [c,a,o]=await Promise.all([
-   db.from("office_cases").select("id").eq("process_number",number).limit(1),
-   db.from("crm_processes").select("id").eq("process_number",number).limit(1),
-   db.from("crm_completed_activities").select("id").eq("actor_id",user.id)
-     .eq("process_number",number).is("deleted_at",null).limit(1)
-  ]);
-  if(c.error||a.error||o.error)return json({ok:false,error:"Não foi possível validar o cadastro autorizado do processo."},503);
-  if(!c.data?.length&&!a.data?.length&&!o.data?.length)return json({ok:false,error:"Processo não encontrado na carteira autorizada."},403);
+  // Repete a autorização do servidor, incluindo a carteira compartilhada Lexis.
+  if(!await authorizeJudicialCase(db,user.id,number))
+   return json({ok:false,error:"Processo não encontrado na carteira autorizada da empresa."},403);
   const region=Deno.env.get("SB_REGION")||"unknown";
   if(region!=="sa-east-1")return json({ok:false,error:"Consulta regional não ocorreu em São Paulo.",region},503);
   const started=Date.now(),checkedAt=new Date().toISOString();

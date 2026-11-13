@@ -24,6 +24,7 @@ function mockDatabase(){
  const writes=[],calls=[],history=[];
  let rejectUpdate=false,rejectAttendance=false;
  return {records,writes,calls,history,
+  auth:{async getSession(){return {data:{session:{access_token:'test-session'}}}}},
   failEdit(value){rejectUpdate=value},failAttendance(value){rejectAttendance=value},
   from(table){
    const filters={};let patch=null;
@@ -36,6 +37,7 @@ function mockDatabase(){
      let result;
      if(table==='usuarios')result={data:[user]};
      else if(table==='empresas')result={data:{nome:'Empresa de teste'}};
+     else if(table==='crm_judicial_snapshots')result={data:[]};
      else if(table==='processos'&&patch){
       writes.push({filters:{...filters},patch});
       if(rejectUpdate)result={data:null,error:{message:'Edição bloqueada no teste'}};
@@ -54,7 +56,7 @@ function mockDatabase(){
 // the test still exercises the real clicks, forms, async results and persistence payloads.
 test('portfolio actions open immediately, save the correct record and retain failures in the dialog',async()=>{
  const dom=new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>',{url:'http://localhost/'});
- const old={window:global.window,document:global.document,HTMLElement:global.HTMLElement,self:global.self};
+ const old={window:global.window,document:global.document,HTMLElement:global.HTMLElement,self:global.self,fetch:global.fetch};
  Object.assign(global,{window:dom.window,self:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
  dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true};
  dom.window.HTMLDialogElement.prototype.close=function(){this.open=false};
@@ -123,7 +125,28 @@ test('portfolio actions open immediately, save the correct record and retain fai
   const cancel=new dom.window.Event('cancel',{cancelable:true});
   await act(async()=>dialog().dispatchEvent(cancel));
   assert.equal(dialog(),null);
+  // Reproduce the reported screen: empty DJEN + unavailable DataJud, but four saved attendances.
+  global.fetch=async()=>new Response(JSON.stringify({ok:true,items:[],partial:true,sourceStatus:{djen:'ok',datajud:'unavailable'},
+   sourceErrors:{datajud:'A função regional não foi encontrada.'}}),{status:200});
+  await click(button('Consultar',document.querySelector('.lx-process-record')));
+  assert.match(dialog().textContent,/Histórico judicial não confirmado/);
+  assert.match(dialog().textContent,/A função regional não foi encontrada/);
+  assert.match(dialog().textContent,/DJEN: publicações de/);
+  await act(async()=>db.history.at(-1).done({data:Array.from({length:4},(_,i)=>({id:'att-'+i,descricao:'Atendimento salvo '+i,categoria:'atendimento',data_realizacao:'2026-11-13'}))}));
+  assert.match(dialog().textContent,/Histórico de atendimentos e atividades \(4\)/);
+  assert.match(dialog().textContent,/Atendimento salvo 3/);
+  await click(button('Fechar',dialog()));
+  assert.equal(dialog(),null);
  }finally{
   await act(async()=>root.unmount());dom.window.close();Object.assign(global,old);delete global.IS_REACT_ACT_ENVIRONMENT;
  }
+});
+
+test('judicial events retain the official calendar date, full description and only official links',async()=>{
+ const {renderToStaticMarkup}=await import('react-dom/server');
+ const {JudicialEvents}=require('../components/judicial-consultation-result.jsx');
+ const description='Teor completo da publicação. '.repeat(35)+'FIM DO TEOR';
+ const html=renderToStaticMarkup(React.createElement(JudicialEvents,{items:[{id:'pub',source:'DJEN',date:'2026-11-13T00:00:00.000Z',title:'Intimação',description,link:'https://comunica.pje.jus.br/consulta?hash=teste'},{id:'unsafe',source:'DJEN',title:'Outro',link:'javascript:alert(1)'}]}));
+ assert.match(html,/13\/11\/2026/);assert.match(html,/FIM DO TEOR/);
+ assert.match(html,/href="https:\/\/comunica\.pje\.jus\.br/);assert.doesNotMatch(html,/javascript:/);
 });
