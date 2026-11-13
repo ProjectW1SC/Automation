@@ -36,7 +36,8 @@ test('login-only video styling preserves the CRM principal and provides readable
  assert.match(css,/\.w1-auth-screen\[data-office-login="infinitum-reference"\]/);
  assert.match(css,/\.w1-auth-video/);
  assert.match(css,/object-fit:cover/);
- assert.match(css,/@media\s*\(max-width:\s*720px\)/);
+ assert.match(css,/@media\s*\(max-width:\s*920px\)/);
+ assert.match(css,/@media\s*\(max-width:\s*480px\)/);
  assert.match(css,/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
  assert.match(css,/focus-visible/);
  assert.doesNotMatch(css,/\.app-sidebar\s*\{/);
