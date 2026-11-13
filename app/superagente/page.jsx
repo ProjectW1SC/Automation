@@ -19,6 +19,7 @@ function Console({db,session}){
  const [engine,setEngine]=useState('evidencias');
  const [externalAiConsent,setExternalAiConsent]=useState(false);
  const [allowEngineFallback,setAllowEngineFallback]=useState(false);
+ const [preferredMotor,setPreferredMotor]=useState('auto');
  const [qwenConsent,setQwenConsent]=useState(false),[modelProgress,setModelProgress]=useState('');
  useEffect(()=>()=>stopBlackholeQwen(),[]);
  const load=useCallback(async()=>{
@@ -46,7 +47,7 @@ function Console({db,session}){
     const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
     const response=await fetch('/api/superagente',{method:'POST',
      headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-     body:JSON.stringify({prompt:q,externalAiConsent:engine==='online'&&externalAiConsent,allowEngineFallback:engine==='online'&&allowEngineFallback,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
+     body:JSON.stringify({prompt:q,externalAiConsent:engine==='online'&&externalAiConsent,allowEngineFallback:engine==='online'&&allowEngineFallback,preferredMotor:engine==='online'&&allowEngineFallback?preferredMotor:'auto',messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
     payload=await response.json();
    }
    if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload?.error||'Não foi possível responder');
@@ -118,7 +119,8 @@ function Console({db,session}){
       <button type="button" aria-pressed={engine==='qwen'} onClick={()=>setEngine('qwen')}>Qwen 0.5B local</button>
     </div>
     {engine==='online'&&<label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Autorizo o envio desta conversa ao modelo online gratuito (pode haver limites e tratamento pelo provedor).</label>}
-    {engine==='online'&&externalAiConsent&&<label className="office-ai-consent"><input type="checkbox" checked={allowEngineFallback} onChange={e=>setAllowEngineFallback(e.target.checked)}/> Autorizo cascata LexisPredict: se um motor falhar, esta conversa pode ser enviada ao próximo provedor configurado (MiniMax, Claude, Groq, xAI, OpenRouter, Gemini).</label>}
+    {engine==='online'&&externalAiConsent&&<label className="office-ai-consent"><input type="checkbox" checked={allowEngineFallback} onChange={e=>setAllowEngineFallback(e.target.checked)}/> Autorizo cascata LexisPredict/PredictLM: esta conversa poderá ser enviada a provedores remotos configurados, em sequência, se houver falha.</label>}
+     {engine==='online'&&externalAiConsent&&allowEngineFallback&&<label className="office-ai-consent office-motor-preference"><span>Motor preferido</span><select aria-label="Selecionar motor preferido" value={preferredMotor} onChange={e=>setPreferredMotor(e.target.value)}><option value="auto">Automático · Lexis + PredictLM</option><option value="predictlm">PredictLM · se configurado</option>{['colibri','minicpm','minimax','claude','groq','xai','openrouter','gemini'].map(id=><option value={id} key={id}>{id.toUpperCase()} · se configurado</option>)}</select></label>}
     {engine==='qwen'&&<label className="office-ai-consent"><input type="checkbox" checked={qwenConsent} onChange={e=>setQwenConsent(e.target.checked)}/> Autorizo baixar os pesos do Qwen para este navegador. Exige WebGPU e memória suficiente; sem fallback CPU.</label>}
     {modelProgress&&<p className="office-ai-progress" role="status">{modelProgress}</p>}
     <p className="office-ai-disclaimer">BLACKHOLE pode errar. Confirme informações judiciais na fonte oficial antes de agir.</p>
