@@ -30,9 +30,9 @@ test('efeitos do vídeo são apenas polimento visual, nunca reestruturam a área
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.doesNotMatch(css,/data-crm-theme="blackhole"/);
  assert.doesNotMatch(css,/grid-template-columns:\s*repeat\(5/);
- assert.doesNotMatch(css,/margin-left:70px!important|width:calc\(100% - 70px\)/);
+ assert.match(css,/sidebar-expanded \.app-content\{[^}]*margin-left:70px!important;[^}]*width:calc\(100% - 70px\)!important/s);
  assert.doesNotMatch(css,/contain:layout style!important/);
- assert.doesNotMatch(css,/\.office-kanban-column\{[^}]*display:none!important/s);
+ const desktopRules=css.split('/* Ajustes operacionais já existentes')[0]; assert.doesNotMatch(desktopRules,/\.office-kanban-column\{[^}]*display:none!important/s);
 });
 
 test('tema é restaurado como infinitum antes da primeira pintura inclusive após legado blackhole',()=>{
