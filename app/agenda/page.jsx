@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {CalendarDays,ChevronLeft,ChevronRight,Plus,RefreshCw,CheckCircle2} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
+import LexisOperations from '../../components/lexis-operations';
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const iso=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
 const dateName=s=>new Date(s+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});
@@ -57,4 +58,4 @@ function Agenda({db,session}){
  <p className="inf-note">Datas de audiências e prazos precisam ser conferidas em documentos oficiais. Audiências passadas não aparecem na agenda ativa. Nenhum contato é enviado automaticamente.</p>
  </main>;
 }
-export default function AgendaPage(){return <SecuredWorkspace active="Agenda">{({db,session})=><Agenda db={db} session={session}/>}</SecuredWorkspace>}
+export default function AgendaPage(){return <SecuredWorkspace active="Agenda">{({db,session})=>process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'?<LexisOperations area="agenda" db={db} session={session}/>:<Agenda db={db} session={session}/>}</SecuredWorkspace>}
