@@ -10,16 +10,15 @@ test('login usa vídeo preservado com compressão suficiente para texto e detalh
  assert.equal(bytes.toString('ascii',4,8),'ftyp');
 });
 
-test('vídeo fica inteiro no painel esquerdo sem zoom ou recorte automático',()=>{
+test('o painel mostra só o vídeo da galáxia em largura e altura completas, sem faixas pretas',()=>{
  const css=read('app/infinitum-login-video.css');
- const videoRule=css.match(/\.w1-auth-video\s*\{([^}]+)\}/);
- assert.ok(videoRule);
- assert.match(videoRule[1],/object-fit:\s*contain\s*!important/);
- assert.match(videoRule[1],/object-position:\s*center center\s*!important/);
- assert.doesNotMatch(videoRule[1],/scale\(|transform:|object-fit:\s*cover/);
- assert.match(css,/\.w1-auth-video-poster\s*\{[^}]*background:[^}]*\/contain/s);
- assert.doesNotMatch(css,/object-position:\s*center 19%/);
- assert.match(css,/aspect-ratio:\s*710\s*\/\s*720/);
+ const final=css.split('/* GALAXY LOGIN FINAL */')[1];
+ assert.ok(final,'the final galaxy override must exist');
+ assert.match(final,/grid-template-columns:min\\(55\\.3125vw,98\\.3333dvh\\) minmax\\(0,1fr\\)!important/);
+ assert.match(final,/object-fit:cover!important/);
+ assert.match(final,/background-size:cover!important/);
+ assert.doesNotMatch(final,/transform:scale\\(|animation:[^;]*zoom/);
+ assert.match(final,/height:100dvh!important/);
 });
 
 test('login, recuperação e cadastro continuam separados do vídeo, inclusive sem movimento',()=>{
