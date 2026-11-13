@@ -12,6 +12,8 @@ import {TeamReport} from './lexis-team-report';
 import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
 import InfinitumLegacyClients from './infinitum-legacy-clients';
 import PortfolioDialog from './portfolio-dialog';
+import JudicialConsultationResult,{JudicialEvents} from './judicial-consultation-result';
+import {loadPortfolioHistory} from '../lib/portfolio-history.mjs';
 import {responsibleDisplay,processStatus,statusForDate} from '../lib/lexis-operations.mjs';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
@@ -20,6 +22,7 @@ const FIELDS_CLIENT=['cliente','telefone','email','cpf'];
 const FIELDS_PROCESS=['cliente','protocolo_ref','tribunal','advogado','observacoes','proximo_retorno','proximo_prazo','status_interno'];
 const initialForm=p=>({cliente:p.client_name||'',telefone:p.phone||'',email:p.email||'',cpf:p.cpf||'',tribunal:p.tribunal||'',advogado:p.advogado||'',observacoes:p.observacoes||'',proximo_retorno:p.next_attendance||'',proximo_prazo:p.next_deadline||'',status_interno:p.status==='outro'?'preservar':p.status||'ativo'});
 const qFilter=(query,type)=>({field:processSearchField(type),text:likeTerm(query)});
+const recentPeriod=()=>{const end=todayBrazil(),start=new Date(end+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-30);return {start:start.toISOString().slice(0,10),end,source:'auto',page:1}};
 function Summary({title,count,href}){return <Link href={href} className="inf-stat" style={{textDecoration:'none'}}><label>{title}</label><strong>{Number(count||0).toLocaleString('pt-BR')}</strong></Link>;}
 export default function LexisSharedOffice({area='dashboard',db,session}){
  const [profile,setProfile]=useState(null),[company,setCompany]=useState(''),[team,setTeam]=useState([]);
@@ -116,8 +119,10 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
  const historyRequest=useRef(0);
  const [historyLoading,setHistoryLoading]=useState(false);
+ const [officialHistory,setOfficialHistory]=useState([]),[historyErrors,setHistoryErrors]=useState([]);
+ const [consultBusy,setConsultBusy]=useState(false),[consultRange,setConsultRange]=useState(recentPeriod);
  useEffect(()=>()=>{historyRequest.current++},[]);
- const closeAction=()=>{if(busy)return;historyRequest.current++;setSelected(null);setEditing(null);setConsulted(null);setHistory([]);setHistoryLoading(false)};
+ const closeAction=()=>{if(busy)return;historyRequest.current++;setSelected(null);setEditing(null);setConsulted(null);setHistory([]);setOfficialHistory([]);setHistoryErrors([]);setHistoryLoading(false);setConsultBusy(false)};
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[attendance,setAttendance]=useState([]),[reportTotal,setReportTotal]=useState(0);
  const [reportBusy,setReportBusy]=useState(false),[teamStats,setTeamStats]=useState([]),[selectedMode,setSelectedMode]=useState('atendimento');
  useEffect(()=>{
@@ -159,19 +164,21 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  },[db,profile?.empresa_id,page,search,type,activeFilter,area]);
  useEffect(()=>{load()},[load]);
  const lastTotalPages=Math.max(1,Math.ceil(total/PAGE));
+ const loadHistory=useCallback(async(row,request)=>{
+  setHistory([]);setOfficialHistory([]);setHistoryErrors([]);setHistoryLoading(true);
+  try{
+   const result=await loadPortfolioHistory({db,companyId:profile.empresa_id,processId:row.id,number:normalizedCnj(row.process_number)});
+   if(request===historyRequest.current){setHistory(result.activities);setOfficialHistory(result.officialItems);setHistoryErrors(result.errors)}
+  }catch(e){if(request===historyRequest.current)setHistoryErrors(['Histórico não carregado: '+e.message])}
+  finally{if(request===historyRequest.current)setHistoryLoading(false)}
+ },[db,profile?.empresa_id]);
  const attend=useCallback(async(row)=>{
   if(!profile?.empresa_id)return;
   const request=++historyRequest.current;
-  setEditing(null);setNotice('');setHistory([]);setHistoryLoading(true);
+  setEditing(null);setNotice('');
   setSelected(row);setSelectedMode('atendimento');setAttendNote('');setNextDate(row.next_attendance||'');setConfirmed(false);setConsulted(null);
-  try{
-   const {data,error}=await db.from('tarefas_realizadas').select('id,descricao,categoria,data_realizacao,responsavel_auth_user_id,contato_cliente_confirmado,created_at')
-    .eq('empresa_id',profile.empresa_id).eq('processo_id',row.id).order('created_at',{ascending:false}).limit(60);
-   if(error)throw Error(error.message);
-   if(request===historyRequest.current)setHistory(data||[]);
-  }catch(e){if(request===historyRequest.current){setHistory([]);setNotice('Histórico não carregado: '+e.message)}}
-  finally{if(request===historyRequest.current)setHistoryLoading(false)}
- },[db,profile?.empresa_id]);
+  void loadHistory(row,request);
+ },[profile?.empresa_id,loadHistory]);
  const saveAttendance=async e=>{
   e.preventDefault();if(!selected||busy)return;
   if(attendNote.trim().length<3){setNotice('Descreva o atendimento realizado.');return}
@@ -213,25 +220,32 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    await load();
   }catch(e){setNotice('Não foi possível alterar situação: '+e.message)}finally{setBusy(false)}
  };
- const consult=async p=>{
+ const consult=async(p,options={})=>{
   if(!p.process_number||!normalizedCnj(p.process_number)){setNotice('Número CNJ incompleto. Consulta oficial não iniciada.');return}
-  historyRequest.current++;setEditing(null);setHistory([]);setHistoryLoading(false);
-  setSelected(p);setSelectedMode('consulta');setConsulted(null);setBusy(true);setNotice('Consultando DJEN e DataJud somente por solicitação...');
+  const request=++historyRequest.current;
+  setEditing(null);setConsultRange(options.start||options.end?options:recentPeriod());
+  setSelected(p);setSelectedMode('consulta');setConsulted(null);setConsultBusy(true);setNotice('Consultando as fontes oficiais...');
+  void loadHistory(p,request);
   try{
    const {data:{session:s}}=await db.auth.getSession();
    if(!s?.access_token)throw Error('Sessão expirada.');
    const result=await consultHistoricalCase({
-    number:normalizedCnj(p.process_number),source:'auto',
+    number:normalizedCnj(p.process_number),source:options.source||'auto',start:options.start,end:options.end,page:options.page||1,
+    onProgress:progress=>{if(request===historyRequest.current)setNotice('Consultando período '+progress.current+' de '+progress.total+'...')},
     fetchServer:async({number,source,start,end,page})=>{
      const qs=new URLSearchParams({numero:number,fonte:source,pagina:String(page),...(start?{inicio:start}:{}),...(end?{fim:end}:{})});
      const resp=await fetch('/api/processos/consulta?'+qs,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-     return resp.json();
+     const raw=await resp.text();
+     let body;try{body=JSON.parse(raw)}catch{throw Error('O servidor de consulta não respondeu com dados válidos (HTTP '+resp.status+').')}
+     if(!resp.ok&&body.ok!==false)throw Error(body.error||'Consulta indisponível (HTTP '+resp.status+').');
+     return body;
     },
     fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page})
    });
+   if(request!==historyRequest.current)return;
    setConsulted(result);
    setNotice(result.notice||'Consulta terminada; confira quais fontes responderam.');
-  }catch(e){setNotice('Consulta judicial não confirmada: '+e.message)}finally{setBusy(false)}
+  }catch(e){if(request===historyRequest.current)setNotice('Consulta judicial não confirmada: '+e.message)}finally{if(request===historyRequest.current)setConsultBusy(false)}
  };
  // Atalho vindo de Prazos, Agenda ou Audiências: abre a ação REAL do processo autorizado.
  // Nunca resolve o vínculo por nome do cliente nem executa ações sem conferir empresa_id.
@@ -398,7 +412,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
      <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
      <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'processo')}><FileText size={14}/> Editar processo</button>
      <button type="button" className="inf-btn primary" aria-haspopup="dialog" onClick={()=>attend(p)}><ClipboardList size={14}/> Registrar atendimento</button>
-     <button className="inf-btn" onClick={()=>consult(p)} disabled={busy||!normalizedCnj(p.process_number)}><Gavel size={14}/> Consultar</button>
+     <button className="inf-btn" onClick={()=>consult(p)} disabled={busy||consultBusy||!normalizedCnj(p.process_number)}><Gavel size={14}/> Consultar</button>
      {p.status!=='encerrado'&&<button className="inf-btn" onClick={()=>changeStatus(p,'encerrado')} disabled={busy}><CheckCircle2 size={14}/> Encerrar</button>}
      {p.status!=='em_andamento'&&<button className="inf-btn" onClick={()=>changeStatus(p,'em_andamento')} disabled={busy}><Activity size={14}/> Em andamento</button>}
      {p.status!=='excluido'&&<button className="inf-btn" onClick={()=>changeStatus(p,'excluido')} disabled={busy}><Archive size={14}/> Excluir da vista</button>}
@@ -424,6 +438,19 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   {selected&&<PortfolioDialog title={selectedMode==='atendimento'?'Registrar atendimento':'Consulta oficial'} busy={busy} notice={notice} onClose={closeAction}>
    <p><strong>{selected.client_name||selected.process_number}</strong></p>
    <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: <strong>{responsibleDisplay(selected.last_responsible,team)}</strong></p>
+   {selectedMode==='consulta'&&<>
+    <p><strong>CNJ: {selected.process_number}</strong></p>
+    <p>DJEN: publicações de {DATE_LABEL(consultRange.start)} a {DATE_LABEL(consultRange.end)}. DataJud: movimentações disponíveis no índice público, inclusive anteriores a esse período.</p>
+    <form className="lx-consult-range" onSubmit={e=>{e.preventDefault();consult(selected,consultRange)}}>
+     <fieldset disabled={consultBusy}><div className="inf-fields">
+      <label>DJEN desde<input type="date" required value={consultRange.start} max={consultRange.end} onChange={e=>setConsultRange({...consultRange,start:e.target.value})}/></label>
+      <label>DJEN até<input type="date" required value={consultRange.end} min={consultRange.start} onChange={e=>setConsultRange({...consultRange,end:e.target.value})}/></label>
+      <label>Fonte<select value={consultRange.source} onChange={e=>setConsultRange({...consultRange,source:e.target.value})}><option value="auto">DJEN + DataJud</option><option value="djen">DJEN</option><option value="datajud">DataJud</option></select></label>
+      <label>Página DJEN<input type="number" min="1" max="100" required value={consultRange.page} onChange={e=>setConsultRange({...consultRange,page:Number(e.target.value)})}/></label>
+     </div></fieldset><button type="submit" className="inf-btn primary" disabled={consultBusy}>{consultBusy?'Consultando...':'Consultar período'}</button>
+    </form>
+    {consulted&&<JudicialConsultationResult result={consulted}/>}
+   </>}
    {selectedMode==='atendimento'&&<form onSubmit={saveAttendance}><fieldset disabled={busy}><div className="inf-fields">
     <label className="lx-field-wide">Resumo do atendimento realizado<textarea value={attendNote} onChange={e=>setAttendNote(e.target.value)} minLength={3} maxLength={3000} required/></label>
     <label>Próximo atendimento<input type="date" value={nextDate} onChange={e=>setNextDate(e.target.value)}/></label>
@@ -431,9 +458,13 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    </div></fieldset><p className="inf-note">Responsável será registrado automaticamente com seu login Lexis: <b>{profile.nome}</b>. O histórico anterior não será sobrescrito.</p>
    <div className="inf-row-end lx-dialog-actions"><button type="submit" className="inf-btn primary" disabled={busy}>{busy?'Registrando...':'Confirmar atendimento'}</button><button className="inf-btn" type="button" disabled={busy} onClick={closeAction}>Fechar</button></div></form>}
    {historyLoading&&<p role="status">Carregando histórico...</p>}
-   {history.length>0&&<div className="office-records"><h3>Histórico de atendimentos e atividades</h3>{history.map(x=><div className="office-record" key={x.id}><strong>{DATE_LABEL(x.data_realizacao)}</strong> · {team.find(p=>p.auth_user_id===x.responsavel_auth_user_id)?.nome||'Responsável registrado'} · {x.categoria}<p>{x.descricao}</p></div>)}</div>}
-   {consulted&&<div className="office-records"><h3>Consulta oficial</h3><p>{consulted.notice}</p><p>DJEN: {consulted.sourceStatus?.djen} · DataJud: {consulted.sourceStatus?.datajud}</p>{(consulted.items||[]).slice(0,50).map((x,i)=><div className="office-record" key={i}>{String(x.title||x.description||x.texto||'Movimentação sem descrição').slice(0,400)}</div>)}</div>}
-   {selectedMode==='consulta'&&<div className="lx-dialog-actions"><button type="button" className="inf-btn" disabled={busy} onClick={closeAction}>Fechar</button></div>}
+   {historyErrors.map(error=><p className="lx-dialog-notice" role="status" key={error}>{error}</p>)}
+   {!historyLoading&&<section className="lx-saved-history"><h3>Histórico de atendimentos e atividades ({history.length})</h3>
+    {history.map(x=><article className="lx-judicial-event" key={x.id}><strong>{DATE_LABEL(x.data_realizacao)}</strong> · {team.find(p=>p.auth_user_id===x.responsavel_auth_user_id)?.nome||'Responsável registrado'} · {x.categoria}<p>{x.descricao}</p></article>)}
+    {!history.length&&!historyErrors.length&&<p>Nenhum atendimento registrado para este processo.</p>}
+   </section>}
+   {!historyLoading&&officialHistory.length>0&&<JudicialEvents key={'saved-'+selected.id} items={officialHistory} title="Histórico judicial salvo (consultas anteriores)"/>}
+   {selectedMode==='consulta'&&<div className="lx-dialog-actions"><button type="button" className="inf-btn" onClick={closeAction}>Fechar</button></div>}
   </PortfolioDialog>}
  </main>;
 }
