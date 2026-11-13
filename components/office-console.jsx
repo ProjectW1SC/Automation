@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {RefreshCw,Plus,Search,FileText,CalendarDays,ShieldCheck,MessageSquare,Users,BriefcaseBusiness,Clock3,ExternalLink,Download,Bot,CheckCircle2,Scale,Headset,Filter} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
+import LexisSharedOffice from './lexis-shared-office';
 import LegalStationery from './legal-stationery';
 import {downloadLegalDocx,printLegalPdf} from '../lib/legal-document-export.mjs';
 import {runBlackholeQwen} from '../lib/blackhole-local-llm.mjs';
@@ -403,4 +404,10 @@ function OfficeUI({area,db,session}){
      <article className="office-record">Relatórios de agentes registrados: {runs.length}</article></div></section></>}
  </main>;
 }
-export default function OfficeConsole({area='dashboard'}){return <SecuredWorkspace active={titleMap[area]||'Painel jurídico'}>{({db,session})=><OfficeUI area={area} db={db} session={session}/>}</SecuredWorkspace>}
+export default function OfficeConsole({area='dashboard'}){
+ return <SecuredWorkspace active={titleMap[area]||'Painel jurídico'}>{({db,session})=>
+  process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'&&['dashboard','clients','cases','reports'].includes(area)
+   ? <LexisSharedOffice area={area} db={db} session={session}/>
+   : <OfficeUI area={area} db={db} session={session}/>
+ }</SecuredWorkspace>;
+}
