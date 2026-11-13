@@ -1,3 +1,19 @@
+# Demonstração e ativação da conta de convidado
+
+A empresa de demonstração está **separada dos escritórios reais** pelo identificador da empresa e pelas políticas RLS.
+
+## Ativação preferencial no aplicativo
+
+1. Entre com a conta **Superadmin** do escritório real no Infinitum.
+2. Acesse `/demo-admin` e clique em **Criar ou renovar senha do convidado**.
+3. Confirme a alteração. O servidor usa a API administrativa do Supabase Auth em função Edge protegida por JWT, nunca no navegador.
+4. Copie imediatamente o e-mail e a senha gerada, guarde num gerenciador de senhas e use-os para entrar no CRM.
+5. Não fotografe nem publique a senha. Renovar a conta invalida a senha anterior.
+
+Se a função regional ou a permissão administrativa estiver indisponível, use o procedimento manual abaixo. A existência do perfil no banco não significa que já exista uma conta de login.
+
+---
+
 # Ativação de conta de convidado — INFINITUM
 
 Empresa demonstrativa: **Aurora & Horizonte Advocacia — DEMONSTRAÇÃO FICTÍCIA**.
