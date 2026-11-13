@@ -20,8 +20,7 @@ test('shell e configuração permitem trocar o tema sem criar uma segunda estrut
  assert.match(shell,/projectw1sc:theme-change/);
  assert.match(settings,/settings-theme-grid/);
  assert.match(settings,/selectTheme/);
- assert.match(settings,/Infinitum Light/);
- assert.match(settings,/Infinitum Dark/);
+ assert.deepEqual(CRM_THEMES.map(theme=>theme.label),['Infinitum Light','Infinitum Dark']);
  assert.match(settings,/aria-pressed/);
  assert.doesNotMatch(settings,/O visual principal Prestige é o único tema/);
 });
