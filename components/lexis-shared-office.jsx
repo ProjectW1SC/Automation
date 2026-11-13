@@ -10,6 +10,7 @@ import {todayBrazil} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
 import {TeamReport} from './lexis-team-report';
 import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
+import InfinitumLegacyClients from './infinitum-legacy-clients';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
 const STATUS={ativo:'Em andamento',em_andamento:'Em andamento',suspenso:'Suspenso',encerrado:'Encerrado',excluido:'Excluído (arquivado)'};
@@ -220,6 +221,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <span>Página {page+1} de {lastTotalPages}</span>
    <button type="button" className="inf-btn" disabled={page+1>=lastTotalPages||loading} onClick={()=>setPage(x=>x+1)}>Próxima <ChevronRight size={16}/></button></div>
   </section>
+  {area==='clients'&&<InfinitumLegacyClients db={db} profile={profile} team={team}/>}
   {editing&&<section className="inf-panel" aria-label="Edição de cadastro"><h2>Editar {mode==='cliente'?'cliente':'processo'} · #{editing.id}</h2>
    <form onSubmit={saveEdit}><div className="inf-fields">
     {(mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref')).map(field=>(
