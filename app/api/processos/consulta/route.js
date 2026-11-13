@@ -88,14 +88,14 @@ export async function GET(request){
  try{
   const authHeader=request.headers.get('authorization')||'';
   const token=authHeader.startsWith('Bearer ')?authHeader.slice(7).trim():'';
-  if(!token)return json({ok:false,error:'Entre no CRM para consultar o processo.'},401);
+  if(!token)return json({ok:false,code:'crm_access',error:'Entre no CRM para consultar o processo.'},401);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if(!url||!key)return json({ok:false,error:'Conexão segura do CRM não configurada.'},503);
   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:'Bearer '+token}}});
   const {data:{user},error:authError}=await db.auth.getUser(token);
   if(authError||!user||!(await checkCrmAccess(db,user)))
-   return json({ok:false,error:'Conta sem permissão para consultar processos neste CRM.'},403);
+   return json({ok:false,code:'crm_access',error:'Conta sem permissão para consultar processos neste CRM.'},403);
   const params=new URL(request.url).searchParams;
   const number=formatProcessNumber(params.get('numero'));
   const source=params.get('fonte');
@@ -108,20 +108,20 @@ export async function GET(request){
   if(shared){
    const profile=await db.from('usuarios').select('empresa_id').eq('auth_user_id',user.id).limit(2);
    if(profile.error||profile.data?.length!==1||!profile.data[0].empresa_id)
-    return json({ok:false,error:'Não foi possível validar a organização do login LexisPredict.'},403);
+    return json({ok:false,code:'crm_access',error:'Não foi possível validar a organização do login LexisPredict.'},403);
    empresaId=profile.data[0].empresa_id;
   }
   const [registry,activities,officeCase,lexisCase]=await Promise.all([
    db.from('crm_processes').select('id').eq('process_number',number).limit(1),
    db.from('crm_completed_activities').select('id').eq('actor_id',user.id).eq('process_number',number).is('deleted_at',null).limit(1),
    db.from('office_cases').select('id').eq('process_number',number).limit(1),
-   shared?db.from('processos').select('id').eq('empresa_id',empresaId).eq('protocolo_ref',number).limit(1):
+   shared?db.from('processos').select('id').eq('empresa_id',empresaId).in('protocolo_ref',[number,number.replace(/\D/g,'')]).limit(1):
     Promise.resolve({data:[],error:null})
   ]);
   if(registry.error||activities.error||officeCase.error||lexisCase.error)
    return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
   if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length&&!lexisCase.data?.length)
-   return json({ok:false,error:'Este CNJ não consta da carteira autorizada da empresa.'},403);
+   return json({ok:false,code:'crm_access',error:'Este CNJ não consta da carteira autorizada da empresa.'},403);
   async function consultOne(kind){
    const queryKey=snapshotQueryKey(kind,params);
    const {data:rawCached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
@@ -194,7 +194,7 @@ export async function GET(request){
     .in('process_number',[number,'*']).eq('source',kind);
    const reduced=shrinkOfficialResult(result);
    const {error:saveError}=await db.from('crm_judicial_snapshots').upsert({
-    actor_id:user.id,process_number:number,source:kind,query_key:queryKey,
+    actor_id:user.id,...(shared?{empresa_id:empresaId}:{}),process_number:number,source:kind,query_key:queryKey,
     checked_at:result.checkedAt,found:!!result.found,payload:reduced
    },{onConflict:'actor_id,process_number,source,query_key'});
    return {...result,snapshotSaved:!saveError,snapshotError:saveError?

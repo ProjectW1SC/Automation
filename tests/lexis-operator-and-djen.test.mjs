@@ -46,5 +46,6 @@ test('rotas dedicadas e navegação exigem login e mantêm o tema existente',()=
  const nav=source('lib/crm-navigation.mjs');
  assert.match(nav,/path:'\/encerrados'/);assert.match(nav,/path:'\/analises-internas'/);assert.match(nav,/path:'\/atividades'/);
  const ui=source('components/lexis-shared-office.jsx');
- assert.match(ui,/\/consulta-judicial\?numero=/);
+ assert.match(ui,/JudicialConsultationResult/);
+ assert.match(source('components/lexis-judicial-dossier.jsx'),/consultHistoricalCase/);
 });
