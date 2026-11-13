@@ -1,0 +1,56 @@
+name: Prepare exact supplied INFINITUM galaxy login video
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/infinitum-galaxy-video.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-galaxy-hero:
+    if: github.repository == 'ProjectW1SC/INFINITUM'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+      - name: Download and verify exact video supplied by the owner
+        shell: bash
+        env:
+          SOURCE_URL: https://hebbkx1anhila5yf.public.blob.vercel-storage.com/gemini_generated_video_99cf8aa7-iOrVhBe4NUN4zCK3l306uKfK6HlD9H.mp4
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location --retry 3 --output "${RUNNER_TEMP}/infinitum-source.mp4" "$SOURCE_URL"
+          printf '%s  %s\n' 'd7ccd1e56577781295dec2b96ce0020644ba9bbf0f012a8d96c68df702a69286' "${RUNNER_TEMP}/infinitum-source.mp4" | sha256sum -c -
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of default=noprint_wrappers=1 "${RUNNER_TEMP}/infinitum-source.mp4"
+      - name: Generate the left galaxy panel only (not the baked-in login form)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/branding
+          ffmpeg -hide_banner -loglevel error -y \
+            -i "${RUNNER_TEMP}/infinitum-source.mp4" \
+            -vf 'crop=708:720:0:0,scale=1416:1440:flags=lanczos,fps=24,format=yuv420p' \
+            -an -c:v libx264 -preset medium -crf 18 -movflags +faststart -pix_fmt yuv420p \
+            public/branding/infinitum-login-hero.mp4
+          ffmpeg -hide_banner -loglevel error -y -ss 0.5 \
+            -i "${RUNNER_TEMP}/infinitum-source.mp4" \
+            -vf 'crop=708:720:0:0,scale=1416:1440:flags=lanczos' \
+            -frames:v 1 -quality 90 public/branding/infinitum-login-poster.webp
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 public/branding/infinitum-login-hero.mp4)" = "1416"
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 public/branding/infinitum-login-hero.mp4)" = "1440"
+          test "$(stat -c %s public/branding/infinitum-login-hero.mp4)" -gt 1000000
+      - name: Publish cropped media on an isolated branch for review
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c generated/infinitum-galaxy-hero-20261113
+          git add public/branding/infinitum-login-hero.mp4 public/branding/infinitum-login-poster.webp
+          git commit -m 'assets: incorporar galáxia do vídeo enviado ao login Infinitum'
+          git push --set-upstream origin generated/infinitum-galaxy-hero-20261113
