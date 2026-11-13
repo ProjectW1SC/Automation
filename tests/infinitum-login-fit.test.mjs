@@ -17,7 +17,7 @@ test('desktop login scales the form and controls to the reference viewport',()=>
 
 test('mobile keeps the full reference hero visible without cropping the video',()=>{
  const css=read('app/infinitum-login-video.css');
- const polish=css.slice(css.indexOf('/* INFINITUM PRESTIGE'));
+ const polish=css.slice(css.indexOf('INFINITUM PRESTIGE'));
  const mobileStart=polish.indexOf('@media(max-width:920px)');
  const mobileEnd=polish.indexOf('@media(max-width:480px)',mobileStart);
  const mobile=polish.slice(mobileStart,mobileEnd);
