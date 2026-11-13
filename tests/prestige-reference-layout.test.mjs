@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('branco prestigio aplicado apos todas as folhas antigas',()=>{const l=read('app/layout.jsx');assert.ok(l.lastIndexOf('prestige-exact-reference.css')>l.indexOf('crm-unified-2026.css'));});
-test('sidebar aberto por padrao, com marca serifada e recolhimento explicito',()=>{const x=read('components/crm-shell.jsx');assert.match(x,/useState\(true\)/);assert.match(x,/pr-brand-name/);assert.match(x,/INFINITUM/);});
+test('sidebar começa compacta e expande sem deslocar os painéis',()=>{const x=read('components/crm-shell.jsx');assert.match(x,/setSidebarExpanded\]=useState\(false\)/);assert.match(x,/pr-brand-name/);assert.match(x,/INFINITUM/);});
 test('login refaz titulo e mantem auth real',()=>{assert.match(read('components/professional-auth.jsx'),/alta performance/);assert.match(read('components/secured-workspace.jsx'),/signInWithPassword/);});
 test('UI da referencia nao e pintura fixa',()=>{const x=read('app/prestige-exact-reference.css');assert.match(x,/\.app-sidebar/);assert.match(x,/\.wa-workspace/);assert.match(x,/\.w1-calendar/);assert.match(x,/\.office-login-primary/);assert.doesNotMatch(x,/pointer-events:\s*none|position:\s*fixed;\s*inset:\s*0;\s*z-index:\s*999/);});

@@ -10,7 +10,7 @@ import {CRM_THEMES,resolveTheme} from '../../lib/crm-themes.mjs';
 import {PROFILE_BUCKET,validateProfileName,validateAvatarFile,avatarPathFor,validatePasswordChange,ownerAvatarPath} from '../../lib/profile-settings.mjs';
 import {APP_COLORS,APPEARANCE_BUCKET,appearanceDefaults,validateAppearance,validateImageFile,appearancePathFor,applyAppearanceToDocument} from '../../lib/appearance-settings.mjs';
 
-const labelForTheme=id=>CRM_THEMES.find(x=>x.id===id)?.label||'Vinho clássico';
+const labelForTheme=id=>CRM_THEMES.find(x=>x.id===id)?.label||'Principal · Prestige';
 export default function SettingsPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[loading,setLoading]=useState(true);
@@ -198,9 +198,9 @@ export default function SettingsPage(){
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
-   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Visual Infinitum padronizado, identificação e segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
+   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Escolha entre o visual principal e o tema claro do vídeo. Ajuste seu perfil e a segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
    {(error||message)&&<div role={error?'alert':'status'} className={'settings-feedback '+(error?'bad':'good')}>{error||message}<button type="button" onClick={()=>{setError('');setMessage('')}} aria-label="Fechar aviso">×</button></div>}
-   <section className="reference-panel settings-panel"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Infinitum Prestige</h2><p>Identidade visual única e permanente: branco, preto e acentos discretos, com alto contraste e interface responsiva.</p></div></div><div className="settings-hint"><ShieldCheck size={16}/> Os temas anteriores foram desativados e não podem ser selecionados.</div></section>
+   <section className="reference-panel settings-panel" aria-label="Seleção de tema"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Visual do CRM</h2><p>O tema principal mantém o Prestige. O segundo reproduz a linguagem clara, menu compacto e quadros do vídeo do INFINITUM.</p></div></div><div className="settings-theme-grid">{CRM_THEMES.map(t=><button key={t.id} type="button" className={'settings-theme-option '+(theme===t.id?'selected':'')} aria-pressed={theme===t.id} onClick={()=>setChosenTheme(t.id)}><span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.tint,borderColor:t.border}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span><span className="settings-theme-option-label">{t.label}{theme===t.id&&<Check size={15}/>}</span></button>)}</div><div className="settings-hint"><ShieldCheck size={16}/> Seleção preservada entre páginas e novas sessões neste navegador. Animações leves nos dois temas.</div></section>
    <div className="settings-grid">
     <section className="reference-panel settings-panel">
      <div className="settings-section-heading"><span className="settings-section-icon"><UserRound size={21}/></span><div><h2>Meu perfil</h2><p>Seu nome e sua foto serão exibidos no menu do CRM.</p></div></div>

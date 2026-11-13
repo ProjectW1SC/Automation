@@ -28,6 +28,9 @@ import './crm-case-client-link.css';
 import './legal-stationery.css';
 import './crm-mobile-all-areas.css';
 import './crm-generator-names.css';
+import './infinitum-video-motion.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'INFINITUM • CRM Jurídico W1',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
-export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum"><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
+// Restaura a escolha visual antes da primeira pintura, evitando flash entre temas.
+const hydrateTheme='try{if(localStorage.getItem("projectw1sc.crm-theme")==="blackhole")document.documentElement.dataset.crmTheme="blackhole"}catch(e){}';
+export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:hydrateTheme}}/></head><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}

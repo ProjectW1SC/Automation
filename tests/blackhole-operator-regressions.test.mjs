@@ -6,7 +6,7 @@ test('sidebar fixo no desktop, com recolhimento por botão e toque externo no mo
  assert.match(shell,/onMouseEnter=\{\(\)=>setSidebarExpanded\(true\)\}/);
  assert.match(shell,/onMouseLeave/);
  assert.match(shell,/window\.innerWidth<880/);
- assert.match(shell,/useState\(true\)/);
+ assert.match(shell,/setSidebarExpanded\]=useState\(false\)/);
  assert.match(shell,/onFocusCapture=\{\(\)=>setSidebarExpanded\(true\)\}/);
  assert.match(shell,/document\.addEventListener\('pointerdown',onPointerDown,true\)/);
 });

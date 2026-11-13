@@ -67,5 +67,5 @@ test('report hero and PDF enforce explicit high contrast regardless of theme ove
 });
 test('custom appearance stored in user settings and applied across all sections',()=>{
  const settings=file('app/configuracoes/page.jsx'),shell=file('components/crm-shell.jsx');
- assert.match(settings,/Infinitum Prestige/);assert.doesNotMatch(settings,/settings-theme-grid/);assert.match(shell,/applyAppearanceToDocument/);assert.doesNotMatch(shell,/w1-theme-picker/);
+ assert.match(settings,/Visual do CRM/);assert.match(settings,/settings-theme-grid/);assert.match(shell,/applyAppearanceToDocument/);assert.doesNotMatch(shell,/w1-theme-picker/);
 });
