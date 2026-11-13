@@ -79,7 +79,7 @@ Deno.serve(async(req:Request)=>{
    const data=validatePublicDataJudResponse(await requestOfficial(url,{method:"POST",
     headers:{Authorization:"APIKey "+credential,"Content-Type":"application/json",Accept:"application/json"},
     body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})},"datajud"));
-   result=normalizeDataJudSnapshot(data,number,checkedAt);
+   result={...normalizeDataJudSnapshot(data,number,checkedAt),court:alias.toUpperCase()};
   }
   return json({...result,via:"supabase-edge-sa-east-1",region,latencyMs:Date.now()-started,authenticated:true});
  }catch(e){

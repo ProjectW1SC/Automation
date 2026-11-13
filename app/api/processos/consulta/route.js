@@ -4,7 +4,7 @@ import {consultJudicialWithFallback,officialBackoffDuration,officialBackoffActiv
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
-import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl} from '../../../../lib/processos-oficiais.mjs';
+import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl,dataJudSnapshotIsFromCourt} from '../../../../lib/processos-oficiais.mjs';
 import {validatePublicDataJudResponse,currentPublicKey} from '../../../../lib/official-datajud-response.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -111,9 +111,10 @@ export async function GET(request){
    return json({ok:false,error:'Cadastre o CNJ no escritório antes de consultar a fonte oficial.'},403);
   async function consultOne(kind){
    const queryKey=snapshotQueryKey(kind,params);
-   const {data:cached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
+   const {data:rawCached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
     .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).eq('query_key',queryKey).maybeSingle();
    if(cacheError)throw Object.assign(new Error('Não foi possível ler histórico oficial autorizado.'),{status:503});
+   const cached=kind==='datajud'&&rawCached?.payload&&!dataJudSnapshotIsFromCourt(rawCached.payload,number)?null:rawCached;
    if(params.get('forcar')!=='1'&&snapshotIsFresh(cached,kind)){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
@@ -130,7 +131,7 @@ export async function GET(request){
    if(paused&&cached?.payload)return {...cached.payload,stale:true,fromCache:true,notice:'Fonte oficial temporariamente bloqueada. Exibindo consulta anterior ('+cached.checked_at+'), sem atualização em tempo real.'};
    if(paused){
     const historical=await db.from('crm_judicial_snapshots').select('payload,checked_at').eq('actor_id',user.id).eq('process_number',number).eq('source',kind).order('checked_at',{ascending:false}).limit(1).maybeSingle();
-    if(!historical.error&&historical.data?.payload)return {...historical.data.payload,stale:true,fromCache:true,checkedAt:historical.data.checked_at,notice:'Histórico anteriormente confirmado ('+historical.data.checked_at+'). Fonte '+kind.toUpperCase()+' permanece bloqueada: NÃO é uma atualização atual.'};
+    if(!historical.error&&historical.data?.payload&&(kind!=='datajud'||dataJudSnapshotIsFromCourt(historical.data.payload,number)))return {...historical.data.payload,stale:true,fromCache:true,checkedAt:historical.data.checked_at,notice:'Histórico anteriormente confirmado ('+historical.data.checked_at+'). Fonte '+kind.toUpperCase()+' permanece bloqueada: NÃO é uma atualização atual.'};
    }
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});

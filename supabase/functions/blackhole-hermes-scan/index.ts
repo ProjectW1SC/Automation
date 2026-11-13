@@ -43,7 +43,7 @@ async function fetchDataJud(number:string,checkedAt:string){
   "Content-Type":"application/json",Accept:"application/json"},
   body:JSON.stringify({size:5,query:{match:{numeroProcesso:digits}}})});
  validatePublicDataJudResponse(payload);
- return normalizeDataJudSnapshot(payload,number,checkedAt);
+ return {...normalizeDataJudSnapshot(payload,number,checkedAt),court:alias.toUpperCase()};
 }
 async function fetchDjen(number:string,today:string,checkedAt:string){
  const payload=await fetchJson(djenUrl(number,today),{method:"GET",headers:{Accept:"application/json"}});
