@@ -198,3 +198,5 @@ html[data-crm-theme="infinitum"] .lx-calendar-entry--atendido{background:#eaf5ee
 html[data-crm-theme="infinitum"] .lx-kpi-mark--atendido{background:#458f6d}
 html[data-crm-theme="infinitum"] .lx-kpi-mark--hoje{background:#c49b4f}
 html[data-crm-theme="infinitum"] .lx-kpi-mark--proximos{background:#6e92b8}
+
+html[data-crm-theme="infinitum"] .lx-status--ignorado{background:#f3f0eb;color:#6e6358;border-color:#e8e1d6}

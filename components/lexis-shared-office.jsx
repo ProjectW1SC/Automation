@@ -14,7 +14,8 @@ import InfinitumLegacyClients from './infinitum-legacy-clients';
 import PortfolioDialog from './portfolio-dialog';
 import JudicialConsultationResult,{JudicialEvents} from './judicial-consultation-result';
 import {loadPortfolioHistory} from '../lib/portfolio-history.mjs';
-import {responsibleDisplay,processStatus,statusForDate} from '../lib/lexis-operations.mjs';
+import {responsibleDisplay,processStatus} from '../lib/lexis-operations.mjs';
+import {classifyLexisReturn} from '../lib/lexis-return-kpis.mjs';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
 const STATUS={ativo:'Em andamento',em_andamento:'Em andamento',suspenso:'Suspenso',encerrado:'Encerrado',excluido:'Excluído (arquivado)'};
@@ -406,7 +407,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <p>Cada linha representa um processo real. Clientes homônimos não são unidos automaticamente.</p>
    <div className="office-records">{rows.map(p=><article className="office-record lx-process-record" key={p.id}>
     <div className="inf-row-end" style={{justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><div><strong>{p.client_name||'Cliente não identificado'}</strong><p>{p.process_number||'Sem número CNJ'} · {p.tribunal||'Tribunal não informado'}</p>
-     <small className="lx-process-meta"><span className={'lx-status lx-status--'+processStatus(p.status_detail).key}>{processStatus(p.status_detail).label}</span> <span className={'lx-status lx-status--'+statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).key}>{statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).label}</span> · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo retorno: {DATE_LABEL(p.next_attendance)} · Próximo prazo: {DATE_LABEL(p.next_deadline)} · Responsável: <strong>{responsibleDisplay(p.last_responsible,team)}</strong></small></div>
+     <small className="lx-process-meta"><span className={'lx-status lx-status--'+processStatus(p.status_detail).key}>{processStatus(p.status_detail).label}</span> <span className={'lx-status lx-status--'+classifyLexisReturn(p,todayBrazil()).status}>{classifyLexisReturn(p,todayBrazil()).label}</span> · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo retorno: {DATE_LABEL(p.next_attendance)} · Próximo prazo: {DATE_LABEL(p.next_deadline)} · Responsável: <strong>{responsibleDisplay(p.last_responsible,team)}</strong></small></div>
     </div>
     <div className="inf-row-end lx-process-toolbar" style={{justifyContent:'flex-start',gap:6,flexWrap:'wrap'}}>
      <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>

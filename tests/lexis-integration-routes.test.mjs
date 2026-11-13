@@ -40,6 +40,6 @@ test('cartão de processos não expõe UUID do responsável e mostra prazo e ret
  const s=src('components/lexis-shared-office.jsx');
  assert.match(s,/responsibleDisplay\(p.last_responsible,team\)/);
  assert.match(s,/p.next_deadline/);
- assert.match(s,/statusForDate\(p.next_attendance/);
+ assert.match(s,/classifyLexisReturn\(p,todayBrazil\(\)\)/);
  assert.match(s,/lx-process-record/);
 });

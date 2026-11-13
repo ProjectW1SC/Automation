@@ -45,3 +45,9 @@ test('lista e KPI de vencidos são idênticos, sem proximo_prazo legado',()=>{
  assert.equal(events.filter(x=>x.kind==='retorno'&&x.status==='vencido').length,summarizeLexisReturns(processes,today).overdue);
  assert.equal(events.some(x=>x.kind==='prazo'),false);
 });
+
+test('cartoes da carteira usam o mesmo criterio com dados mapeados',()=>{
+ const mapped={process_number:cnj,status:'em_andamento',status_detail:'EM ANDAMENTO',next_attendance:'2026-11-10',last_attendance:'2026-11-12'};
+ assert.equal(classifyLexisReturn(mapped,today).status,'atendido');
+ assert.equal(classifyLexisReturn({...mapped,last_attendance:'2026-11-01'},today).status,'vencido');
+});
