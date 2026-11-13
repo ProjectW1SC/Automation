@@ -5,6 +5,7 @@ import CrmShell from './crm-shell';
 import ProfessionalAuth from './professional-auth';
 import {useWorkspaceSession} from './workspace-session-provider';
 import {getRememberOfficeSession,setRememberOfficeSession} from '../lib/supabase-office-storage.mjs';
+import {firebaseGoogleConfigured,firebaseGoogleLogin,completeFirebaseGoogleRedirect} from '../lib/firebase-google-bridge.mjs';
 export default function SecuredWorkspace({active,children}){
  const {db,session,loading,authFault,access}=useWorkspaceSession();
  const [email,setEmail]=useState(''),[password,setPassword]=useState('');
@@ -12,17 +13,24 @@ export default function SecuredWorkspace({active,children}){
  const [recovery,setRecovery]=useState(false),[newPassword,setNewPassword]=useState('');
  const [mode,setMode]=useState('login'),[showPassword,setShowPassword]=useState(false);
  const [remember,setRemember]=useState(true);const [googleEnabled,setGoogleEnabled]=useState(null);
+ const [otpCode,setOtpCode]=useState(''),[otpSent,setOtpSent]=useState(false);
  useEffect(()=>{
   try{if(window.sessionStorage.getItem('blackhole-password-recovery')==='1'){
    setRecovery(true);window.sessionStorage.removeItem('blackhole-password-recovery');
   }}catch{}
  },[session]);
  useEffect(()=>{setRemember(getRememberOfficeSession())},[]);
+ useEffect(()=>{
+  if(!db||!firebaseGoogleConfigured())return;
+  let alive=true;
+  completeFirebaseGoogleRedirect(db).catch(e=>{if(alive)setError('Login Google Firebase não concluído: '+String(e?.message||e).slice(0,170))});
+  return()=>{alive=false};
+ },[db]);
  useEffect(()=>{let alive=true;const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if(url&&key)fetch(url+'/auth/v1/settings',{headers:{apikey:key},cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(alive&&typeof j?.external?.google==='boolean')setGoogleEnabled(j.external.google)}).catch(()=>{});
   return()=>{alive=false};
  },[]);
- function setModeTo(next){setMode(next);setError('');setShowPassword(false);setPassword('')}
+ function setModeTo(next){setMode(next);setError('');setShowPassword(false);setPassword('');setOtpSent(false);setOtpCode('')}
  async function login(e){e.preventDefault();if(!db||busy)return;setBusy(true);setError('');
   setRememberOfficeSession(remember);
   const {error:err}=await db.auth.signInWithPassword({email:email.trim(),password});
@@ -39,7 +47,23 @@ export default function SecuredWorkspace({active,children}){
  async function magicLink(){if(!db||busy)return;
   if(!email.trim()||!email.includes('@')){setError('Informe seu e-mail acima para receber um link de acesso.');return}
   setBusy(true);setError('');const {error:err}=await db.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.origin+'/',shouldCreateUser:false}});
-  setError(err?'Não foi possível enviar o link: '+err.message:'Se o e-mail estiver autorizado, receberá um link de acesso. Confira também a caixa de spam.');setBusy(false);
+  if(!err)setOtpSent(true);
+  setError(err?'Não foi possível enviar o link: '+err.message:'Se o e-mail estiver autorizado, receberá um link. Caso o e-mail inclua um código, você também pode digitá-lo abaixo.');setBusy(false);
+ }
+ async function verifyEmailCode(e){e.preventDefault();if(!db||busy)return;
+  const code=otpCode.trim();if(!/^\d{6,8}$/.test(code)){setError('Digite o código numérico de 6 a 8 dígitos recebido por e-mail.');return}
+  setBusy(true);setError('');setRememberOfficeSession(remember);
+  try{const {error:err}=await db.auth.verifyOtp({email:email.trim().toLowerCase(),token:code,type:'email'});
+   if(err)throw err;setOtpCode('');setOtpSent(false);
+  }catch(err){setError('Código não validado: '+String(err?.message||err).slice(0,180))}
+  finally{setBusy(false)}
+ }
+ async function googleFirebase(){
+  if(!db||busy)return;
+  if(googleEnabled===false){setError('Ative também o provedor Google no Supabase antes de usar o Firebase.');return}
+  setBusy(true);setError('');setRememberOfficeSession(remember);
+  try{await firebaseGoogleLogin(db)}catch(e){setError('Google pelo Firebase indisponível: '+String(e?.message||e).slice(0,210))}
+  finally{setBusy(false)}
  }
  async function google(){
   if(!db||busy)return;if(googleEnabled===false){setError('Google não foi habilitado neste Supabase. Use e-mail e senha ou link de acesso.');return}setBusy(true);setError('');
@@ -100,8 +124,11 @@ export default function SecuredWorkspace({active,children}){
     <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M21.35 12.2c0-.7-.07-1.36-.18-2H12v3.8h5.25a4.5 4.5 0 0 1-1.94 2.96v2.45h3.14c1.84-1.69 2.9-4.19 2.9-7.21Z"/><path fill="#34A853" d="M12 21.5c2.62 0 4.83-.87 6.44-2.35l-3.14-2.45c-.87.58-1.98.92-3.3.92-2.53 0-4.67-1.7-5.44-3.98H3.3v2.51A9.75 9.75 0 0 0 12 21.5Z"/><path fill="#FBBC05" d="M6.56 13.64a5.86 5.86 0 0 1 0-3.28V7.84H3.3a9.76 9.76 0 0 0 0 8.32l3.26-2.52Z"/><path fill="#EA4335" d="M12 6.38c1.4 0 2.65.48 3.64 1.43l2.8-2.8C16.8 3.47 14.62 2.5 12 2.5a9.75 9.75 0 0 0-8.7 5.34l3.26 2.52C7.33 8.08 9.47 6.38 12 6.38Z"/></svg>
     {googleEnabled===false?'Google ainda não configurado':'Continuar com Google'}
    </button>
+   {firebaseGoogleConfigured()&&<button type="button" className="office-google-btn" onClick={googleFirebase} disabled={busy||googleEnabled===false}>Entrar ou cadastrar com Google via Firebase</button>}
    {googleEnabled===false&&<p className="auth-google-help" role="note">O acesso Google ainda não está habilitado no projeto de autenticação. O administrador deve configurar o provedor Google no Supabase, incluindo as credenciais OAuth e o domínio de retorno. <a href="https://supabase.com/docs/guides/auth/social-sign-in/auth-google" target="_blank" rel="noopener noreferrer">Como ativar o login Google</a></p>}
-   {!registration&&<button type="button" className="crm-magic-link-btn" onClick={magicLink} disabled={busy}>Receber link de acesso por e-mail (grátis)</button>}
+   {!registration&&<><button type="button" className="crm-magic-link-btn" onClick={magicLink} disabled={busy}>Receber link de acesso por e-mail (grátis)</button>
+    {otpSent&&<form className="office-email-code" onSubmit={verifyEmailCode}><label htmlFor="office-email-otp">Código de acesso recebido por e-mail, se disponível</label><input id="office-email-otp" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" minLength={6} maxLength={8} required value={otpCode} onChange={e=>setOtpCode(e.target.value.replace(/\D/g,'').slice(0,8))} placeholder="6 a 8 dígitos"/><button type="submit" className="crm-magic-link-btn" disabled={busy}>Validar código e entrar</button></form>}
+   </>}
   </ProfessionalAuth>;
  }
  if(recovery||mode==='recover'){
