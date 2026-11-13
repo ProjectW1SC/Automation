@@ -128,6 +128,42 @@ Deno.serve(async(req:Request)=>{
   const token=req.headers.get("x-blackhole-cron-token")||"";
   if(!await verifyToken(db,token))return json({ok:false,error:"Agendador não autorizado."},401);
   const body=await req.json().catch(()=>({}));
+  // Protected one-off source probe: only a verified internal cron token can invoke it.
+  // It never exposes a process identifier, a party, court movements, or API credentials.
+  if(body?.diagnostic===true){
+   const today=brazilToday(),checkedAt=new Date().toISOString();
+   const {data:rows,error:caseErr}=await db.from("office_cases").select("process_number")
+     .not("process_number","is",null).limit(30);
+   if(caseErr)return json({ok:false,error:"Base de processos indisponível"},503);
+   const row=(rows||[]).find(r=>{try{return !!resolveCourtAlias(formatCnj(r.process_number))}catch{return false}});
+   if(!row)return json({ok:true,region:Deno.env.get("SB_REGION")||"unknown",tested:false,
+     reason:"Nenhum processo público elegível foi encontrado no cadastro."});
+   const number=formatCnj(row.process_number);
+   const {data:pauses,error:cooldownErr}=await db.from("office_source_cooldowns").select("source,status,retry_after")
+     .in("source",["datajud","djen"]);
+   if(cooldownErr)return json({ok:false,error:"Controle de pausas indisponível"},503);
+   async function checkSource(source:"datajud"|"djen"){
+    const pause=(pauses||[]).find(x=>x.source===source&&Date.parse(x.retry_after)>Date.now());
+    if(pause)return {state:"cooldown",httpStatus:Number(pause.status)||null,source,verified:false};
+    const began=Date.now();
+    try{
+     const result=source==="datajud"?await fetchDataJud(number,checkedAt):await fetchDjen(number,today,checkedAt);
+     return {state:result?.ok===true?"verified_response":"unverified_response",source,
+       verified:result?.ok===true,found:result?.ok===true?!!result.found:null,
+       items:result?.ok===true?Math.min(1500,(result.items||[]).length):null,
+       latencyMs:Date.now()-began};
+    }catch(err){
+     const status=Number((err as any)?.status)||null;
+     return {state:status===403?"blocked_403":status===429?"rate_limited_429":
+       /AbortError|TimeoutError|timed out|timeout|signal has been aborted/i.test(String((err as any)?.message||""))
+       ?"timeout":"unavailable",source,verified:false,httpStatus:status,
+       error:String((err as any)?.message||"Fonte não respondeu").slice(0,170),latencyMs:Date.now()-began};
+    }
+   }
+   const [datajud,djen]=await Promise.all([checkSource("datajud"),checkSource("djen")]);
+   return json({ok:true,region:Deno.env.get("SB_REGION")||"unknown",tested:true,checkedAt,
+     sourceStatus:{datajud,djen},notice:"Diagnóstico restrito: nenhuma informação processual ou segredo foi retornado."});
+  }
   const limit=Math.max(1,Math.min(2,Number(body?.limit)||1)),today=brazilToday();
   const cutoff=new Date(Date.now()-18*60*60*1000).toISOString();
   const [office,crm,recent]=await Promise.all([
