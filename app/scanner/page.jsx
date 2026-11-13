@@ -94,6 +94,18 @@ function Scanner({db,session}){
    await read();
   }catch(e){setError(e.message)}finally{active.current=false;setBusy(false);aborter.current=null}
  },[db,read]);
+ async function recordBrowserBlock(number,source,status){
+  if(![403,429].includes(Number(status)))return;
+  const failedAt=new Date(),duration=Number(status)===403?20*60*1000:15*60*1000;
+  const retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+  await Promise.all([
+   db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+    actor_id:session.user.id,process_number,source,status:Number(status),
+    failed_at:failedAt.toISOString(),retry_after:retryAfter
+   })),{onConflict:'actor_id,process_number,source'}),
+   db.rpc('record_office_source_cooldown',{p_source:source,p_status:Number(status)})
+  ]);
+ }
  async function directDjen(){
   if(active.current)return;
   let number;try{number=formatProcessNumber(directCNJ||filtered[0]?.process_number)}catch{setError('Escolha um CNJ cadastrado.');return}
@@ -116,8 +128,10 @@ function Scanner({db,session}){
    setNotice('DJEN consultado diretamente na API pública pelo navegador, com '+result.items.length+' publicação(ões). DataJud NÃO foi consultado nesta operação.'+
     (audit.error?' A trilha não foi gravada: '+audit.error.message:''));
    await read();
-  }catch(e){setError('Consulta DJEN pelo navegador não confirmada: '+e.message)}
-  finally{active.current=false;setBusy(false)}
+  }catch(e){
+   if([403,429].includes(Number(e?.status)))await recordBrowserBlock(number,'djen',Number(e.status));
+   setError('Consulta DJEN pelo navegador não confirmada: '+e.message)
+  }finally{active.current=false;setBusy(false)}
  }
  async function directDataJud(){
   if(active.current)return;
@@ -126,7 +140,10 @@ function Scanner({db,session}){
   active.current=true;setBusy(true);setError('');setNotice('');
   try{
    const result=await browseOfficialDataJudNumber({number});
-   if(!result.ok)throw Error(result.error||'DataJud não confirmou a consulta.');
+   if(!result.ok){
+    if([403,429].includes(Number(result.status)))await recordBrowserBlock(number,'datajud',Number(result.status));
+    throw Object.assign(new Error(result.error||'DataJud não confirmou a consulta.'),{status:result.status});
+   }
    const review=buildScannerReview([{process_number:number,source:'datajud',checked_at:result.checkedAt,payload:{items:result.items}}],{
     today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
    const sources={...sourceSummary({datajud:result,djen:{ok:false,error:'Não consultado nesta operação.'}}),via:'navegador'};
