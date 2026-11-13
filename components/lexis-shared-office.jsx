@@ -11,12 +11,13 @@ import {toCsvCell} from '../lib/minhas-atividades.mjs';
 import {TeamReport} from './lexis-team-report';
 import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
 import InfinitumLegacyClients from './infinitum-legacy-clients';
+import {responsibleDisplay,processStatus,statusForDate} from '../lib/lexis-operations.mjs';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
 const STATUS={ativo:'Em andamento',em_andamento:'Em andamento',suspenso:'Suspenso',encerrado:'Encerrado',excluido:'Excluído (arquivado)'};
 const FIELDS_CLIENT=['cliente','telefone','email','cpf'];
-const FIELDS_PROCESS=['cliente','protocolo_ref','tribunal','advogado','observacoes','proximo_retorno','status_interno'];
-const initialForm=p=>({cliente:p.client_name||'',telefone:p.phone||'',email:p.email||'',cpf:p.cpf||'',tribunal:p.tribunal||'',advogado:p.advogado||'',observacoes:p.observacoes||'',proximo_retorno:p.next_attendance||'',status_interno:p.status||'ativo'});
+const FIELDS_PROCESS=['cliente','protocolo_ref','tribunal','advogado','observacoes','proximo_retorno','proximo_prazo','status_interno'];
+const initialForm=p=>({cliente:p.client_name||'',telefone:p.phone||'',email:p.email||'',cpf:p.cpf||'',tribunal:p.tribunal||'',advogado:p.advogado||'',observacoes:p.observacoes||'',proximo_retorno:p.next_attendance||'',proximo_prazo:p.next_deadline||'',status_interno:p.status==='outro'?'preservar':p.status||'ativo'});
 const qFilter=(query,type)=>({field:processSearchField(type),text:likeTerm(query)});
 function Summary({title,count,href}){return <Link href={href} className="inf-stat" style={{textDecoration:'none'}}><label>{title}</label><strong>{Number(count||0).toLocaleString('pt-BR')}</strong></Link>;}
 export default function LexisSharedOffice({area='dashboard',db,session}){
@@ -114,14 +115,14 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   let live=true;
   (async()=>{
    try{
-    const {data,error}=await db.from('usuarios').select('auth_user_id,empresa_id,nome,cargo,role').eq('auth_user_id',session.user.id).limit(2);
+    const {data,error}=await db.from('usuarios').select('id,auth_user_id,empresa_id,nome,cargo,role').eq('auth_user_id',session.user.id).limit(2);
     if(error)throw Error(error.message);
     const current=resolveCompanyAccess(data||[],session.user.id);
     if(!current)throw Error('Conta sem vínculo único e autorizado com empresa do LexisPredict.');
     if(!live)return;
     setProfile(current);
     const [users,empresa]=await Promise.all([
-      db.from('usuarios').select('auth_user_id,empresa_id,nome,cargo').eq('empresa_id',current.empresa_id).limit(200),
+      db.from('usuarios').select('id,auth_user_id,empresa_id,nome,cargo').eq('empresa_id',current.empresa_id).limit(200),
       db.from('empresas').select('nome').eq('id',current.empresa_id).maybeSingle()
     ]);
     if(!live)return;
@@ -177,7 +178,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const startEdit=(p,what)=>{setSelected(null);setEditing(p);setMode(what);setForm(initialForm(p));setNotice('')};
  const saveEdit=async e=>{
   e.preventDefault();if(!editing||busy||!profile?.empresa_id)return;
-  const fields=mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref');
+  const fields=mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref' && !(f==='status_interno'&&form.status_interno==='preservar'));
   let patch;try{patch=portfolioUpdate(Object.fromEntries(fields.map(f=>[f,form[f]])))}catch(err){setNotice(err.message);return}
   setBusy(true);
   try{
@@ -245,10 +246,10 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download='infinitum-relatorio-lexis.csv';a.click();URL.revokeObjectURL(url);
  }
- if(authChecking)return <main className="reference-auth">Validando vínculo com a organização do LexisPredict...</main>;
- if(!profile)return <main className="reference-auth" role="alert">Acesso bloqueado. {notice||'Usuário sem vínculo ativo com empresa do LexisPredict.'}</main>;
- if(area==='reports')return <main className="reference-dashboard" data-lexis-shared="reports">
-  <header className="reference-header"><div><div className="reference-overline">LEXISPREDICT · RELATÓRIO EMPRESARIAL</div><h1>Relatórios</h1><p>{company} · todos os dados provêm do banco principal LexisPredict.</p></div>
+ if(authChecking)return <main className="reference-auth lx-shared">Validando vínculo com a organização do LexisPredict...</main>;
+ if(!profile)return <main className="reference-auth lx-shared" role="alert">Acesso bloqueado. {notice||'Usuário sem vínculo ativo com empresa do LexisPredict.'}</main>;
+ if(area==='reports')return <main className="inf-studio lx-shared" data-lexis-shared="reports">
+  <header className="reference-header"><div><div className="reference-overline">INFINITUM · RELATÓRIO EMPRESARIAL</div><h1>Relatórios</h1><p>{company} · todos os dados provêm do banco principal LexisPredict.</p></div>
    <div className="reference-actions"><button className="inf-btn" onClick={loadReport} disabled={reportBusy}><RefreshCw size={16}/> Atualizar</button>
    <button className="inf-btn" onClick={exportCsv}><Download size={16}/> CSV</button><button className="inf-btn" onClick={()=>window.print()}><Printer size={16}/> PDF / Imprimir</button></div></header>
   {notice&&<div className="inf-note" role="status">{notice}</div>}
@@ -332,8 +333,8 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   </main>;
  }
 
- return <main className="reference-dashboard" data-lexis-shared="portfolio">
-  <header className="reference-header"><div><div className="reference-overline">INFINITUM · BASE PRINCIPAL LEXISPREDICT</div><h1>{area==='clients'?'Clientes':area==='cases'?'Processos':'Carteira da organização'}</h1>
+ return <main className="inf-studio lx-shared" data-lexis-shared="portfolio">
+  <header className="reference-header"><div><div className="reference-overline">INFINITUM · GESTÃO DA ORGANIZAÇÃO</div><h1>{area==='clients'?'Clientes':area==='cases'?'Processos':'Carteira da organização'}</h1>
   <p>{company} · consultas da empresa inteira, conforme permissões do LexisPredict.</p></div>
   <div className="reference-actions"><button type="button" className="inf-btn" onClick={load} disabled={loading}><RefreshCw size={16}/> Atualizar</button><Link href="/relatorios" className="inf-btn"><BarChart3 size={16}/> Relatórios</Link></div></header>
   {notice&&<div className="inf-note" role="status">{notice}</div>}
@@ -350,11 +351,11 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   {loading&&<p className="inf-note">Carregando página de processos...</p>}
   <section className="inf-panel"><h2>{area==='clients'?'Cadastros de clientes por processo':'Processos cadastrados no LexisPredict'}</h2>
    <p>Cada linha representa um processo real. Clientes homônimos não são unidos automaticamente.</p>
-   <div className="office-records">{rows.map(p=><article className="office-record" key={p.id}>
+   <div className="office-records">{rows.map(p=><article className="office-record lx-process-record" key={p.id}>
     <div className="inf-row-end" style={{justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><div><strong>{p.client_name||'Cliente não identificado'}</strong><p>{p.process_number||'Sem número CNJ'} · {p.tribunal||'Tribunal não informado'}</p>
-     <small>{STATUS[p.status]||p.status_detail||'Situação não registrada'} · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo: {DATE_LABEL(p.next_attendance)} · Responsável: {p.last_responsible||'Não registrado'}</small></div>
+     <small className="lx-process-meta"><span className={'lx-status lx-status--'+processStatus(p.status_detail).key}>{processStatus(p.status_detail).label}</span> <span className={'lx-status lx-status--'+statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).key}>{statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).label}</span> · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo retorno: {DATE_LABEL(p.next_attendance)} · Próximo prazo: {DATE_LABEL(p.next_deadline)} · Responsável: <strong>{responsibleDisplay(p.last_responsible,team)}</strong></small></div>
     </div>
-    <div className="inf-row-end" style={{justifyContent:'flex-start',gap:6,flexWrap:'wrap'}}>
+    <div className="inf-row-end lx-process-toolbar" style={{justifyContent:'flex-start',gap:6,flexWrap:'wrap'}}>
      <button className="inf-btn" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
      <button className="inf-btn" onClick={()=>startEdit(p,'processo')}><FileText size={14}/> Editar processo</button>
      <button className="inf-btn primary" onClick={()=>attend(p)}><ClipboardList size={14}/> Registrar atendimento</button>
