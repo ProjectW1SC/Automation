@@ -10,9 +10,9 @@ test('DJEN via navegador usa somente domínio oficial público, sem token privad
  assert.ok(!('Authorization'in options.headers));
 });
 test('bloqueios não são apresentados como consulta sem publicações',async()=>{
- const blocked=await assert.rejects(()=>fetchPublicDjenBrowser('https://comunicaapi.pje.jus.br/api/v1/comunicacao',
-  async()=>({ok:false,status:403})),/403/);
- assert.equal(blocked.status,403);
+ let blocked;try{await fetchPublicDjenBrowser('https://comunicaapi.pje.jus.br/api/v1/comunicacao',
+  async()=>({ok:false,status:403}))}catch(error){blocked=error}
+ assert.match(blocked.message,/403/);assert.equal(blocked.status,403);
  await assert.rejects(()=>fetchPublicDjenBrowser('https://evil.test/api/v1/comunicacao',fetchOK),/não pertence/);
 });
 test('gerador por texto pode usar o DJEN público do navegador',async()=>{
