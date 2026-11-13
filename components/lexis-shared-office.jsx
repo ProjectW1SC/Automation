@@ -8,6 +8,8 @@ import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs
 import {periodBounds} from '../lib/report.mjs';
 import {todayBrazil} from '../lib/tarefas.mjs';
 import {toCsvCell} from '../lib/minhas-atividades.mjs';
+import {TeamReport} from './lexis-team-report';
+import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
 const STATUS={ativo:'Em andamento',em_andamento:'Em andamento',suspenso:'Suspenso',encerrado:'Encerrado',excluido:'Excluído (arquivado)'};
@@ -25,7 +27,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[attendance,setAttendance]=useState([]),[reportTotal,setReportTotal]=useState(0);
- const [reportBusy,setReportBusy]=useState(false);
+ const [reportBusy,setReportBusy]=useState(false),[teamStats,setTeamStats]=useState([]),[selectedMode,setSelectedMode]=useState('atendimento');
  useEffect(()=>{
   let live=true;
   (async()=>{
@@ -55,7 +57,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   try{
    let q=db.from('processos').select(PROCESS_FIELDS,{count:'exact'}).eq('empresa_id',profile.empresa_id);
    if(search){const f=qFilter(search,type);q=q.ilike(f.field,f.text)}
-   if(activeFilter==='em_andamento')q=q.neq('status_interno','encerrado').neq('status_interno','excluido');
+   if(activeFilter==='em_andamento')q=q.or('status_interno.is.null,status_interno.not.in.(encerrado,excluido)');
    if(activeFilter==='encerrado'||activeFilter==='excluido')q=q.eq('status_interno',activeFilter);
    const {data,error,count}=await q.order('updated_at',{ascending:false,nullsFirst:false}).range(page*PAGE,(page+1)*PAGE-1);
    if(error)throw Error(error.message);
@@ -67,7 +69,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const lastTotalPages=Math.max(1,Math.ceil(total/PAGE));
  const attend=useCallback(async(row)=>{
   if(!profile?.empresa_id)return;
-  setSelected(row);setAttendNote('');setNextDate(row.next_attendance||'');setConfirmed(false);setConsulted(null);
+  setSelected(row);setSelectedMode('atendimento');setAttendNote('');setNextDate(row.next_attendance||'');setConfirmed(false);setConsulted(null);
   try{
    const {data,error}=await db.from('tarefas_realizadas').select('id,descricao,categoria,data_realizacao,responsavel_auth_user_id,contato_cliente_confirmado,created_at')
     .eq('empresa_id',profile.empresa_id).eq('processo_id',row.id).order('created_at',{ascending:false}).limit(60);
@@ -117,7 +119,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  };
  const consult=async p=>{
   if(!p.process_number||!normalizedCnj(p.process_number)){setNotice('Número CNJ incompleto. Consulta oficial não iniciada.');return}
-  setSelected(p);setConsulted(null);setBusy(true);setNotice('Consultando DJEN e DataJud somente por solicitação...');
+  setSelected(p);setSelectedMode('consulta');setConsulted(null);setBusy(true);setNotice('Consultando DJEN e DataJud somente por solicitação...');
   try{
    const {data:{session:s}}=await db.auth.getSession();
    if(!s?.access_token)throw Error('Sessão expirada.');
@@ -139,19 +141,22 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   setReportBusy(true);
   try{
    const bounds=periodBounds(period,todayBrazil());
-   const [r,caseCount]=await Promise.all([
-    db.from('tarefas_realizadas').select('id,data_realizacao,responsavel_auth_user_id,processo_id,categoria,contato_cliente_confirmado')
+   const [r,caseCount,teamData]=await Promise.all([
+    db.from('tarefas_realizadas').select('id,titulo,descricao,protocolo_ref,data_realizacao,responsavel_auth_user_id,processo_id,categoria,contato_cliente_confirmado')
      .eq('empresa_id',profile.empresa_id).gte('data_realizacao',bounds.start).lt('data_realizacao',bounds.endExclusive).order('data_realizacao',{ascending:false}).limit(2500),
-    db.from('processos').select('id',{count:'exact',head:true}).eq('empresa_id',profile.empresa_id)
+    db.from('processos').select('id',{count:'exact',head:true}).eq('empresa_id',profile.empresa_id),
+    db.rpc('infinitum_resumo_equipe_v2')
    ]);
    if(r.error||caseCount.error)throw Error(r.error?.message||caseCount.error?.message);
-   setAttendance(r.data||[]);setReportTotal(caseCount.count??0);
+   setAttendance(r.data||[]);setReportTotal(caseCount.count??0);setTeamStats(teamData.error?[]:(teamData.data||[]));
+   if(teamData.error)setNotice('Detalhamento de equipe indisponível: '+teamData.error.message);
   }catch(e){setNotice('Relatório indisponível: '+e.message)}
   finally{setReportBusy(false)}
  },[db,profile?.empresa_id,area,period]);
  useEffect(()=>{loadReport()},[loadReport]);
  const reportRows=useMemo(()=>scope==='meus'?attendance.filter(x=>x.responsavel_auth_user_id===session.user.id):attendance,[attendance,scope,session.user.id]);
  const summary=useMemo(()=>dailyAttendanceSummary(reportRows,team),[reportRows,team]);
+ const teamReport=useMemo(()=>adaptLexisTeamReport({teamStats,activities:reportRows,period,bounds:periodBounds(period,todayBrazil())}),[teamStats,reportRows,period]);
  function exportCsv(){
   const lines=[['Dia','Atendimentos'],...summary.byDay.map(x=>[x.day,x.count])];
   const csv='\uFEFF'+lines.map(x=>x.map(toCsvCell).join(';')).join('\r\n');
@@ -175,7 +180,8 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <div className="office-records">{summary.byUser.length?summary.byUser.map(u=><div className="office-record" key={u.id}><strong>{u.name}</strong> · {u.count} atendimento(s)</div>):<p>Sem atendimentos confirmados no período.</p>}</div>
   </section>
   <section className="inf-panel"><h2>Atendimentos por dia</h2><div className="office-records">{summary.byDay.map(d=><div className="office-record" key={d.day}><strong>{DATE_LABEL(d.day)}</strong> · {d.count}</div>)}</div></section>
-  <p className="inf-note">O relatório executivo original do Lexis possui painéis adicionais de auditoria, Hermes e produtividade; esses módulos exigem uma migração própria para conservar todos os cálculos. Esta visão não apresenta números estimados como dados confirmados.</p>
+  <TeamReport data={teamStats.length?teamReport:null} currentUserId={session.user.id}/>
+  <p className="inf-note">O relatório de equipe acima utiliza literalmente o componente do LexisPredict. Painéis de Hermes, auditoria avançada e relatórios executivos ainda exigem integração específica; dados sem origem comprovada são exibidos como indisponíveis.</p>
  </main>;
  return <main className="reference-dashboard" data-lexis-shared="portfolio">
   <header className="reference-header"><div><div className="reference-overline">INFINITUM · BASE PRINCIPAL LEXISPREDICT</div><h1>{area==='clients'?'Clientes':area==='cases'?'Processos':'Carteira da organização'}</h1>
@@ -226,12 +232,12 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   </section>}
   {selected&&<section className="inf-panel" aria-label="Registrar atendimento"><h2><History size={18}/> Atendimento · {selected.client_name||selected.process_number}</h2>
    <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: {selected.last_responsible||'Não registrado'}</p>
-   <form onSubmit={saveAttendance}><div className="inf-fields">
+   {selectedMode==='atendimento'&&<form onSubmit={saveAttendance}><div className="inf-fields">
     <label>Resumo do atendimento realizado<textarea value={attendNote} onChange={e=>setAttendNote(e.target.value)} minLength={3} maxLength={3000} required/></label>
     <label>Próximo atendimento<input type="date" value={nextDate} onChange={e=>setNextDate(e.target.value)}/></label>
     <label><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> Contato com o cliente confirmado</label>
    </div><p className="inf-note">Responsável será registrado automaticamente com seu login Lexis: <b>{profile.nome}</b>. O histórico anterior não será sobrescrito.</p>
-   <div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>Confirmar atendimento</button><button className="inf-btn" type="button" onClick={()=>{setSelected(null);setConsulted(null)}}>Fechar</button></div></form>
+   <div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>Confirmar atendimento</button><button className="inf-btn" type="button" onClick={()=>{setSelected(null);setConsulted(null)}}>Fechar</button></div></form>}
    {history.length>0&&<div className="office-records"><h3>Histórico de atendimentos e atividades</h3>{history.map(x=><div className="office-record" key={x.id}><strong>{DATE_LABEL(x.data_realizacao)}</strong> · {team.find(p=>p.auth_user_id===x.responsavel_auth_user_id)?.nome||'Responsável registrado'} · {x.categoria}<p>{x.descricao}</p></div>)}</div>}
    {consulted&&<div className="office-records"><h3>Consulta oficial</h3><p>{consulted.notice}</p><p>DJEN: {consulted.sourceStatus?.djen} · DataJud: {consulted.sourceStatus?.datajud}</p>{(consulted.items||[]).slice(0,50).map((x,i)=><div className="office-record" key={i}>{String(x.title||x.description||x.texto||'Movimentação sem descrição').slice(0,400)}</div>)}</div>}
   </section>}
