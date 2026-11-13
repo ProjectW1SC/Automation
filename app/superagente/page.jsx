@@ -18,6 +18,7 @@ function Console({db,session}){
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
  const [engine,setEngine]=useState('evidencias');
  const [externalAiConsent,setExternalAiConsent]=useState(false);
+ const [allowEngineFallback,setAllowEngineFallback]=useState(false);
  const [qwenConsent,setQwenConsent]=useState(false),[modelProgress,setModelProgress]=useState('');
  useEffect(()=>()=>stopBlackholeQwen(),[]);
  const load=useCallback(async()=>{
@@ -45,7 +46,7 @@ function Console({db,session}){
     const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
     const response=await fetch('/api/superagente',{method:'POST',
      headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-     body:JSON.stringify({prompt:q,externalAiConsent:engine==='online'&&externalAiConsent,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
+     body:JSON.stringify({prompt:q,externalAiConsent:engine==='online'&&externalAiConsent,allowEngineFallback:engine==='online'&&allowEngineFallback,messages:messages.slice(-8).map(x=>({role:x.role,content:x.content}))})});
     payload=await response.json();
    }
    if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload?.error||'Não foi possível responder');
@@ -83,7 +84,7 @@ function Console({db,session}){
     {tab==='habilidades'&&<><h1>Habilidades e mini agentes</h1><p>Cada especialista encaminha seu pedido ao motor de análise verificável. Nenhuma ação é executada sem autorização.</p>
       <div className="office-agent-grid">{OFFICE_AGENTS.map(x=><button className="office-agent-card" type="button" key={x.id} onClick={()=>chooseAction('Analise a carteira como especialista de '+x.name+'. Objetivo: '+x.role+'. Aponte somente o que estiver comprovado nos registros disponíveis.')}>
        <strong>{x.name}</strong><p>{x.role}</p><small>{x.mode}</small></button>)}</div></>}
-    {tab==='modelos'&&<><h1>Motores de IA disponíveis</h1><p>O mecanismo local rápido não baixa modelos. O Qwen exige WebGPU e autorização do download. A IA gratuita online só recebe mensagens após autorização explícita.</p>
+    {tab==='modelos'&&<><h1>Motores de IA e LexisPredict</h1><p>Roteamento de motores somente com credenciais do servidor e autorização do operador. Colibri → MiniCPM → MiniMax → Claude → Groq → xAI → OpenRouter → Gemini. A análise jurídica determinística permanece local.</p><p>O mecanismo local rápido não baixa modelos. O Qwen exige WebGPU e autorização do download. A IA gratuita online só recebe mensagens após autorização explícita.</p>
       <div className="office-ai-model-choice"><button type="button" onClick={()=>{setEngine('evidencias');setTab('nova')}} aria-pressed={engine==='evidencias'}><ShieldCheck size={18}/> Motor de evidências · imediato</button>
        <button type="button" onClick={()=>{setEngine('qwen');setTab('nova')}} aria-pressed={engine==='qwen'}><Bot size={18}/> Qwen 0.5B · no navegador (WebGPU)</button>
        <button type="button" onClick={()=>{setEngine('online');setTab('nova')}} aria-pressed={engine==='online'}><Layers3 size={18}/> IA online gratuita · OpenRouter</button>
@@ -117,6 +118,7 @@ function Console({db,session}){
       <button type="button" aria-pressed={engine==='qwen'} onClick={()=>setEngine('qwen')}>Qwen 0.5B local</button>
     </div>
     {engine==='online'&&<label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Autorizo o envio desta conversa ao modelo online gratuito (pode haver limites e tratamento pelo provedor).</label>}
+    {engine==='online'&&externalAiConsent&&<label className="office-ai-consent"><input type="checkbox" checked={allowEngineFallback} onChange={e=>setAllowEngineFallback(e.target.checked)}/> Autorizo cascata LexisPredict: se um motor falhar, esta conversa pode ser enviada ao próximo provedor configurado (MiniMax, Claude, Groq, xAI, OpenRouter, Gemini).</label>}
     {engine==='qwen'&&<label className="office-ai-consent"><input type="checkbox" checked={qwenConsent} onChange={e=>setQwenConsent(e.target.checked)}/> Autorizo baixar os pesos do Qwen para este navegador. Exige WebGPU e memória suficiente; sem fallback CPU.</label>}
     {modelProgress&&<p className="office-ai-progress" role="status">{modelProgress}</p>}
     <p className="office-ai-disclaimer">BLACKHOLE pode errar. Confirme informações judiciais na fonte oficial antes de agir.</p>

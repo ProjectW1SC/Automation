@@ -3,6 +3,7 @@ import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildSuperAgentReview,targetCNJ} from '../../../lib/superagent-core.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
+import {configuredLexisMotors,runLexisCascade} from '../../../lib/lexis-motor-cascade.mjs';
 import {validateBlackholePrompt,offlineBlackholeReply,configuredBlackholeProvider,generativeBlackholeReply,requiresPortfolio} from '../../../lib/blackhole-chat.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store,private'}});
@@ -18,12 +19,14 @@ export async function POST(request){
   const body=await request.json();
   let prompt;try{prompt=validateBlackholePrompt(body?.prompt)}catch(e){return json({ok:false,error:e.message},400)}
   const provider=configuredBlackholeProvider(process.env);
+  const cascaded=body?.allowEngineFallback===true?configuredLexisMotors(process.env):[];
   // A conversa generativa nunca recebe dados de processos sem consentimento expresso.
-  if(provider&&body?.externalAiConsent===true){
+  if((provider||cascaded.length)&&body?.externalAiConsent===true){
    try{
     const history=Array.isArray(body?.messages)?body.messages.slice(-8):[];
-    const reply=await generativeBlackholeReply(provider,[...history,{role:'user',content:prompt}]);
-    return json({ok:true,reply,model:provider.model,isGenerativeModel:true,notice:'Resposta produzida por modelo externo autorizado; confira qualquer afirmação jurídica.'});
+    const answer=cascaded.length?await runLexisCascade([...history,{role:'user',content:prompt}],{motors:cascaded,allowFallback:true}):
+     {reply:await generativeBlackholeReply(provider,[...history,{role:'user',content:prompt}]),model:provider.model,engine:'motor-online'};
+    return json({ok:true,reply:answer.reply,model:answer.model,engine:answer.engine,isGenerativeModel:true,notice:'Motor utilizado: '+answer.engine+'. Provedores adicionais '+(cascaded.length?'autorizados':'desativados')+'. Confira afirmações jurídicas.'});
    }catch(e){
     // Em falha de rede/limite, mantém a conversa utilizável com aviso explícito.
     // Não envia a mensagem a outro provedor sem uma nova autorização.
