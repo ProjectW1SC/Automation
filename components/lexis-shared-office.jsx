@@ -22,6 +22,87 @@ function Summary({title,count,href}){return <Link href={href} className="inf-sta
 export default function LexisSharedOffice({area='dashboard',db,session}){
  const [profile,setProfile]=useState(null),[company,setCompany]=useState(''),[team,setTeam]=useState([]);
  const [authChecking,setAuthChecking]=useState(true),[rows,setRows]=useState([]),[total,setTotal]=useState(0);
+
+ const [deadlineRows,setDeadlineRows]=useState([]);
+ const [hearingRows,setHearingRows]=useState([]);
+ const [calendarLoading,setCalendarLoading]=useState(false);
+
+ const loadDeadlinesFromProcessos=useCallback(async()=>{
+  if(!profile?.empresa_id)return;
+  setCalendarLoading(true);setNotice('');
+  try{
+   // Prazos/retornos a partir da carteira Lexis (proximo_retorno).
+   let q=db.from('processos').select(PROCESS_FIELDS,{count:'exact'}).eq('empresa_id',profile.empresa_id)
+    .not('proximo_retorno','is',null).order('proximo_retorno',{ascending:true}).limit(500);
+   if(activeFilter==='em_andamento')q=q.or('status_interno.eq.ativo,status_interno.eq.em_andamento,status_interno.is.null');
+   if(activeFilter==='encerrado')q=q.eq('status_interno','encerrado');
+   const {data,error}=await q;
+   if(error)throw Error(error.message);
+   const today=todayBrazil();
+   const mapped=(data||[]).map(r=>{
+    const p=mapLexisProcess(r);
+    const due=String(p.next_attendance||'').slice(0,10);
+    return {
+     id:p.id,
+     title:p.client_name||p.process_number||'Retorno',
+     due_on:due,
+     kind:'retorno',
+     status:due&&due<today?'vencido':'aberto',
+     process_number:p.process_number,
+     client_name:p.client_name,
+     tribunal:p.tribunal,
+     advogado:p.advogado,
+     responsible:p.advogado||'',
+     notes:p.observacoes||''
+    };
+   }).filter(x=>x.due_on);
+   setDeadlineRows(mapped);
+  }catch(e){setNotice('Não foi possível carregar prazos/retornos: '+e.message);setDeadlineRows([]);}
+  finally{setCalendarLoading(false);}
+ },[db,profile,activeFilter]);
+
+ const loadHearings=useCallback(async()=>{
+  if(!profile?.empresa_id)return;
+  setCalendarLoading(true);setNotice('');
+  try{
+   // Preferência: tabela oficial do Lexis se existir; senão, retornos futuros como agenda operacional.
+   const aud=await db.from('audiencias_monitoradas')
+    .select('id,processo_id,protocolo_ref,cliente,advogado,tribunal,tipo,data_evento,data_fim,hora_local,modalidade,situacao,fonte,fonte_url,portal_url')
+    .eq('empresa_id',profile.empresa_id)
+    .order('data_evento',{ascending:true})
+    .limit(400);
+   if(!aud.error&&Array.isArray(aud.data)){
+    setHearingRows(aud.data.map(a=>({
+     id:a.id,
+     title:a.cliente||a.protocolo_ref||'Audiência',
+     due_on:String(a.data_evento||'').slice(0,10),
+     kind:'audiencia',
+     status:a.situacao||'aberta',
+     process_number:a.protocolo_ref,
+     client_name:a.cliente,
+     tribunal:a.tribunal,
+     advogado:a.advogado,
+     tipo:a.tipo,
+     hora:a.hora_local,
+     fonte:a.fonte,
+     fonte_url:a.fonte_url||a.portal_url,
+     notes:[a.modalidade,a.tipo].filter(Boolean).join(' · ')
+    })).filter(x=>x.due_on));
+   }else{
+    // Fallback: não inventa audiência a partir de retorno; avisa e lista vazia.
+    setHearingRows([]);
+    if(aud.error)setNotice('Tabela de audiências oficiais indisponível neste Supabase ('+aud.error.message+'). Use Prazos para retornos da carteira ou habilite audiencias_monitoradas.');
+   }
+  }catch(e){setNotice('Não foi possível carregar audiências: '+e.message);setHearingRows([]);}
+  finally{setCalendarLoading(false);}
+ },[db,profile]);
+
+ useEffect(()=>{
+  if(!profile?.empresa_id)return;
+  if(area==='deadlines')loadDeadlinesFromProcessos();
+  if(area==='audiencias')loadHearings();
+ },[area,profile,loadDeadlinesFromProcessos,loadHearings]);
+
  const [page,setPage]=useState(0),[type,setType]=useState('cliente'),[draft,setDraft]=useState(''),[search,setSearch]=useState('');
  const [activeFilter,setActiveFilter]=useState('em_andamento'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
  const [notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[mode,setMode]=useState('processo'),[form,setForm]=useState({});
@@ -184,6 +265,73 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   <TeamReport data={teamStats.length?teamReport:null} currentUserId={session.user.id}/>
   <p className="inf-note">O relatório de equipe acima utiliza literalmente o componente do LexisPredict. Painéis de Hermes, auditoria avançada e relatórios executivos ainda exigem integração específica; dados sem origem comprovada são exibidos como indisponíveis.</p>
  </main>;
+
+ if(area==='deadlines'){
+  const today=todayBrazil();
+  const open=deadlineRows.filter(x=>x.status!=='concluido');
+  const overdue=open.filter(x=>x.due_on&&x.due_on<today);
+  const todayList=open.filter(x=>x.due_on===today);
+  const weekEnd=(()=>{const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+7);return d.toISOString().slice(0,10);})();
+  const week=open.filter(x=>x.due_on&&x.due_on>=today&&x.due_on<=weekEnd);
+  return <main className="reference-dashboard" data-lexis-shared="deadlines">
+   <header className="reference-header"><div><div className="reference-overline">INFINITUM · BASE LEXISPREDICT</div><h1>Prazos e retornos</h1>
+   <p>Retornos agendados a partir de <code>processos.proximo_retorno</code> da carteira Lexis. Não calcula prazo processual automático (CPC).</p></div>
+   <div className="reference-actions"><button className="reference-outline" onClick={loadDeadlinesFromProcessos} disabled={calendarLoading}><RefreshCw size={16}/> Atualizar</button>
+   <Link className="reference-outline" href="/agenda"><CalendarDays size={16}/> Agenda</Link>
+   <Link className="reference-primary" href="/processos"><FileText size={16}/> Processos</Link></div></header>
+   {notice&&<p className="inf-note" role="status">{notice}</p>}
+   <div className="inf-grid">
+    <Summary title="Com retorno cadastrado" count={open.length} href="/prazos"/>
+    <Summary title="Vencidos" count={overdue.length} href="/prazos"/>
+    <Summary title="Hoje" count={todayList.length} href="/prazos"/>
+    <Summary title="Próximos 7 dias" count={week.length} href="/prazos"/>
+   </div>
+   <section className="inf-panel"><h2>Fila de retornos</h2>
+    <p className="inf-note">Fonte: Supabase Lexis · tabela processos. Datas exigem conferência com intimação e expediente do tribunal.</p>
+    {calendarLoading&&<p className="inf-note">Carregando retornos...</p>}
+    <div className="office-records">{open.map(x=><article className="office-record" key={x.id}>
+     <strong>{x.client_name||x.title}</strong>
+     <small>{DATE_LABEL(x.due_on)} · {x.status==='vencido'?'Vencido':'Em aberto'} · {x.process_number||'Sem CNJ'} · {x.tribunal||'—'}</small>
+     <p>{x.notes||'Retorno operacional cadastrado na carteira.'}</p>
+     <div className="office-action-row"><Link className="inf-btn" href={"/processos"}>Abrir carteira</Link></div>
+    </article>)}
+    {!calendarLoading&&!open.length&&<div className="office-list-empty">Nenhum próximo retorno cadastrado nos processos desta empresa.</div>}
+    </div>
+   </section>
+  </main>;
+ }
+
+ if(area==='audiencias'){
+  const today=todayBrazil();
+  const upcoming=hearingRows.filter(x=>!x.due_on||x.due_on>=today);
+  return <main className="reference-dashboard" data-lexis-shared="audiencias">
+   <header className="reference-header"><div><div className="reference-overline">INFINITUM · BASE LEXISPREDICT</div><h1>Audiências</h1>
+   <p>Eventos oficiais monitorados (quando a tabela Lexis estiver disponível). Não inventa audiência a partir de retorno de carteira.</p></div>
+   <div className="reference-actions"><button className="reference-outline" onClick={loadHearings} disabled={calendarLoading}><RefreshCw size={16}/> Atualizar</button>
+   <Link className="reference-outline" href="/prazos"><CalendarDays size={16}/> Prazos</Link>
+   <Link className="reference-primary" href="/processos"><Gavel size={16}/> Processos</Link></div></header>
+   {notice&&<p className="inf-note" role="status">{notice}</p>}
+   <div className="inf-grid">
+    <Summary title="Registros carregados" count={hearingRows.length} href="/audiencias"/>
+    <Summary title="A partir de hoje" count={upcoming.length} href="/audiencias"/>
+    <Summary title="Com link/fonte" count={hearingRows.filter(x=>x.fonte_url).length} href="/audiencias"/>
+    <Summary title="Membros da org." count={team.length} href="/relatorios"/>
+   </div>
+   <section className="inf-panel"><h2>Agenda de audiências</h2>
+    <p className="inf-note">Conferência obrigatória no portal do tribunal. Situação e horário podem mudar sem aviso nesta tela.</p>
+    {calendarLoading&&<p className="inf-note">Carregando audiências...</p>}
+    <div className="office-records">{upcoming.map(x=><article className="office-record" key={x.id}>
+     <strong>{x.client_name||x.title}</strong>
+     <small>{DATE_LABEL(x.due_on)}{x.hora?' · '+x.hora:''} · {x.tipo||'Audiência'} · {x.process_number||'—'} · {x.tribunal||'—'}</small>
+     <p>{x.notes||x.fonte||'Fonte oficial monitorada'}</p>
+     {x.fonte_url&&<div className="office-action-row"><a className="inf-btn" href={x.fonte_url} target="_blank" rel="noopener noreferrer">Abrir fonte</a></div>}
+    </article>)}
+    {!calendarLoading&&!upcoming.length&&<div className="office-list-empty">Nenhuma audiência monitorada disponível. Se a tabela <code>audiencias_monitoradas</code> não existir neste projeto Supabase, habilite as migrations do Lexis ou cadastre retornos em Processos.</div>}
+    </div>
+   </section>
+  </main>;
+ }
+
  return <main className="reference-dashboard" data-lexis-shared="portfolio">
   <header className="reference-header"><div><div className="reference-overline">INFINITUM · BASE PRINCIPAL LEXISPREDICT</div><h1>{area==='clients'?'Clientes':area==='cases'?'Processos':'Carteira da organização'}</h1>
   <p>{company} · consultas da empresa inteira, conforme permissões do LexisPredict.</p></div>

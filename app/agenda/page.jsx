@@ -14,11 +14,38 @@ function Agenda({db,session}){
  const year=Number(month.slice(0,4)),m=Number(month.slice(5,7))-1;
  const first=iso(year,m,1),last=iso(year,m+1,0),startOffset=(new Date(first+'T12:00:00Z').getUTCDay()+6)%7;
  const grid=Array.from({length:42},(_,i)=>iso(year,m,1+i-startOffset));
- const load=useCallback(async()=>{setError('');const a=await db.from('office_deadlines').select('id,title,due_on,kind,status,priority,responsible,notes').gte('due_on',iso(year,m,-6)).lte('due_on',iso(year,m+1,7)).order('due_on',{ascending:true}).limit(500);if(a.error)setError('Não foi possível carregar a agenda: '+a.error.message);else setRows(a.data||[])},[db,year,m]);
+ const load=useCallback(async()=>{setError('');
+  const lexis=process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1';
+  if(lexis){
+   // Agenda operacional a partir de retornos da carteira Lexis (processos.proximo_retorno).
+   const {data:userRows,error:uErr}=await db.from('usuarios').select('empresa_id').eq('auth_user_id',session.user.id).limit(1);
+   if(uErr||!userRows?.[0]?.empresa_id){setError('Não foi possível identificar a empresa no Lexis: '+(uErr?.message||'sem empresa_id'));setRows([]);return;}
+   const empresaId=userRows[0].empresa_id;
+   const start=iso(year,m,-6),end=iso(year,m+1,7);
+   const a=await db.from('processos').select('id,cliente,protocolo_ref,proximo_retorno,advogado,tribunal,status_interno,observacoes')
+    .eq('empresa_id',empresaId).not('proximo_retorno','is',null)
+    .gte('proximo_retorno',start).lte('proximo_retorno',end)
+    .order('proximo_retorno',{ascending:true}).limit(500);
+   if(a.error){setError('Não foi possível carregar a agenda Lexis: '+a.error.message);setRows([]);return;}
+   setRows((a.data||[]).map(r=>({
+    id:r.id,
+    title:r.cliente||r.protocolo_ref||'Retorno',
+    due_on:String(r.proximo_retorno).slice(0,10),
+    kind:'retorno',
+    status:'aberto',
+    priority:'normal',
+    responsible:r.advogado||'',
+    notes:[r.protocolo_ref,r.tribunal,r.observacoes].filter(Boolean).join(' · ')
+   })));
+   return;
+  }
+  const a=await db.from('office_deadlines').select('id,title,due_on,kind,status,priority,responsible,notes').gte('due_on',iso(year,m,-6)).lte('due_on',iso(year,m+1,7)).order('due_on',{ascending:true}).limit(500);
+  if(a.error)setError('Não foi possível carregar a agenda: '+a.error.message);else setRows(a.data||[]);
+ },[db,year,m,session?.user?.id]);
  useEffect(()=>{load()},[load]);
  const visible=useMemo(()=>rows.filter(x=>(filter==='todos'||x.status==='aberto')&&!(x.kind==='audiencia'&&x.due_on<today())),[rows,filter]);
  const move=delta=>setMonth(iso(year,m+delta,1).slice(0,7));
- async function save(e){e.preventDefault();if(busy)return;setBusy(true);setError('');const row={title:form.title.trim(),due_on:form.due_on,kind:form.kind,priority:form.priority,responsible:form.responsible.trim()||null,notes:form.notes.trim()||null};if(row.title.length<3||row.title.length>250){setError('Título deve ter entre 3 e 250 caracteres.');setBusy(false);return}const result=await db.from('office_deadlines').insert({...row,owner_id:session.user.id}).select('id').single();setBusy(false);if(result.error){setError(result.error.message);return}setEditing(false);setForm({title:'',due_on:today(),kind:'retorno',priority:'normal',responsible:'',notes:''});await load()}
+ async function save(e){e.preventDefault();if(busy)return;if(process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'){setError('Neste modo Lexis, agende o próximo retorno editando o processo em /processos (campo próximo retorno / atendimento).');return;}setBusy(true);setError('');const row={title:form.title.trim(),due_on:form.due_on,kind:form.kind,priority:form.priority,responsible:form.responsible.trim()||null,notes:form.notes.trim()||null};if(row.title.length<3||row.title.length>250){setError('Título deve ter entre 3 e 250 caracteres.');setBusy(false);return}const result=await db.from('office_deadlines').insert({...row,owner_id:session.user.id}).select('id').single();setBusy(false);if(result.error){setError(result.error.message);return}setEditing(false);setForm({title:'',due_on:today(),kind:'retorno',priority:'normal',responsible:'',notes:''});await load()}
  async function conclude(row){setBusy(true);const res=await db.from('office_deadlines').update({status:'concluido',completed_at:new Date().toISOString()}).eq('id',row.id);setBusy(false);if(res.error)setError(res.error.message);else{setSelected(null);await load()}}
  return <main className="w1-calendar-shell"><header className="w1-calendar-toolbar"><div><div className="reference-overline">PROJECTW1SC / GESTÃO OPERACIONAL</div><h1>Agenda</h1><p>Compromissos, retornos, tarefas e audiências futuras da carteira.</p></div><div className="w1-calendar-actions"><Link className="inf-btn" href="/prazos">Prazos e tarefas</Link><button className="inf-btn" type="button" onClick={load}><RefreshCw size={15}/> Atualizar</button><button className="inf-btn primary" type="button" onClick={()=>setEditing(x=>!x)}><Plus size={15}/> Novo compromisso</button></div></header>
  {error&&<p className="inf-note error" role="alert">{error}</p>}

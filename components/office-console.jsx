@@ -406,7 +406,7 @@ function OfficeUI({area,db,session}){
 }
 export default function OfficeConsole({area='dashboard'}){
  return <SecuredWorkspace active={titleMap[area]||'Painel jurídico'}>{({db,session})=>
-  process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'&&['dashboard','clients','cases','reports'].includes(area)
+  process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'&&['dashboard','clients','cases','reports','deadlines','audiencias'].includes(area)
    ? <LexisSharedOffice area={area} db={db} session={session}/>
    : <OfficeUI area={area} db={db} session={session}/>
  }</SecuredWorkspace>;

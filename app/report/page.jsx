@@ -58,7 +58,7 @@ function exportAggregate(report){
  const csv=exportReportCsv(report);
  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
  const url=URL.createObjectURL(blob);
- const a=document.createElement('a');a.href=url;a.download='projectw1sc-relatorio-operacional.csv';a.click();URL.revokeObjectURL(url);
+ const a=document.createElement('a');a.href=url;a.download='infinitum-relatorio-operacional.csv';a.click();URL.revokeObjectURL(url);
 }
 function ReportLogin({db,onLogged}){
  const [loginEmail,setLoginEmail]=useState(ADMIN_EMAIL);
@@ -127,7 +127,7 @@ export default function ReportPage(){
  function printReport(){
   if(loading)return;
   const original=document.title;
-  document.title='ProjectW1SC-Relatorio-Executivo-'+period+'-'+scope;
+  document.title='INFINITUM-Relatorio-Executivo-'+period+'-'+scope;
   const restore=()=>{document.title=original;window.removeEventListener('afterprint',restore)};
   window.addEventListener('afterprint',restore,{once:true});
   window.print();
@@ -152,7 +152,7 @@ export default function ReportPage(){
  return <CrmShell active="Relatórios" email={session.user.email||''} overdueCount={report.portfolio.overdue} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard report-dashboard" data-projectw1sc-report="operational">
    <header className="reference-header report-header">
-    <div><div className="reference-overline">PROJECTW1SC · INTELIGÊNCIA OPERACIONAL</div><h1>Relatórios operacionais</h1><p>Carteira, atendimentos e atividades registradas. Dados do Supabase, sem estimativas.</p></div>
+    <div><div className="reference-overline">INFINITUM · INTELIGÊNCIA OPERACIONAL</div><h1>Relatórios operacionais</h1><p>Carteira, atendimentos e atividades registradas. Dados do Supabase, sem estimativas.</p></div>
     <div className="reference-actions">
      <button className="reference-outline" onClick={load} disabled={loading}><RefreshCw size={16}/> Atualizar</button>
      <button className="reference-outline" onClick={()=>exportAggregate(report)} disabled={loading}><Download size={16}/> Exportar CSV</button>
@@ -161,7 +161,7 @@ export default function ReportPage(){
     </div>
    </header>
    <section className="report-executive-hero" aria-label="Apresentação executiva do relatório">
-    <div><span className="hero-overline">DOSSIÊ GERENCIAL · PROJECTW1SC</span><h2>O panorama da operação,<br/>em uma única visão.</h2><p>Informações organizadas para decisões rápidas, com origem rastreável e separação entre quitação informada e comprovada.</p></div>
+    <div><span className="hero-overline">DOSSIÊ GERENCIAL · INFINITUM</span><h2>O panorama da operação,<br/>em uma única visão.</h2><p>Informações organizadas para decisões rápidas, com origem rastreável e separação entre quitação informada e comprovada.</p></div>
     <div className="hero-highlight"><small>Retornos ativos vencidos</small><strong>{fmt(report.portfolio.overdue)}</strong><small>{fmt(report.portfolio.active)} acompanhamentos ativos</small></div>
    </section>
    <div className="report-filters">
