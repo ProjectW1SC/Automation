@@ -25,8 +25,8 @@ function DemoAdmin({db,session}){
      <p><strong>E-mail de convidado reservado:</strong> <code>{EMAIL}</code></p>
      <h3>Ativação segura do login</h3>
      <p>O cadastro no Supabase Auth ainda precisa ser criado pelo administrador. Em Authentication → Users, selecione Add User, use o e-mail acima e uma senha de sua escolha, e confirme o usuário. Não compartilhe essa senha em conversas públicas.</p>
-     <p>Depois da criação no Auth, é necessário vincular o ID gerado à organização demonstrativa e aos registros de teste. Enquanto isso não ocorrer, o login não funcionará.</p>
-     <a href={AUTH_URL} target="_blank" rel="noopener noreferrer" className="inf-btn primary">Abrir usuários do Supabase W1 Capital</a>
+     <p>Depois da criação no Auth, execute o script de vínculo exclusivo da empresa demonstrativa no SQL Editor. Enquanto isso não ocorrer, o login não funcionará.</p>
+     <a href={AUTH_URL} target="_blank" rel="noopener noreferrer" className="inf-btn primary">Abrir usuários do Supabase W1 Capital</a><p className="inf-note">Instruções completas e SQL do vínculo: repositório INFINITUM / docs / DEMO-CONVIDADO-ATIVACAO.md.</p>
      <p className="inf-note">A conta não pode ser ativada apenas com a existência de dados na carteira. Nenhuma senha foi pré-definida ou gravada no código.</p>
     </>}
   </section>
