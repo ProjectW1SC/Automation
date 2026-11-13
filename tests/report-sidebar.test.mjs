@@ -24,8 +24,8 @@ test('sidebar has responsive compact rail and accessible expansion controls',()=
  const component=read('components/crm-shell.jsx');
  const css=read('app/reference-design.css');
  assert.match(component,/sidebarExpanded/);
- assert.match(component,/onMouseEnter/);
- assert.match(component,/onMouseLeave/);
+ assert.match(component,/onPointerEnter/);
+ assert.match(component,/onPointerLeave/);
  assert.match(component,/onFocusCapture/);
  assert.match(component,/aria-expanded/);
  assert.match(component,/onPointerDown/);

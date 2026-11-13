@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {Plus,RefreshCw,GripVertical,ArrowRight,Scale,CheckCircle2} from 'lucide-react';
+import {Plus,RefreshCw,GripVertical,ArrowRight,Scale,CheckCircle2,Settings2} from 'lucide-react';
 import SecuredWorkspace from './secured-workspace';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 const STAGES=[{key:'entrada',name:'Entrada',hint:'Novas demandas'}, {key:'triagem',name:'Triagem',hint:'Conferência inicial'}, {key:'producao',name:'Produção',hint:'Trabalho jurídico'}, {key:'revisao',name:'Revisão',hint:'Aprovação humana'}, {key:'concluido',name:'Concluído',hint:'Atividade encerrada'}];
@@ -73,7 +73,7 @@ function Board({db,session}){
   </div>
   <div className="office-workflow-tools"><input className="inf-search" aria-label="Filtrar tarefas" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Buscar tarefa, fase ou responsável"/>
     <span className="office-hint">{visible.length} exibidos de {cards.length} cartões · Arraste ou use Avançar</span></div>
-  {adding&&<section className="inf-panel"><h2>Novo card jurídico</h2><form className="office-form-col" onSubmit={add}>
+  {adding&&<section id="office-new-card" className="inf-panel"><h2>Novo card jurídico</h2><form className="office-form-col" onSubmit={add}>
    <div className="inf-fields"><label>Título<input required minLength={3} maxLength={220} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label>
     <label>Etapa<select value={form.stage} onChange={e=>setForm({...form,stage:e.target.value})}>{STAGES.map(s=><option key={s.key} value={s.key}>{s.name}</option>)}</select></label>
     <label>Tipo<select value={form.card_type} onChange={e=>setForm({...form,card_type:e.target.value})}>{['tarefa','processo','peca','lead','outro'].map(t=><option key={t} value={t}>{t}</option>)}</select></label>
@@ -85,12 +85,18 @@ function Board({db,session}){
    </form></section>}
   <div className="office-kanban-columns" role="list" aria-label="Kanban jurídico">
    {columns.map((stage,idx)=><section key={stage.key} data-stage={stage.key} className="office-kanban-column" aria-label={stage.name} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||dragged;move(id,stage.key)}}>
-    <header className="office-kanban-head"><span className={'office-phase-dot office-phase-'+stage.key}/><div><strong>{stage.name}</strong><small>{stage.hint}</small></div><b>{stage.items.length}</b></header>
-    <div className="office-kanban-stack"><button type="button" className="office-kanban-quickadd" onClick={()=>{setForm(previous=>({...previous,stage:stage.key}));setAdding(true)}}><Plus size={15}/> Novo card</button>{stage.items.map(x=><article className="office-kanban-card" key={x.id} draggable={!busy} onDragStart={e=>{setDragged(x.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',x.id)}}>
+    <header className="office-kanban-head"><span className={'office-phase-dot office-phase-'+stage.key}/><div><strong>{stage.name}</strong><small>{stage.hint}</small></div><b>{stage.items.length}</b><button type="button" className="office-kanban-stage-filter" aria-label={'Filtrar etapa '+stage.name} aria-pressed={stageFilter===stage.key} title={stageFilter===stage.key?'Mostrar todas as etapas':'Mostrar apenas '+stage.name} onClick={()=>setStageFilter(old=>old===stage.key?'':stage.key)}><Settings2 size={14}/></button></header>
+    <div className="office-kanban-stack"><button type="button" className="office-kanban-quickadd" onClick={()=>{setForm(previous=>({...previous,stage:stage.key}));setAdding(true);requestAnimationFrame(()=>document.getElementById('office-new-card')?.scrollIntoView({behavior:'smooth',block:'start'}))}}><Plus size={15}/> Novo card</button>{stage.items.map(x=><article className="office-kanban-card" data-priority={x.priority} key={x.id} draggable={!busy} onDragStart={e=>{setDragged(x.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',x.id)}}>
      <div className="office-kanban-line"><GripVertical size={13} aria-hidden="true"/><span>{x.card_type}</span><span className={'office-kanban-priority pr-'+x.priority}>{x.priority}</span></div>
-     <strong>{x.title}</strong><p>{x.description?.slice(0,150)||'Sem descrição.'}</p><small>{x.assigned_to||'Sem responsável'} {x.due_on?' · '+x.due_on:''}</small>
-     <div className="office-kanban-actions">{idx<STAGES.length-1&&<button className="inf-btn" type="button" disabled={busy} onClick={()=>move(x.id,STAGES[idx+1].key)}><ArrowRight size={13}/> Avançar</button>}
-      {idx===STAGES.length-1&&<span className="office-hint"><CheckCircle2 size={13}/> Concluído</span>}</div>
+     <strong className="office-kanban-card-title">{x.title}</strong>
+     <div className="office-kanban-card-fields">
+      <div><small>TIPO</small><span>{x.card_type}</span></div>
+      {x.assigned_to&&<div><small>RESPONSÁVEL</small><span>{x.assigned_to}</span></div>}
+      {x.due_on&&<div><small>PRAZO</small><span>{x.due_on}</span></div>}
+      {x.description&&<div><small>DESCRIÇÃO</small><span>{x.description.slice(0,150)}</span></div>}
+     </div>
+     <div className="office-kanban-actions">{STAGES.findIndex(s=>s.key===stage.key)<STAGES.length-1&&<button className="inf-btn" type="button" disabled={busy} onClick={()=>move(x.id,STAGES[STAGES.findIndex(s=>s.key===stage.key)+1].key)}><ArrowRight size={13}/> Avançar</button>}
+      {STAGES.findIndex(s=>s.key===stage.key)===STAGES.length-1&&<span className="office-hint"><CheckCircle2 size={13}/> Concluído</span>}</div>
     </article>)}{!stage.items.length&&<div className="office-kanban-empty">Solte um card aqui</div>}</div>
    </section>)}
   </div><div className="inf-note"><Scale size={14}/> Os procedimentos são próprios do escritório. A integração pública do Infinitum é de leitura e não replica dados automaticamente.</div>

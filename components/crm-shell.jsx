@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
+import {usePathname} from 'next/navigation';
 import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck,Workflow,PlugZap,ScanSearch,Search,Command,Menu,X} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
@@ -18,6 +19,7 @@ const icons={
  'Integrações':PlugZap,'Configurações':Settings2
 };
 export default function CrmShell({active='Painel jurídico',email='',onNavigate,onSignOut,onPassword,overdueCount=0,children}){
+ const pathname=usePathname()||'/';
  const [sidebarExpanded,setSidebarExpanded]=useState(false);
  const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
  useEffect(()=>{if(window.innerWidth<880)setSidebarExpanded(false)},[]);
@@ -97,9 +99,6 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    document.removeEventListener('keydown',onKeyDown);
   };
  },[]);
- const shrinkIfUnfocused=()=>{
-  if(!sidebarRef.current?.contains(document.activeElement))setSidebarExpanded(false);
- };
  function selectTheme(value){
   const selected=resolveTheme(value);
   try{localStorage.setItem('projectw1sc.crm-theme',selected)}catch{}
@@ -110,8 +109,8 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  }
  return <div className={'app-shell blackhole-studio-shell '+(sidebarExpanded?'sidebar-expanded':'sidebar-collapsed')}>
   <aside ref={sidebarRef} className="app-sidebar"
-    onMouseEnter={()=>setSidebarExpanded(true)}
-    onMouseLeave={shrinkIfUnfocused}
+    onPointerEnter={()=>setSidebarExpanded(true)}
+    onPointerLeave={()=>setSidebarExpanded(false)}
     onFocusCapture={()=>setSidebarExpanded(true)}
     onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSidebarExpanded(false)}}>
    <div className="app-identity"><Link href="/" className="pr-brand" aria-label="INFINITUM — Painel jurídico"><span className="pr-brand-symbol" aria-hidden="true">∞</span><strong className="pr-brand-name">INFINITUM</strong><small className="pr-brand-sub">CRM | JURÍDICO</small></Link>
@@ -146,7 +145,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 BLACKHOLE · W1 Capital</small>
    </footer>
   </aside>
-  <div className="app-content"><div className="reference-top-tools">
+  <div className="app-content" key={pathname} data-route={pathname}><div className="reference-top-tools">
    <div className="blackhole-shell-breadcrumb"><img src="/branding/blackhole-symbol.svg" alt="" width="31" height="20"/><Link href="/" prefetch={false}>PROJECTW1SC</Link><span className="blackhole-shell-crumb-sep">/</span><strong>{active}</strong></div>
    <div className="blackhole-shell-tools">
     <div className="blackhole-shell-search"><Search size={15}/><input ref={navSearchRef} type="search" value={navSearch} onChange={e=>setNavSearch(e.target.value)} aria-label="Pesquisar abas do escritório" placeholder="Buscar uma área..."/><kbd><Command size={12}/> K</kbd>

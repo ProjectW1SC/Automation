@@ -3,8 +3,8 @@ import {tryArithmetic} from '../lib/blackhole-arithmetic.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('sidebar fixo no desktop, com recolhimento por botão e toque externo no mobile',()=>{
  const shell=read('components/crm-shell.jsx');
- assert.match(shell,/onMouseEnter=\{\(\)=>setSidebarExpanded\(true\)\}/);
- assert.match(shell,/onMouseLeave/);
+ assert.match(shell,/onPointerEnter=\{\(\)=>setSidebarExpanded\(true\)\}/);
+ assert.match(shell,/onPointerLeave=\{\(\)=>setSidebarExpanded\(false\)\}/);
  assert.match(shell,/window\.innerWidth<880/);
  assert.match(shell,/setSidebarExpanded\]=useState\(false\)/);
  assert.match(shell,/onFocusCapture=\{\(\)=>setSidebarExpanded\(true\)\}/);
