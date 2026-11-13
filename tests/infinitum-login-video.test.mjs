@@ -35,7 +35,7 @@ test('login-only video styling preserves the CRM principal and provides readable
  assert.match(layout,/infinitum-login-video\.css/);
  assert.match(css,/\.w1-auth-screen\[data-office-login="infinitum-reference"\]/);
  assert.match(css,/\.w1-auth-video/);
- assert.match(css,/object-fit:contain/);
+ assert.match(css.split('/* GALAXY LOGIN FINAL */')[1],/object-fit:cover!important/);
  assert.match(css,/@media\s*\(max-width:\s*920px\)/);
  assert.match(css,/@media\s*\(max-width:\s*480px\)/);
  assert.match(css,/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
