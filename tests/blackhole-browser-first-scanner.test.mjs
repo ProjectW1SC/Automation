@@ -18,6 +18,7 @@ test('scanner API valida e persiste resultado direto, mas não contorna 403/429'
  assert.match(route,/browserResultNeedsServerFallback/);
  assert.match(route,/browserResults/);
  assert.match(route,/office_scan_runs/);
+ assert.match(route,/record_office_source_cooldown/);
 });
 test('consulta manual de Processos integra DataJud browser-first e salva snapshot com RLS',()=>{
  const office=read('components/office-console.jsx');
