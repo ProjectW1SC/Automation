@@ -1,0 +1,134 @@
+/* INFINITUM · integração Lexis sem mudar a identidade Prestige original.
+   Escopo restrito ao módulo compartilhado; o login e sidebar ficam intactos. */
+html[data-crm-theme="infinitum"] .lx-workspace,
+html[data-crm-theme="infinitum"] .lx-shared{
+ --lx-ink:#252019;--lx-soft:#766c61;--lx-paper:#fff;--lx-line:#e8e1d8;--lx-gold:#aa8b62;
+ background:#f8f6f3!important;color:var(--lx-ink)!important;max-width:1800px;margin:0 auto;padding:clamp(18px,2.2vw,34px)!important;
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared .reference-header,
+html[data-crm-theme="infinitum"] .lx-workspace-heading{margin-bottom:21px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+html[data-crm-theme="infinitum"] .lx-shared .reference-header h1,
+html[data-crm-theme="infinitum"] .lx-workspace-heading h1{
+ font-family:Georgia,"Times New Roman",serif!important;font-weight:400!important;font-size:clamp(32px,3vw,46px)!important;letter-spacing:-.045em!important;color:#201a15!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared .reference-header p,
+html[data-crm-theme="infinitum"] .lx-workspace-heading p{font-size:12px!important;color:#7f7569!important}
+html[data-crm-theme="infinitum"] .lx-shared .reference-overline,
+html[data-crm-theme="infinitum"] .lx-workspace-heading small{font-size:10px!important;letter-spacing:.17em!important;color:#a18b6a!important}
+html[data-crm-theme="infinitum"] .lx-shared .inf-panel,
+html[data-crm-theme="infinitum"] .lx-workspace .pr-module{
+ background:#fff!important;border:1px solid #e6e0d7!important;border-radius:13px!important;
+ box-shadow:0 4px 18px #21180e0a!important;margin-bottom:16px;padding:clamp(17px,2vw,25px)!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared .inf-panel h2,
+html[data-crm-theme="infinitum"] .lx-workspace .pr-module h2{
+ color:#211b17!important;font-family:Georgia,"Times New Roman",serif!important;font-weight:400!important;font-size:clamp(20px,2vw,29px)!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared .inf-panel p,
+html[data-crm-theme="infinitum"] .lx-workspace .pr-module p{color:#82786e;font-size:12px}
+html[data-crm-theme="infinitum"] .lx-shared .inf-grid{gap:12px;margin:0 0 17px}
+html[data-crm-theme="infinitum"] .lx-shared .inf-stat{
+ background:#fff!important;min-height:105px!important;border:1px solid #e7dfd6!important;border-radius:12px!important;
+ box-shadow:0 2px 12px #1c140b08!important;padding:17px!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared .inf-stat label{font-size:11px;color:#81766b;font-weight:650}
+html[data-crm-theme="infinitum"] .lx-shared .inf-stat strong{font-family:Georgia,serif;font-size:31px;font-weight:400;color:#251e19}
+html[data-crm-theme="infinitum"] .lx-shared .office-record{
+ padding:17px 19px!important;margin:0!important;border:0!important;border-bottom:1px solid #eee8e0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;display:flex;flex-direction:column;gap:7px;
+}
+html[data-crm-theme="infinitum"] .lx-shared .office-record:last-child{border-bottom:0!important}
+html[data-crm-theme="infinitum"] .lx-shared .office-record:hover{background:#fcfaf7!important}
+html[data-crm-theme="infinitum"] .lx-shared .office-record strong{color:#29221c;font-size:13px;letter-spacing:-.01em}
+html[data-crm-theme="infinitum"] .lx-shared .office-record p{margin:1px 0;color:#796e63}
+html[data-crm-theme="infinitum"] .lx-shared .office-record small{line-height:1.8;color:#756d65}
+html[data-crm-theme="infinitum"] .lx-shared .inf-btn,
+html[data-crm-theme="infinitum"] .lx-workspace .inf-btn{
+ background:white;color:#493f35;border:1px solid #e3dbd2;border-radius:8px;font-size:11px;font-weight:650;
+ box-shadow:none;min-height:37px;transition:background .16s ease,border-color .16s ease;
+}
+html[data-crm-theme="infinitum"] .lx-shared .inf-btn:hover,
+html[data-crm-theme="infinitum"] .lx-workspace .inf-btn:hover{background:#f4efe8;border-color:#c4b39e}
+html[data-crm-theme="infinitum"] .lx-shared .inf-btn.primary,
+html[data-crm-theme="infinitum"] .lx-workspace .inf-btn.primary{background:#211c18;color:white;border-color:#211c18}
+html[data-crm-theme="infinitum"] .lx-shared input,
+html[data-crm-theme="infinitum"] .lx-shared select,
+html[data-crm-theme="infinitum"] .lx-shared textarea,
+html[data-crm-theme="infinitum"] .lx-workspace input,
+html[data-crm-theme="infinitum"] .lx-workspace select,
+html[data-crm-theme="infinitum"] .lx-workspace textarea{background:#fffcfa;border:1px solid #e1d9ce;border-radius:8px;min-height:38px;padding:8px 11px;color:#2d2620;font-size:12px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-record{border-left:3px solid #c6ad8b!important}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-toolbar{align-items:center;gap:8px;flex-wrap:wrap}
+html[data-crm-theme="infinitum"] .lx-status{
+ display:inline-flex;align-items:center;gap:6px;white-space:nowrap;letter-spacing:.015em;font-weight:750;
+ border:1px solid transparent;border-radius:999px;padding:5px 10px;font-size:10px;line-height:1.2;
+}
+html[data-crm-theme="infinitum"] .lx-status--vencido{background:#fff0ef;color:#a12c2c;border-color:#f5d2cf}
+html[data-crm-theme="infinitum"] .lx-status--atencao{background:#fff6e6;color:#945e13;border-color:#f1dcb3}
+html[data-crm-theme="infinitum"] .lx-status--em_dia{background:#ecf7ef;color:#246742;border-color:#cde9d5}
+html[data-crm-theme="infinitum"] .lx-status--em_andamento{background:#eef4ff;color:#345a9f;border-color:#d8e4fa}
+html[data-crm-theme="infinitum"] .lx-status--encerrado{background:#eeece8;color:#605a53;border-color:#dcd7d0}
+html[data-crm-theme="infinitum"] .lx-status--sem_data{background:#f3f0eb;color:#6e6358;border-color:#e8e1d6}
+html[data-crm-theme="infinitum"] .lx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:19px}
+html[data-crm-theme="infinitum"] .lx-kpi{background:#fff;text-align:left;position:relative;border:1px solid #e8e0d6;border-radius:12px;padding:16px 19px;min-height:108px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 4px 12px #23190b09;color:#7f756a}
+html[data-crm-theme="infinitum"] .lx-kpi strong{font:400 clamp(28px,3vw,37px)/1.2 Georgia,serif;color:#231b16}
+html[data-crm-theme="infinitum"] .lx-kpi span:first-child{font-size:11px;font-weight:700}
+html[data-crm-theme="infinitum"] .lx-kpi.is-active{border-color:#ad9372;box-shadow:0 0 0 2px #cbb38a40}
+html[data-crm-theme="infinitum"] .lx-kpi-mark{position:absolute;width:9px;height:9px;border-radius:50%;right:17px;top:17px;background:#b8a18b}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--vencido{background:#c74c45}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--atencao{background:#dfa03a}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--em_dia{background:#4b9864}
+html[data-crm-theme="infinitum"] .lx-toolbar,.lx-calendar-header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:15px 0}
+html[data-crm-theme="infinitum"] .lx-toolbar .lx-search{display:flex;gap:8px;align-items:center;min-width:230px;max-width:420px;flex:1;padding:0 10px;border:1px solid #e5ddd3;border-radius:8px;color:#8b7e6f;background:#fbfaf8}
+html[data-crm-theme="infinitum"] .lx-toolbar .lx-search input{background:transparent;border:0;min-width:0;width:100%;flex:1}
+html[data-crm-theme="infinitum"] .lx-toolbar .lx-check{display:flex;gap:7px;align-items:center;font-size:11px}
+html[data-crm-theme="infinitum"] .lx-toolbar .lx-check input{min-height:auto}
+html[data-crm-theme="infinitum"] .lx-event-list{border:1px solid #eae3da;border-radius:10px;overflow:hidden}
+html[data-crm-theme="infinitum"] .lx-event-card{background:#fff;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:13px;align-items:center;padding:16px;border-bottom:1px solid #eee8e1;min-width:0}
+html[data-crm-theme="infinitum"] .lx-event-card:last-child{border-bottom:0}
+html[data-crm-theme="infinitum"] .lx-event-card:hover{background:#fcfaf6}
+html[data-crm-theme="infinitum"] .lx-event-symbol{display:grid;place-items:center;width:37px;height:37px;border-radius:10px;background:#f5f0e9;color:#9d815d}
+html[data-crm-theme="infinitum"] .lx-event-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+html[data-crm-theme="infinitum"] .lx-event-main strong{font-size:13px;font-weight:750;white-space:normal;color:#27201a}
+html[data-crm-theme="infinitum"] .lx-event-main>span{color:#80766b;font-size:11px}
+html[data-crm-theme="infinitum"] .lx-event-kicker{color:#ac8c64;font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+html[data-crm-theme="infinitum"] .lx-event-main small:last-child{color:#72685e;font-size:10px}
+html[data-crm-theme="infinitum"] .lx-event-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+html[data-crm-theme="infinitum"] .lx-event-open{border:0;background:transparent;color:#7d684e;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;cursor:pointer}
+html[data-crm-theme="infinitum"] .lx-calendar-header strong{font:400 23px Georgia,serif;color:#2b241c;text-transform:capitalize;margin:0 12px}
+html[data-crm-theme="infinitum"] .lx-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:#e7ded2;border:1px solid #e8dfd3;border-radius:10px;overflow:hidden}
+html[data-crm-theme="infinitum"] .lx-calendar-weekday{background:#f4efe7;text-align:center;padding:11px;font-size:10px;font-weight:750;color:#786754}
+html[data-crm-theme="infinitum"] .lx-calendar-day{min-height:105px;background:#fff;padding:9px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+html[data-crm-theme="infinitum"] .lx-calendar-day.is-outside{background:#f9f7f4;color:#b4aba0}
+html[data-crm-theme="infinitum"] .lx-calendar-day.is-today{background:#fffaf1;box-shadow:inset 0 0 0 2px #d6bc91}
+html[data-crm-theme="infinitum"] .lx-calendar-day>span{font-size:11px;font-weight:750;margin-bottom:5px}
+html[data-crm-theme="infinitum"] .lx-calendar-entry{font:650 9px/1.3 Inter,sans-serif;display:block;border:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:4px;background:#e9f2e9;color:#375741;padding:5px;cursor:pointer}
+html[data-crm-theme="infinitum"] .lx-calendar-entry--vencido{background:#f9e8e4;color:#962e31}
+html[data-crm-theme="infinitum"] .lx-calendar-entry--atencao{background:#fff0da;color:#8e631b}
+html[data-crm-theme="infinitum"] .lx-calendar-entry--encerrado{background:#f1eee9;color:#777069}
+html[data-crm-theme="infinitum"] .lx-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+html[data-crm-theme="infinitum"] .lx-detail-head small{font-size:10px;color:#a38b6b;letter-spacing:.14em}
+html[data-crm-theme="infinitum"] .lx-detail-meta{display:flex;align-items:center;gap:13px;margin:13px 0;flex-wrap:wrap;font-size:12px;color:#71665a}
+html[data-crm-theme="infinitum"] .lx-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+html[data-crm-theme="infinitum"] .lx-form>label{font-size:11px;display:flex;flex-direction:column;gap:7px;color:#6b6157;font-weight:650}
+html[data-crm-theme="infinitum"] .lx-form-full{grid-column:1/-1}
+html[data-crm-theme="infinitum"] .lx-form textarea{min-height:90px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-toolbar{margin-top:12px}
+@media(max-width:860px){html[data-crm-theme="infinitum"] .lx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-crm-theme="infinitum"] .lx-calendar-day{min-height:78px;padding:5px}
+ html[data-crm-theme="infinitum"] .lx-calendar-day .lx-calendar-entry{font-size:8px}
+ html[data-crm-theme="infinitum"] .lx-shared .inf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ html[data-crm-theme="infinitum"] .lx-event-card{grid-template-columns:32px minmax(0,1fr);gap:10px}
+ html[data-crm-theme="infinitum"] .lx-event-right{grid-column:2;align-items:flex-start;flex-direction:row}
+ html[data-crm-theme="infinitum"] .lx-workspace .pr-module{padding:14px!important}
+ html[data-crm-theme="infinitum"] .lx-calendar-grid{overflow-x:auto;grid-template-columns:repeat(7,minmax(54px,1fr))}
+ html[data-crm-theme="infinitum"] .lx-calendar-day{min-height:64px}
+ html[data-crm-theme="infinitum"] .lx-calendar-day .lx-calendar-entry{font-size:7px}
+ html[data-crm-theme="infinitum"] .lx-form{grid-template-columns:1fr}
+ html[data-crm-theme="infinitum"] .lx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){html[data-crm-theme="infinitum"] .lx-workspace *,
+html[data-crm-theme="infinitum"] .lx-shared *{transition:none!important;animation:none!important}}
