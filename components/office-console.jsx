@@ -190,25 +190,26 @@ function OfficeUI({area,db,session}){
     if(r.error)throw Error('Não foi possível conferir as fontes oficiais: '+r.error.message);
     evidence=(r.data||[]).map(x=>({source:x.source,checked_at:x.checked_at,summary:safeText(x.payload?.items?.[0]?.title||x.payload?.items?.[0]?.description,200)}));
    }
-   let draft=caseRecord?makePetitionSkeleton({kind:docKind,caseRecord,client,instructions:docInstructions,evidence}):makeStandalonePetition({kind:docKind,instructions:docInstructions}),modelUsed='estrutura-verificavel',avisoAi='';
+   const options={kind:docKind,instructions:docInstructions,sourceDocument:docSourceDocument,appealType:docAppealType};
+   let draft=caseRecord?makePetitionSkeleton({...options,caseRecord,client,evidence}):makeStandalonePetition(options),
+    modelUsed='estrutura-documental-local',avisoAi='',usedRemoteAi=false;
    if(useAi){
-    if(!caseRecord)avisoAi='A IA externa exige processo cadastrado. Minuta avulsa estruturada sem envio externo.';
-    else{
-     try{
-      const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());
-      if(!s?.access_token)throw Error('Sessão expirada');
-      const r=await fetch('/api/office/ai',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
-       body:JSON.stringify({caseId:caseRecord.id,kind:docKind,instructions:docInstructions,externalAiConsent:true})});
-      const output=await r.json();if(!output.ok)throw Error(output.error||'IA indisponível');
-      draft={...draft,body:output.content};modelUsed=output.model;
-     }catch(err){avisoAi='IA externa não utilizada: '+String(err?.message||'falha').slice(0,180)+' · A minuta estruturada local foi preservada.';}
-    }
+    try{
+     const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());
+     if(!s?.access_token)throw Error('Sessão expirada');
+     const response=await fetch('/api/office/ai',{method:'POST',
+      headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({caseId:caseRecord?.id||null,...options,externalAiConsent:true})});
+     const output=await response.json();
+     if(!response.ok||!output.ok)throw Error(output.error||'Provedor de IA não respondeu.');
+     draft={...draft,body:output.content};modelUsed=output.model;usedRemoteAi=true;
+    }catch(error){avisoAi='IA externa não utilizada: '+String(error?.message||'falha').slice(0,180)+'. Minuta local preservada.'}
    }
    const rec={owner_id:session.user.id,case_id:caseRecord?.id||null,client_id:caseRecord?.client_id||null,title:draft.title,kind:docKind,body:draft.body,
-    evidence:draft.evidence,status:'rascunho',external_ai_consent:useAi,model_used:modelUsed};
+    evidence:draft.evidence,status:'rascunho',external_ai_consent:usedRemoteAi,model_used:modelUsed};
    const result=await db.from('office_documents').insert(rec).select('id').single();
    if(result.error)throw result.error;
-   setDocResult({...draft,id:result.data.id,modelUsed});setNotice('Minuta estruturada salva. '+(avisoAi?avisoAi+' ':'')+'Revisão do advogado é obrigatória antes de qualquer uso.');await load();
+   setDocResult({...draft,id:result.data.id,modelUsed});setNotice('Minuta salva. '+(draft.evidence?.importedDocument?'Fonte judicial colada preservada como documento não verificado. ':'')+(avisoAi?avisoAi+' ':'')+'Confirme fatos, dispositivo, prazo e cabimento antes de utilizar.');await load();
   }catch(e){setNotice('Minuta não concluída: '+e.message)}
   finally{setBusy(false)}
  }
