@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {Archive,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,Clock3,ExternalLink,FileText,Gavel,Plus,RefreshCw,Search,Users,X} from 'lucide-react';
 import {buildLexisEvents} from '../lib/lexis-operations.mjs';
+import LexisEventDetails from './lexis-event-details';
 const brazilToday=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const iso=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
 const fmt=d=>d?String(d).slice(0,10).split('-').reverse().join('/'):'Data não confirmada';
@@ -119,6 +120,7 @@ export default function LexisOperations({db,session,area='deadlines'}){
    setSelected(null);await load();
   }catch(err){setErrors(['Não foi possível concluir: '+err.message])}finally{setBusy(false)}
  };
+ const openDetails=event=>setSelected(event);
  const gotoMonth=delta=>setMonth(iso(currentYear,currentMonth+delta,1).slice(0,7));
  const offset=(new Date(first+'T12:00:00Z').getUTCDay()+6)%7;
  const grid=Array.from({length:42},(_,i)=>iso(currentYear,currentMonth,1+i-offset));
@@ -155,27 +157,18 @@ export default function LexisOperations({db,session,area='deadlines'}){
    {area==='agenda'&&view==='month'&&<div className="lx-calendar-grid">
     {['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(d=><div key={d} className="lx-calendar-weekday">{d}</div>)}
     {grid.map(d=><div key={d} className={'lx-calendar-day '+(d.slice(0,7)!==month?'is-outside':'')+(d===brazilToday()?' is-today':'')}>
-     <span>{Number(d.slice(8))}</span>{(groups.get(d)||[]).slice(0,3).map(e=><button key={e.id} type="button" title={e.title} onClick={()=>setSelected(e)} className={'lx-calendar-entry lx-calendar-entry--'+e.status}>{e.title}</button>)}
+     <span>{Number(d.slice(8))}</span>{(groups.get(d)||[]).slice(0,3).map(e=><button key={e.id} type="button" title={e.title} onClick={()=>openDetails(e)} className={'lx-calendar-entry lx-calendar-entry--'+e.status}>{e.title}</button>)}
      {(groups.get(d)||[]).length>3&&<small>+{groups.get(d).length-3} registros</small>}
     </div>)}
    </div>}
-   {(area!=='agenda'||view==='list')&&<div className="lx-event-list">{listing.slice(0,visibleLimit).map(x=><Card key={x.id} item={x} onSelect={setSelected}/>)}
+   {(area!=='agenda'||view==='list')&&<div className="lx-event-list">{listing.slice(0,visibleLimit).map(x=><Card key={x.id} item={x} onSelect={openDetails}/>)}
     {listing.length>visibleLimit&&<div className="lx-load-more"><span>Mostrando {visibleLimit} de {listing.length} registros</span><button type="button" className="inf-btn" onClick={()=>setVisibleLimit(v=>v+60)}>Carregar mais</button></div>}
     {!loading&&!listing.length&&<p className="pr-list-empty">Nenhum registro corresponde aos filtros. Confira as fontes e altere o período quando necessário.</p>}
    </div>}
    {area==='audiencias'&&<p className="inf-note">Audiências sem data são apresentadas como pendentes de confirmação, nunca como audiência futura. Confira sempre a fonte oficial.</p>}
    {area==='deadlines'&&<p className="inf-note">Prazos e retornos são datas distintas. O encerramento de um processo não é tratado como atraso.</p>}
   </section>
-  {selected&&<section className="pr-module lx-detail" aria-label="Detalhes do compromisso">
-   <div className="lx-detail-head"><div><small>{kinds[selected.kind]||'Compromisso'}</small><h2>{selected.title}</h2></div><button type="button" className="inf-btn" onClick={()=>setSelected(null)}><X size={15}/> Fechar</button></div>
-   <div className="lx-detail-meta"><Chip value={selected.status}/><span>{fmt(selected.due_on)} {selected.hour?'· '+selected.hour:''}</span><span>Responsável: {selected.responsible||'Não informado'}</span></div>
-   {selected.process_number&&<p>Processo: {selected.process_number}</p>}{selected.notes&&<p>{selected.notes}</p>}
-   <div className="inf-actions">
-    {selected.source_url&&<a href={selected.source_url} target="_blank" rel="noopener noreferrer" className="inf-btn"><ExternalLink size={15}/> Conferir fonte oficial</a>}
-    {selected.process_number&&<Link href={'/processos?buscar='+encodeURIComponent(selected.process_number)} className="inf-btn"><FileText size={15}/> Abrir processo</Link>}
-    {selected.manual_id&&selected.status!=='encerrado'&&<button type="button" className="inf-btn primary" disabled={busy} onClick={()=>finish(selected)}><CheckCircle2 size={15}/> Concluir compromisso</button>}
-   </div>
-  </section>}
+  {selected&&<LexisEventDetails key={selected.id} event={selected} db={db} profile={profile} onClose={()=>setSelected(null)} onSaved={load} onFinish={finish} busy={busy}/>}
   {editing&&<section className="pr-module lx-detail"><div className="lx-detail-head"><div><small>CADASTRO OPERACIONAL</small><h2>Novo compromisso</h2></div><button className="inf-btn" onClick={()=>setEditing(false)}><X size={14}/> Cancelar</button></div>
    <p>O compromisso será salvo para a organização, sem alterar movimentos oficiais do tribunal.</p>
    <form onSubmit={save} className="lx-form">
