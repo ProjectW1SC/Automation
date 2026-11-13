@@ -19,3 +19,10 @@ test('endpoint do agente recebe mensagens livres e responde com texto',()=>{
  assert.match(ui,/payload\.reply/);assert.match(ui,/minLength=\{1\}/);
  assert.doesNotMatch(ui,/prompt\.trim\(\)\.length<6/);
 });
+
+test('mensagem composta responde conta e brincadeira sem simular modelo remoto',()=>{
+ const reply=offlineBlackholeReply('quanto é 2 +8 e porque tu é o pato rosa');
+ assert.match(reply,/2\s*\+\s*8\s*=\s*10/);
+ assert.match(reply,/pato rosa/i);
+ assert.doesNotMatch(reply,/Recebi sua mensagem/);
+});
