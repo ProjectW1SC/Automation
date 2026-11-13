@@ -2,6 +2,7 @@
  * INFINITUM · acesso com o vídeo original fornecido em 13/11/2026.
  * Só a autenticação é afetada. O vídeo mostra o painel esquerdo; os campos
  * da direita são elementos reais do CRM com Supabase Auth.
+ * Original 1280x720, recorte esquerdo 710x720; contain evita zoom e cortes.
  */
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{
  min-height:100dvh!important;
@@ -50,7 +51,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
  position:absolute!important;
  inset:0!important;
  z-index:0!important;
- background:#84776c url('/branding/infinitum-login-poster.webp') center/cover no-repeat!important;
+ background:#84776c url('/branding/infinitum-login-poster.webp') center/contain no-repeat!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
  display:block;
@@ -60,7 +61,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
  width:100%!important;
  height:100%!important;
  min-height:100%!important;
- object-fit:cover!important;
+ object-fit:contain!important;
  object-position:center center!important;
  border:0!important;
  border-radius:0!important;
@@ -198,15 +199,14 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
  }
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
   width:100%!important;
-  height:clamp(245px,35svh,330px)!important;
-  min-height:245px!important;
-  max-height:330px!important;
+  height:min(101.4vw,720px)!important;
+  min-height:0!important;
+  max-height:720px!important;
+  aspect-ratio:710 / 720!important;
  }
- html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
-  object-position:center 19%!important;
- }
+
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
-  min-height:calc(100dvh - 245px)!important;
+  min-height:0!important;
   padding:30px clamp(20px,5vw,56px)!important;
  }
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
@@ -215,13 +215,13 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
 }
 @media(max-width:480px){
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
-  height:260px!important;
-  min-height:260px!important;
-  max-height:260px!important;
+  height:calc(100vw * 720 / 710)!important;
+  min-height:0!important;
+  max-height:none!important;
  }
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
   padding:21px 22px 28px!important;
-  min-height:calc(100dvh - 260px)!important;
+  min-height:0!important;
   gap:12px!important;
  }
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
