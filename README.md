@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="./public/branding/infinitum-symbol-preto.svg" alt="INFINITUM" width="120" />
+<!-- Símbolo branco: legível no tema escuro do GitHub -->
+<img src="./public/branding/infinitum-symbol-branco.svg" alt="INFINITUM" width="140" />
 
 # INFINITUM
 
@@ -13,6 +14,11 @@ Organização de clientes, processos, atendimentos, captção de leads e rotinas
 [![Licença: MIT](https://img.shields.io/badge/licença-MIT-0a0a0a)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14+-black)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E)](https://supabase.com/)
+
+<br/>
+
+<!-- Logo horizontal (preto) — melhor em fundo claro / light mode -->
+<img src="./public/branding/infinitum-horizontal-preto.png" alt="INFINITUM logotipo" width="320" />
 
 </div>
 
@@ -173,7 +179,7 @@ A marca **INFINITUM**, o símbolo infinito, o logotipo Lead Broker e demais elem
 
 <div align="center">
 
-<img src="./public/branding/infinitum-symbol-preto.svg" alt="INFINITUM" width="48" />
+<img src="./public/branding/infinitum-symbol-branco.svg" alt="INFINITUM" width="48" />
 
 **INFINITUM** · W1 Capital
 
