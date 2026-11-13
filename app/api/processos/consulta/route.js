@@ -5,13 +5,14 @@ import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl} from '../../../../lib/processos-oficiais.mjs';
+import {validatePublicDataJudResponse,currentPublicKey} from '../../../../lib/official-datajud-response.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
 const PUBLIC_DATAJUD_KEY='cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=='; // Public key documented by CNJ
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store, private'}});
-async function fetchJson(url,opts={}){
- const response=await fetch(url,{...opts,cache:'no-store',signal:AbortSignal.timeout(32000)});
+async function fetchJson(url,opts={},timeoutMs=21000){
+ const response=await fetch(url,{...opts,cache:'no-store',redirect:'error',signal:AbortSignal.timeout(timeoutMs)});
  const raw=await response.text();
  if(!response.ok){
   if(response.status===429)throw Object.assign(new Error('Fonte oficial limitou as consultas (HTTP 429). Tente novamente mais tarde.'),{status:429});
@@ -26,16 +27,47 @@ async function datajud(number){
  const alias=resolveCourtAlias(number);
  const url='https://api-publica.datajud.cnj.jus.br/api_publica_'+alias+'/_search';
  const digits=number.replace(/\D/g,'');
- const key=process.env.DATAJUD_API_KEY||PUBLIC_DATAJUD_KEY;
+ const key=currentPublicKey(process.env.DATAJUD_API_KEY,PUBLIC_DATAJUD_KEY);
  const payload=await fetchJson(url,{method:'POST',headers:{Authorization:'APIKey '+key,'Content-Type':'application/json',Accept:'application/json'},
-  body:JSON.stringify({size:2,query:{match:{numeroProcesso:digits}}})});
- if(!Array.isArray(payload?.hits?.hits))throw new Error('O DataJud não retornou um resultado processual reconhecível.');
+  body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})},23000);
+ validatePublicDataJudResponse(payload);
  const match=payload.hits.hits.find(h=>h?._source&&String(h._source.numeroProcesso||'').replace(/\D/g,'')===digits)?._source;
  const parsed=normalizeDataJud(match,number);
  return {ok:true,source:'DataJud',found:parsed.found,items:parsed.movements,meta:parsed.meta,
   checkedAt:new Date().toISOString(),court:alias.toUpperCase(),
   notice:parsed.found?'Movimentações disponíveis no índice público do CNJ.':'CNJ não localizado no índice público do tribunal consultado.'};
 }
+async function regionalOfficial(kind,number,query,userJwt){
+ // Calls the same protected Supabase Edge region that returned real DJEN publications.
+ // Authorization is the actual CRM Supabase JWT, verified again by the Edge function.
+ const base=String(process.env.NEXT_PUBLIC_SUPABASE_URL||'').replace(/\/$/,'');
+ const apiKey=String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||'');
+ if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(base)||!userJwt||!apiKey)
+  throw Object.assign(new Error('Consulta regional segura não está configurada.'),{status:503});
+ const endpoint=base+'/functions/v1/infinitum-judicial-query?forceFunctionRegion=sa-east-1';
+ let response;
+ try{
+  response=await fetch(endpoint,{method:'POST',cache:'no-store',redirect:'error',
+   headers:{Authorization:'Bearer '+userJwt,apikey:apiKey,'x-region':'sa-east-1',
+    'Content-Type':'application/json',Accept:'application/json'},
+   body:JSON.stringify({source:kind,number,start:query.get('inicio')||undefined,
+    end:query.get('fim')||undefined,page:Number(query.get('pagina')||1)}),
+   signal:AbortSignal.timeout(30000)});
+ }catch(e){throw Object.assign(new Error('Nó judicial de São Paulo não respondeu: '+String(e?.message||'falha').slice(0,120)),{status:503})}
+ const raw=await response.text();
+ if(!raw||raw.length>2400000||raw.trimStart().startsWith('<'))
+  throw Object.assign(new Error('Nó regional não retornou JSON verificável.'),{status:502});
+ let result;try{result=JSON.parse(raw)}catch{throw Object.assign(new Error('Nó regional retornou JSON inválido.'),{status:502})}
+ if(!response.ok||result?.ok!==true){
+  const status=Number(result?.status)||response.status||503;
+  throw Object.assign(new Error('Consulta CNJ em São Paulo: '+String(result?.error||'HTTP '+status).slice(0,170)),{status,code:result?.code});
+ }
+ if(result?.authenticated!==true||result?.region!=='sa-east-1'||!Array.isArray(result?.items)
+   ||result.source!==(kind==='djen'?'DJEN':'DataJud'))
+  throw Object.assign(new Error('Fonte ou autenticação do resultado regional não verificável.'),{status:502});
+ return result;
+}
+
 async function djen(number,query){
  const start=query.get('inicio')||undefined,end=query.get('fim')||undefined,page=query.get('pagina')||1;
  const url=buildDjenUrl(number,{start,end,page});
@@ -103,7 +135,24 @@ export async function GET(request){
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
    let result;
-   try{result=kind==='datajud'?await datajud(number):await djen(number,params)}
+   try{
+    if(kind==='djen'){
+     // Prefer the verified Brazilian Edge exit. Fall back to Vercel only on infrastructure errors.
+     try{result=await regionalOfficial('djen',number,params,token)}
+     catch(e){
+      if([401,403,429].includes(Number(e?.status)))throw e;
+      result=await djen(number,params);
+     }
+    }else{
+     // Original Vercel DataJud path can work for some courts. A single regional
+     // retry is allowed on network/timeout (never after HTTP 429).
+     try{result=await datajud(number)}
+     catch(e){
+      if(Number(e?.status)===429)throw e;
+      result=await regionalOfficial('datajud',number,params,token);
+     }
+    }
+   }
    catch(error){
     const duration=officialBackoffDuration(error?.status);
     if(duration){
