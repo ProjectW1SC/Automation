@@ -53,7 +53,7 @@ test('HTTP 429 suspende a mesma corte e não dispara nova chamada',async()=>{
 });
 
 test('limite 429 de uma corte não bloqueia outro tribunal',async()=>{
- const other='1001218-36.2026.5.02.0040',otherDigits='10012183620265020040';
+ const other='0411964-57.2026.3.00.0000',otherDigits='04119645720263000000';
  let calls=0;
  const fetchImpl=async(url)=>{calls++;return calls===1?response({},429):response(official(otherDigits))};
  const blocked=await browseOfficialDataJudNumber({number:cnj,fetchImpl});
@@ -63,9 +63,10 @@ test('limite 429 de uma corte não bloqueia outro tribunal',async()=>{
 
 test('falha de CORS/rede ativa pausa do navegador e permite fallback identificado',async()=>{
  let calls=0;
+ const other='0411964-57.2026.3.00.0000';
  const fetchImpl=async()=>{calls++;throw new TypeError('Failed to fetch')};
- const first=await browseOfficialDataJudNumber({number:cnj,fetchImpl});
- const second=await browseOfficialDataJudNumber({number:cnj,fetchImpl});
+ const first=await browseOfficialDataJudNumber({number:other,fetchImpl});
+ const second=await browseOfficialDataJudNumber({number:other,fetchImpl});
  assert.equal(first.reason,'network_error');assert.equal(second.reason,'browser_cooldown');
  assert.equal(calls,1);
 });
