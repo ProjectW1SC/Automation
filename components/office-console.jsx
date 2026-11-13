@@ -142,17 +142,17 @@ function OfficeUI({area,db,session}){
   if(!row.process_number)return setNotice('Informe um número CNJ para consultar o tribunal.');
   setConsulting(row.id+fonte);setCheckResult(null);setNotice('');
   try{
-   const {data:{session:s}}=await db.auth.getSession();
+   const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());
    if(!s?.access_token)throw Error('Sessão expirada. Entre novamente no CRM.');
    const result=await consultHistoricalCase({
-    number:row.process_number,source:fonte,start:period?.inicio||undefined,end:period?.fim||undefined,page:period?.pagina||1,
-    fetchServer:async({number,source,start,end,page})=>{
+    independentSources:true,onResult:result=>setCheckResult({...result,number:row.process_number}),number:row.process_number,source:fonte,start:period?.inicio||undefined,end:period?.fim||undefined,page:period?.pagina||1,
+    fetchServer:async({number,source,start,end,page,signal})=>{
      const args=new URLSearchParams({numero:number,fonte:source,...(start?{inicio:start}:{}),...(end?{fim:end}:{}),pagina:String(page)});
-     const response=await fetch('/api/processos/consulta?'+args,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
+     const response=await fetch('/api/processos/consulta?'+args,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store',signal});
      try{return await response.json()}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
     },
     // Somente API pública, sem CAPTCHA, token ou requisição automática em segundo plano.
-    fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page}),
+    fetchBrowser:async({number,start,end,page,signal})=>browseOfficialDjenNumber({number,start,end,page,signal}),
     onProgress:({current,total,start,end})=>setNotice('Consultando fontes oficiais: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias'))
    });
    setCheckResult({...result,number:row.process_number});
@@ -191,7 +191,7 @@ function OfficeUI({area,db,session}){
     if(!caseRecord)avisoAi='A IA externa exige processo cadastrado. Minuta avulsa estruturada sem envio externo.';
     else{
      try{
-      const {data:{session:s}}=await db.auth.getSession();
+      const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());
       if(!s?.access_token)throw Error('Sessão expirada');
       const r=await fetch('/api/office/ai',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
        body:JSON.stringify({caseId:caseRecord.id,kind:docKind,instructions:docInstructions,externalAiConsent:true})});
@@ -222,7 +222,7 @@ function OfficeUI({area,db,session}){
  async function sendWhatsApp(e){e.preventDefault();if(!selectedPhone||!reply.trim())return;
   setBusy(true);setNotice('');
   try{
-   const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada');
+   const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());if(!s?.access_token)throw Error('Sessão expirada');
    const r=await fetch('/api/office/whatsapp/send',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({phone:selectedPhone,text:reply.trim(),approved:true})});
    const p=await r.json();if(!p.ok)throw Error(p.error||'Provedor recusou');
    setReply('');setNotice(p.warning||'WhatsApp confirmou o envio.');await load();

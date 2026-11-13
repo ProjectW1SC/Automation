@@ -1,3 +1,4 @@
+import {requestOfficialJson,djenPageInfo} from '../../../supabase/functions/_shared/official-http.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
@@ -15,13 +16,7 @@ export async function POST(request){
   if(error||!user||!await checkCrmAccess(db,user))return result({ok:false,error:'Acesso não autorizado.'},403);
   const input=await request.json();
   const upstream=buildDjenSearchURL(input);
-  const response=await fetch(upstream,{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(24000)});
-  if(response.status===429)return result({ok:false,error:'DJEN limitou consultas (429); respeite a pausa.'},429);
-  if(response.status===403)return result({ok:false,error:'DJEN bloqueou esta rede (403). Não foram gerados resultados.'},503);
-  if(!response.ok)return result({ok:false,error:'DJEN indisponível: HTTP '+response.status},502);
-  const raw=await response.text();
-  if(raw.length>2_000_000||raw.trim().startsWith('<'))return result({ok:false,error:'Resposta oficial não verificável.'},502);
-  let payload;try{payload=JSON.parse(raw)}catch{return result({ok:false,error:'DJEN não retornou JSON válido.'},502)}
+  const payload=await requestOfficialJson(upstream,{headers:{Accept:'application/json'}},{source:'djen',page:Number(input.page||1)});
   const items=parseDjenCandidates(payload,String(input.term));
   let persisted=true,saveError='';
   if(items.length){
@@ -29,10 +24,10 @@ export async function POST(request){
    const r=await db.from('crm_process_candidates').upsert(insert,{onConflict:'owner_id,process_number,query_term'});
    if(r.error){persisted=false;saveError='Resultados consultados, mas não gravados: '+r.error.message;}
   }
-  return result({ok:true,items,limited:items.length>=50,persisted,saveError,checkedAt:new Date().toISOString(),
+  return result({ok:true,items,limited:djenPageInfo(payload,Number(input.page||1)).hasMore,persisted,saveError,checkedAt:new Date().toISOString(),
    notice:items.length?'Resultados públicos identificados pelo campo oficial numeroProcesso.':'A consulta retornou zero candidatos nesta janela; isso não comprova ausência de processos.'});
  }catch(e){let msg=e?.message||'Erro de consulta';
-  const status=/Termo|intervalo|Tribunal|31 dias/i.test(msg)?400:502;
+  const status=Number(e?.status)||(/Termo|intervalo|Tribunal|31 dias/i.test(msg)?400:502);
   if(e?.name==='TimeoutError'||e?.name==='AbortError')msg='DJEN excedeu 24 segundos; nenhum resultado foi presumido.';
   return result({ok:false,error:msg},status);
  }

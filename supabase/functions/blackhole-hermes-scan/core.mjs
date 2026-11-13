@@ -1,3 +1,4 @@
+import {officialDateIso,officialProcessDigits} from '../_shared/official-normalize.mjs';
 const COURTS={
  '8.01':'tjac','8.02':'tjal','8.03':'tjap','8.04':'tjam','8.05':'tjba','8.06':'tjce','8.07':'tjdft',
  '8.08':'tjes','8.09':'tjgo','8.10':'tjma','8.11':'tjmt','8.12':'tjms','8.13':'tjmg','8.14':'tjpa',
@@ -18,11 +19,7 @@ export function resolveCourtAlias(raw){
  if(!COURTS[key])throw new Error('Tribunal não identificado no número CNJ.');
  return COURTS[key];
 }
-function dateOf(raw){
- if(!raw)return null;const value=String(raw).trim();
- if(/^\d{4}-\d{2}-\d{2}$/.test(value))return value+'T12:00:00.000Z';
- const time=Date.parse(value);return Number.isFinite(time)?new Date(time).toISOString():null;
-}
+const dateOf=officialDateIso;
 function plainText(raw){
  return String(raw||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(?:p|div|li|tr)>/gi,'\n')
   .replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&')
@@ -40,15 +37,15 @@ export function normalizeDataJudSnapshot(payload,number,checkedAt=new Date().toI
   notice:'Consulta DataJud concluída; CNJ não localizado nesta consulta. Isso não prova inexistência do processo.'};
  if(Number(doc.nivelSigilo||0)>0)return {ok:true,source:'DataJud',found:false,items:[],meta:null,checkedAt,
   notice:'Registro com nível de sigilo não foi exposto pelo scanner.'};
- const items=(Array.isArray(doc.movimentos)?doc.movimentos:[]).slice(0,120).map((m,i)=>{
+ const items=(Array.isArray(doc.movimentos)?doc.movimentos:[]).map((m,i)=>{
   const at=dateOf(m?.dataHora||m?.data||m?.dataMovimento);
   const details=(Array.isArray(m?.complementosTabelados)?m.complementosTabelados:[])
    .slice(0,8).map(x=>[x?.nome,x?.descricao,x?.valor].filter(v=>typeof v==='string'||typeof v==='number').join(': ')).filter(Boolean).join(' · ');
-  return {id:'dj-'+String(m?.codigo||i)+'-'+String(at||i),source:'DataJud',date:at,
-   title:clean(m?.nome||m?.descricao||'Movimentação judicial',250),
-   description:plainText([m?.descricao,details].filter(Boolean).join(' · ')),link:null,code:m?.codigo||null};
+  return {id:'dj-'+String(m?.codigo||m?.movimentoNacional?.codigo||i)+'-'+String(at||i),source:'DataJud',date:at,
+   title:clean(m?.nome||m?.movimentoNacional?.nome||m?.descricao||'Movimentação judicial',250),
+   description:plainText([m?.descricao,details].filter(Boolean).join(' · ')),link:null,code:m?.codigo||m?.movimentoNacional?.codigo||null};
  }).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
- return {ok:true,source:'DataJud',found:true,items,checkedAt,
+ return {ok:true,source:'DataJud',found:true,items:items.slice(0,1500),checkedAt,
   meta:{court:clean(doc.tribunal,50),courtUnit:clean(doc.orgaoJulgador?.nome,200),
    className:clean(doc.classe?.nome,140),degree:clean(doc.grau,30),filedAt:dateOf(doc.dataAjuizamento)},
   notice:'Metadados e movimentos do índice público DataJud. Não equivalem ao inteiro teor dos autos.'};
@@ -59,7 +56,7 @@ export function normalizeDjenSnapshot(payload,number,checkedAt=new Date().toISOS
  if(!rows)throw new Error('DJEN retornou formato de lista não reconhecido.');
  const seen=new Set(),items=[];
  for(const [i,row] of rows.entries()){
-  if(!row||digits(row.numero_processo||row.numeroProcesso||row.numeroProcessoFormatado)!==expected)continue;
+  if(!row||officialProcessDigits(row)!==expected)continue;
   const hash=String(row.hash||row.id||i),date=dateOf(row.data_disponibilizacao||row.dataDisponibilizacao||row.data_publicacao||row.dataPublicacao);
   const rawLink=row.link||row.url||(row.hash?'https://comunica.pje.jus.br/consulta?hash='+encodeURIComponent(String(row.hash)):null);
   const link=officialLink(rawLink);
@@ -69,6 +66,7 @@ export function normalizeDjenSnapshot(payload,number,checkedAt=new Date().toISOS
    courtUnit:clean(row.nomeOrgao||row.nome_orgao||row.nomeOrgaoJulgador||'',150)};
   const key=item.id+'|'+String(item.date||'');if(!seen.has(key)){seen.add(key);items.push(item)}
  }
+ if(rows.length&&!items.length)throw new Error('DJEN retornou publicações sem correspondência verificável com este CNJ.');
  items.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
  return {ok:true,source:'DJEN',found:items.length>0,items:items.slice(0,120),checkedAt,
   notice:items.length?'Publicações localizadas na API pública do DJEN.':'Consulta DJEN concluída sem publicações nesta janela; outras datas/fontes podem conter registros.'};

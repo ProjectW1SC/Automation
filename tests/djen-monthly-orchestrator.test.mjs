@@ -17,13 +17,13 @@ test('cache anterior DJEN é atualizado por consulta pública sem apagar DataJud
  assert.equal(browsed,1);assert.equal(result.sourceStatus.djen,'ok_browser');
  assert.equal(result.partial,false);assert.ok(result.items.find(x=>x.id==='original'));assert.ok(result.items.find(x=>x.id==='new'));
 });
-test('bloqueio 403 de ambas as redes mantém histórico mas interrompe tentativas repetidas',async()=>{
+test('bloqueio 403 da fonte mantém histórico mas interrompe tentativas repetidas',async()=>{
  const {consultHistoricalCase}=await import('../lib/judicial-history-client.mjs');
  let serverCalls=0,browserCalls=0;
  const result=await consultHistoricalCase({number:'1001218-36.2026.5.02.0040',start:'2026-01-01',end:'2026-08-01',source:'auto',
   fetchServer:async()=>{serverCalls++;return {ok:false,fromCache:true,items:[{source:'DJEN',id:'cached',date:'2026-01-02'}],sourceStatus:{djen:'blocked_403',datajud:'blocked_403'},error:'Fonte HTTP 403'}},
   fetchBrowser:async()=>{browserCalls++;throw Error('DJEN respondeu 403')}});
- assert.equal(serverCalls,1);assert.equal(browserCalls,1);
+ assert.equal(serverCalls,1);assert.equal(browserCalls,0);
  assert.ok(result.items.some(x=>x.id==='cached'));assert.equal(result.partial,true);assert.ok(result.windowsPending>0);assert.notEqual(result.sourceStatus.djen,'ok');
 });
 test('nunca usa navegador alternativo para escapar bloqueio 429',async()=>{

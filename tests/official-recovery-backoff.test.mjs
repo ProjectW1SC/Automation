@@ -16,7 +16,7 @@ test('cooldown oficial protege somente dados do próprio usuário via RLS',()=>{
 });
 test('consulta automática expõe distinção entre DJEN e DataJud',()=>{
  const s=rd('app/api/processos/consulta/route.js');
- assert.match(s,/consultJudicialWithFallback/);
+ assert.match(s,/consultBothOfficialSources/);
  assert.match(s,/office_official_backoff/);
  assert.match(rd('lib/judicial-source-recovery.mjs'),/sourceStatus/);
 });

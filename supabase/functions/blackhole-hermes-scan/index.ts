@@ -1,3 +1,4 @@
+import {requestOfficialJson,djenPageInfo} from '../_shared/official-http.mjs';
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {validatePublicDataJudResponse,currentPublicKey} from "./official-datajud-response.mjs";
@@ -24,11 +25,7 @@ function brazilToday(){
  return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 }
 async function fetchJson(url:string,init:RequestInit={}){
- const response=await fetch(url,{...init,cache:"no-store",redirect:"error",signal:AbortSignal.timeout(url.includes('datajud.cnj.jus.br')?29000:21000)});
- const raw=await response.text();
- if(!response.ok)throw Object.assign(new Error("Fonte oficial respondeu HTTP "+response.status),{status:response.status});
- if(raw.length>2_400_000||raw.trimStart().startsWith("<"))throw new Error("Fonte oficial retornou conteúdo não verificável.");
- try{return JSON.parse(raw)}catch{throw new Error("Fonte oficial não retornou JSON válido.")}
+ return requestOfficialJson(url,init,{source:url.includes('datajud.cnj.jus.br')?'datajud':'djen'});
 }
 function djenUrl(number:string,today:string){
  const start=new Date(Date.parse(today+"T12:00:00Z")-29*86400000).toISOString().slice(0,10);
@@ -41,13 +38,14 @@ async function fetchDataJud(number:string,checkedAt:string){
  const url="https://api-publica.datajud.cnj.jus.br/api_publica_"+alias+"/_search";
  const payload=await fetchJson(url,{method:"POST",headers:{Authorization:"APIKey "+currentPublicKey(Deno.env.get("DATAJUD_API_KEY"),PUBLIC_DATAJUD_KEY),
   "Content-Type":"application/json",Accept:"application/json"},
-  body:JSON.stringify({size:5,query:{match:{numeroProcesso:digits}}})});
+  body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})});
  validatePublicDataJudResponse(payload);
- return {...normalizeDataJudSnapshot(payload,number,checkedAt),court:alias.toUpperCase()};
+ return {...normalizeDataJudSnapshot(payload,number,checkedAt),parserVersion:2,court:alias.toUpperCase()};
 }
 async function fetchDjen(number:string,today:string,checkedAt:string){
  const payload=await fetchJson(djenUrl(number,today),{method:"GET",headers:{Accept:"application/json"}});
- return normalizeDjenSnapshot(payload,number,checkedAt);
+ const info=djenPageInfo(payload);
+ return {...normalizeDjenSnapshot(payload,number,checkedAt),parserVersion:2,hasMore:info.hasMore,limited:info.hasMore,total:info.total};
 }
 function sourceStatus(result:any,source:string){
  if(result?.ok===true)return {source,status:"confirmed",found:!!result.found,checked_at:result.checkedAt||null,
@@ -69,11 +67,11 @@ async function callSource(db:any,actorId:string,number:string,source:"datajud"|"
   await db.from("office_official_backoff").delete().eq("actor_id",actorId).in("process_number",[number,"*"]).eq("source",source);
   return result;
  }catch(e){
-  const status=Number((e as any)?.status)||0,failedAt=new Date(),duration=status===403?20*60*1000:status===429?15*60*1000:0;
+  const status=Number((e as any)?.status)||0,failedAt=new Date(),duration=status===429&&(e as any)?.code==="search_queue_rejected"?Math.max(30000,(e as any)?.retryAfterMs||0):status===403?20*60*1000:status===429?15*60*1000:0;
   if(duration){
    const retryAfter=new Date(failedAt.getTime()+duration).toISOString();
-   await db.from("office_source_cooldowns").upsert({source,status,failed_at:failedAt.toISOString(),retry_after:retryAfter},{onConflict:"source"});
-   await db.from("office_official_backoff").upsert([number,"*"].map(process_number=>({
+   if((e as any)?.code!=="search_queue_rejected")await db.from("office_source_cooldowns").upsert({source,status,failed_at:failedAt.toISOString(),retry_after:retryAfter},{onConflict:"source"});
+   await db.from("office_official_backoff").upsert(((e as any)?.code==="search_queue_rejected"?[number]:[number,"*"]).map(process_number=>({
     actor_id:actorId,process_number,source,status,failed_at:failedAt.toISOString(),retry_after:retryAfter
    })),{onConflict:"actor_id,process_number,source"});
   }

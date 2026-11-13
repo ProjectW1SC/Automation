@@ -1,10 +1,11 @@
+import {authorizeJudicialCase} from '../../../supabase/functions/infinitum-judicial-query/access.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
 import {GET as consultOfficial} from '../processos/consulta/route.js';
 import {buildScannerReview,sourceSummary} from '../../../lib/blackhole-office-scanner.mjs';
-export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
+export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=90;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 async function checkOne(number,source,token,force=false){
  const q=new URLSearchParams({numero:number,fonte:source});
@@ -31,13 +32,8 @@ export async function POST(request){
   if(authError||!user||!await checkCrmAccess(db,user))return json({ok:false,error:'Sem acesso autorizado aos processos do escritório.'},403);
   const body=await request.json();
   let number;try{number=formatProcessNumber(body?.process_number)}catch{return json({ok:false,error:'Informe CNJ válido com 20 dígitos.'},400)}
-  const [caseRow,legacyRow]=await Promise.all([
-   db.from('office_cases').select('id').eq('process_number',number).limit(1),
-   db.from('crm_processes').select('id').eq('process_number',number).limit(1)
-  ]);
-  if(caseRow.error||legacyRow.error)return json({ok:false,error:'Não foi possível conferir o cadastro deste CNJ.'},503);
-  if(!caseRow.data?.length&&!legacyRow.data?.length)
-   return json({ok:false,error:'CNJ não cadastrado na carteira autorizada. Cadastre antes de consultar.'},403);
+  if(!await authorizeJudicialCase(db,user.id,number))
+   return json({ok:false,error:'CNJ não cadastrado na carteira autorizada da empresa.'},403);
   // Pesquisa duas fontes separadas, mesmo se a primeira falhar. O cache e backoff
   // são aplicados por cada rota oficial individual, sem fazer scraping ou simular resultado.
   const [datajud,djen]=await Promise.all([

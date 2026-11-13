@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-test('manual scanner has enough Vercel runtime for parallel DataJud direct and regional fallback',()=>{
+test('manual scanner has enough Vercel runtime for parallel independent official sources',()=>{
  const scanner=read('app/api/scanner/route.js');
  const official=read('app/api/processos/consulta/route.js');
- assert.match(scanner,/maxDuration=60/);
- assert.match(official,/maxDuration=60/);
+ assert.match(scanner,/maxDuration=90/);
+ assert.match(official,/maxDuration=90/);
  assert.match(scanner,/Promise\.all\(\[/);
- assert.match(official,/regionalOfficial\('datajud'/);
+ assert.match(official,/result=await datajud\(number\)/);
 });
 test('official source HTTP 403, 429 and timeouts preserve accurate status to scanner',()=>{
  const source=read('app/api/processos/consulta/route.js');

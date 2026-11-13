@@ -7,6 +7,7 @@ import {formatProcessNumber} from '../../lib/processos-oficiais.mjs';
 import {shrinkOfficialResult} from '../../lib/judicial-triage.mjs';
 import {buildScannerReview,sourceSummary} from '../../lib/blackhole-office-scanner.mjs';
 import {browseOfficialDjenNumber} from '../../lib/blackhole-public-djen-browser.mjs';
+import {withOfficialDeadline} from '../../supabase/functions/_shared/official-http.mjs';
 import {withAuthDeadline} from '../../lib/auth-deadline.mjs';
 const label={confirmed:'Consulta confirmada',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite atingido (429)',
  cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Indisponível',cached_previous:'Histórico confirmado (não atualizado)'};
@@ -20,15 +21,22 @@ function Scanner({db,session}){
  const read=useCallback(async()=>{
   setLoading(true);
   try{
+   let company=null;
+   if(process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'){
+    const profile=await withAuthDeadline(db.from('usuarios').select('empresa_id').eq('auth_user_id',session.user.id).limit(2));
+    if(profile.error||profile.data?.length!==1||!profile.data[0].empresa_id)throw Error('Empresa da sessão não confirmada.');
+    company=profile.data[0].empresa_id;
+   }
    const results=await withAuthDeadline(Promise.all([
     db.from('office_cases').select('id,process_number,title,tribunal,status').order('updated_at',{ascending:false}).limit(500),
     db.from('crm_processes').select('id,process_number').limit(500),
-    db.from('office_scan_runs').select('id,process_number,source_status,review,checked_at,trigger_mode').order('checked_at',{ascending:false}).limit(180)
+    db.from('office_scan_runs').select('id,process_number,source_status,review,checked_at,trigger_mode').order('checked_at',{ascending:false}).limit(180),
+    company?db.from('processos').select('id,protocolo_ref,cliente,tribunal,status_interno').eq('empresa_id',company).order('updated_at',{ascending:false}).limit(500):Promise.resolve({data:[]})
    ]),12000);
    const failures=results.filter(x=>x.error).map(x=>x.error.message);
    if(failures.length)throw Error(failures.join(' · '));
    const merged=new Map();
-   for(const r of [...(results[0].data||[]),...(results[1].data||[])]){
+   for(const r of [...(results[0].data||[]),...(results[1].data||[]),...(results[3].data||[]).map(p=>({...p,process_number:p.protocolo_ref,title:p.cliente,status:p.status_interno}))]){
     try{const cnj=formatProcessNumber(r.process_number);
       if(!merged.has(cnj))merged.set(cnj,{...r,process_number:cnj,title:r.title||'Processo registrado'})}catch{}
    }
@@ -38,7 +46,7 @@ function Scanner({db,session}){
    setError('');
   }catch(e){setError('A carteira não pôde ser carregada: '+e.message)}
   finally{setLoading(false)}
- },[db]);
+ },[db,session.user.id]);
  useEffect(()=>{read()},[read]);
  useEffect(()=>{
   try{const v=window.localStorage.getItem('blackhole.scanner.auto.foreground');setAuto(v==='1')}catch{}
@@ -57,10 +65,12 @@ function Scanner({db,session}){
    for(const row of list){
     if(controller.signal.aborted)break;
     try{
-     const response=await fetch('/api/scanner',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
-      body:JSON.stringify({process_number:row.process_number,mode}),signal:controller.signal});
-     const answer=await response.json();
-     if(!response.ok||!answer.ok)throw Error(answer.error||'Consulta não concluída.');
+     const answer=await withOfficialDeadline(async signal=>{const response=await fetch('/api/scanner',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({process_number:row.process_number,mode}),signal});
+     const value=await response.json();
+     if(!response.ok)throw Error(value.error||'Consulta não concluída.');return value;
+     },{timeoutMs:75000,signal:controller.signal});
+     if(!answer.ok)throw Error(answer.error||'Consulta não concluída.');
      const outcome={number:row.process_number,title:row.title||'Processo',...answer};
      setLive(items=>[outcome,...items].slice(0,35));
      if((answer.sourceStatus.availableSources??answer.sourceStatus.confirmedSources)>0)success++;else failed++;
@@ -70,6 +80,7 @@ function Scanner({db,session}){
      setLive(items=>[{number:row.process_number,title:row.title||'Processo',ok:false,error:e.message},...items].slice(0,35));
     }
     index++;setProgress({done:index,total:list.length});
+    if(failed>=3&&success===0)break;
     // Evita varreduras agressivas em IP compartilhado e preserva as fontes oficiais.
     if(index<list.length&&!controller.signal.aborted)await new Promise(resolve=>setTimeout(resolve,1100));
    }
@@ -138,7 +149,7 @@ function Scanner({db,session}){
    <div className="inf-stat"><label>Restantes nesta execução</label><strong>{Math.max(0,progress.total-progress.done)}</strong></div>
   </div>
   <section className="inf-panel"><h2><ScanSearch size={17}/> Varredura de carteira</h2>
-   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa global. O Hermes agendado no Supabase trabalha em segundo plano em micro-lotes, mesmo com esta tela fechada. Uma fonte nunca substitui a confirmação da outra.</p>
+   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa global. A execução automática desta tela ocorre enquanto a aba estiver aberta; o agendador da carteira compartilhada é independente. Uma fonte nunca substitui a confirmação da outra.</p>
    <div className="office-action-row blackhole-scanner-controls">
     <input className="inf-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Filtrar CNJ, tribunal ou caso" aria-label="Filtrar processos"/>
     <select aria-label="Tamanho do lote" value={scanBatch} onChange={e=>setScanBatch(e.target.value)}>

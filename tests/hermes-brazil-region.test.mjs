@@ -3,7 +3,7 @@ test('Hermes automated edge scan has short DJEN window, page 50 and longer upstr
  const s=read('supabase/functions/blackhole-hermes-scan/index.ts');
  assert.match(s,/-29\*86400000/);
  assert.match(s,/itensPorPagina:"50"/);
- assert.match(s,/AbortSignal\.timeout\(url\.includes/);
+ assert.match(s,/requestOfficialJson/);
  assert.doesNotMatch(s,/AbortSignal\.timeout\(14000\)/);
  assert.match(s,/query:\{match:\{numeroProcesso:digits\}\}/);
 });
