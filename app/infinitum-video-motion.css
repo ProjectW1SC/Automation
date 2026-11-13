@@ -218,3 +218,232 @@ html[data-crm-theme] .office-workflow-screen .office-kanban-card:nth-child(-n+5)
  html[data-crm-theme] .blackhole-studio-shell :is(.crm-theme-select,.office-kanban-quickadd){display:none!important}
  html[data-crm-theme] .blackhole-studio-shell *{animation:none!important;transition:none!important}
 }
+
+
+/*
+ * INFINITUM · correção de fidelidade 13/11/2026
+ * Regra final dos dois temas. A animação utiliza apenas composição GPU,
+ * sem redesenhar centenas de elementos e sem sobrepor telas fictícias.
+ */
+@media(min-width:841px){
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-sidebar{
+  will-change:auto!important;
+  contain:layout style!important;
+  transition:width 340ms cubic-bezier(.22,1,.36,1),
+    box-shadow 300ms cubic-bezier(.22,1,.36,1)!important;
+  transform:translateZ(0);
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar{
+  width:56px!important;min-width:56px!important;padding:10px 7px!important;
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{
+  width:242px!important;box-shadow:8px 0 28px #00000012!important;
+ }
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-sidebar{
+  width:70px!important;min-width:70px!important;
+ }
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar{
+  width:228px!important;box-shadow:8px 0 28px #00000015!important;
+ }
+
+ /* O texto existe nos dois estados: display:none anterior impedia transições. */
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link span,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link span{
+  display:block!important;opacity:0!important;visibility:hidden!important;
+  flex:0 1 auto!important;width:auto!important;max-width:0!important;
+  overflow:hidden!important;white-space:nowrap!important;
+  transform:translate3d(-8px,0,0)!important;
+  transition:max-width 330ms cubic-bezier(.22,1,.36,1),
+    opacity 200ms ease,transform 330ms cubic-bezier(.22,1,.36,1),
+    visibility 0s linear 250ms!important;
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link span,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link span{
+  opacity:1!important;visibility:visible!important;max-width:184px!important;
+  transform:translate3d(0,0,0)!important;
+  transition:max-width 330ms cubic-bezier(.22,1,.36,1),
+    opacity 230ms ease 60ms,transform 330ms cubic-bezier(.22,1,.36,1),
+    visibility 0s!important;
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link{
+  transition:background-color 220ms ease,color 220ms ease,
+    border-color 220ms ease,transform 220ms cubic-bezier(.2,.7,.2,1)!important;
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link:hover svg,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link:hover svg{
+  transform:scale(1.08)!important;transition:transform 210ms ease!important;
+ }
+ html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-content,
+ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content{
+  transition:none!important;
+ }
+}
+
+/* Tema 2: menu branco, largura e marca como a gravação, sem duplicar marcas. */
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-brand-link{display:none!important}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-identity{
+ height:61px!important;min-height:61px!important;
+ margin:0 0 14px!important;padding:0 2px!important;position:relative!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .pr-brand{
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:flex-start!important;min-width:0!important;
+ padding:0 3px!important;margin:0!important;gap:7px!important;white-space:nowrap!important;
+ color:#181818!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .pr-brand-symbol{
+ flex:none!important;font-family:Arial,sans-serif!important;font-size:33px!important;
+ font-weight:400!important;line-height:1!important;color:#202020!important;
+ margin:0!important;text-shadow:none!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .pr-brand-name{
+ display:block!important;opacity:1!important;width:auto!important;
+ color:#252525!important;font-family:Arial,sans-serif!important;font-weight:400!important;
+ font-size:15px!important;letter-spacing:.13em!important;margin:0!important;
+ transition:opacity 200ms ease,transform 260ms ease!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .pr-brand-sub{display:none!important}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-collapsed .pr-brand-name{
+ opacity:0!important;width:0!important;overflow:hidden!important;
+ transform:translate3d(-5px,0,0)!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-identity{
+ justify-content:flex-start!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar-toggle{
+ position:absolute!important;right:0!important;top:9px!important;z-index:1!important;
+ background:#fff!important;color:#737373!important;opacity:0!important;
+ transition:opacity 180ms ease,background 180ms ease!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell:hover .app-sidebar-toggle,
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-sidebar-toggle:focus-visible{
+ opacity:1!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-sidebar-toggle{right:3px!important}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link{
+ color:#666!important;font-size:11px!important;font-weight:450!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link{
+ min-height:38px!important;height:38px!important;padding:0 12px!important;
+}
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link.active,
+html[data-crm-theme="blackhole"] .app-shell.blackhole-studio-shell .app-nav-link[aria-current="page"]{
+ background:#f1f1f1!important;color:#212121!important;font-weight:650!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell :is(.reference-panel,.inf-panel,.office-record,.pr-metric,.efferd-kpi){
+ border-radius:9px!important;box-shadow:0 1px 3px #00000008!important;
+}
+html[data-crm-theme="blackhole"] .blackhole-studio-shell :is(.reference-panel,.inf-panel,.office-record,.pr-metric,.efferd-kpi):hover{
+ box-shadow:0 3px 12px #00000010!important;
+}
+
+/* O visual aparece de verdade ao entrar numa rota, não só no primeiro carregamento. */
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content[data-route]{
+ animation:video-route-enter 360ms cubic-bezier(.2,.72,.25,1) both!important;
+}
+@keyframes video-route-enter{
+ 0%{opacity:.54;transform:translate3d(0,11px,0)}
+ 100%{opacity:1;transform:translate3d(0,0,0)}
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell :is(.reference-panel,.inf-panel,.task-item,.office-kanban-card,.pr-metric){
+ transition:box-shadow 200ms ease,border-color 200ms ease,
+   transform 230ms cubic-bezier(.2,.72,.25,1)!important;
+}
+html[data-crm-theme] .app-shell.blackhole-studio-shell :is(.reference-primary,.reference-outline,.inf-btn,button,.app-nav-link):active:not(:disabled){
+ transform:scale(.985);
+}
+
+/* Réplica da densidade e geometria do Kanban mostrado na gravação. */
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-columns{
+ gap:20px!important;padding-top:10px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-column{
+ border-top:3px solid var(--phase)!important;
+ padding:5px 0 0!important;background:#fff!important;min-height:350px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-head{
+ padding:5px 2px 13px!important;margin:0!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-head strong{
+ text-transform:uppercase!important;font-size:11px!important;
+ letter-spacing:.01em!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-head small{
+ display:none!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-stack{
+ padding:0 5px 10px!important;gap:8px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-quickadd{
+ min-height:38px!important;background:#fff!important;border:1px dashed #d7d7d7!important;
+ border-radius:7px!important;color:#676767!important;font-size:11px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-quickadd:hover{
+ background:#f9f9f9!important;color:#202020!important;border-color:#aaa!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card{
+ padding:12px!important;border:1px solid #e3e3e3!important;border-radius:9px!important;
+ background:#fff!important;box-shadow:0 1px 3px #00000009!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card:hover{
+ box-shadow:0 5px 13px #00000010!important;border-color:#ccc!important;
+ transform:translate3d(0,-3px,0)!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card .office-kanban-line{
+ border-bottom:1px solid #f2f2f2!important;padding-bottom:7px!important;margin-bottom:8px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card strong{
+ font-size:11px!important;font-weight:650!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card :is(p,small){
+ font-size:10px!important;line-height:1.6!important;color:#666!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card-fields{
+ display:grid!important;gap:7px!important;padding:9px 0 10px!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card-fields div{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+ gap:3px!important;min-width:0!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card-fields small{
+ color:#a4a4a4!important;letter-spacing:.05em!important;font-size:9px!important;
+ text-transform:uppercase!important;font-weight:600!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-card-fields span{
+ color:#3d3d3d!important;font-size:10px!important;overflow-wrap:anywhere!important;
+}
+html[data-crm-theme="blackhole"] .office-workflow-screen .office-kanban-actions{
+ border-top:1px solid #f2f2f2!important;padding-top:8px!important;margin-top:8px!important;
+}
+html[data-crm-theme] .office-workflow-screen .office-kanban-card{
+ animation:video-board-card-enter 280ms cubic-bezier(.2,.72,.25,1) both!important;
+}
+@keyframes video-board-card-enter{
+ from{opacity:.45;transform:translate3d(0,10px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+
+/* Nunca anima áreas de impressão nem força movimento em quem desativou animações. */
+@media(max-width:840px){
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content[data-route]{
+  animation:video-route-enter 210ms ease-out both!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content[data-route],
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .office-kanban-card{
+  animation:none!important;
+ }
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar,
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link span{
+  transition:none!important;
+ }
+}
+@media print{
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content[data-route],
+ html[data-crm-theme] .app-shell.blackhole-studio-shell .office-kanban-card{
+  animation:none!important;
+ }
+}
