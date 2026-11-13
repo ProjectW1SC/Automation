@@ -5,15 +5,15 @@
  */
 html[data-crm-mode="light"]{
  color-scheme:light;
- --inf-paper:#fffdfa;--inf-canvas:#f6f2ee;--inf-ink:#2d2520;--inf-muted:#71665e;
- --inf-line:#e4d8ce;--inf-soft:#f1e8df;--inf-accent:#89684f;--inf-gold:#a98262;
- --inf-shadow:0 4px 16px rgba(55,39,27,.055);--inf-shadow-hover:0 9px 24px rgba(55,39,27,.10);
+ --inf-paper:#fffdfd;--inf-canvas:#fbf7f8;--inf-ink:#392c39;--inf-muted:#756575;
+ --inf-line:#e5d8e3;--inf-soft:#f3eaf1;--inf-accent:#8d6686;--inf-gold:#b48b75;
+ --inf-shadow:0 4px 16px rgba(83,52,77,.055);--inf-shadow-hover:0 9px 24px rgba(83,52,77,.10);
  --inf-radius:13px;--inf-radius-sm:9px;
 }
 html[data-crm-mode="dark"]{
  color-scheme:dark;
- --inf-paper:#20191a;--inf-canvas:#100e0e;--inf-ink:#f4ece6;--inf-muted:#c4b3a7;
- --inf-line:#493a36;--inf-soft:#302524;--inf-accent:#d7aa80;--inf-gold:#e0b68f;
+ --inf-paper:#211a24;--inf-canvas:#110d14;--inf-ink:#f5edf2;--inf-muted:#c4b6c3;
+ --inf-line:#493849;--inf-soft:#342638;--inf-accent:#d5a48e;--inf-gold:#e0b59d;
  --inf-shadow:0 8px 25px rgba(0,0,0,.24);--inf-shadow-hover:0 12px 32px rgba(0,0,0,.34);
  --inf-radius:13px;--inf-radius-sm:9px;
 }
@@ -79,17 +79,17 @@ html[data-crm-mode] .reference-top-tools{
 }
 html[data-crm-mode="light"] .reference-top-tools{
  background:
-  radial-gradient(ellipse at 76% -95%,rgba(190,151,117,.18),transparent 58%),
-  linear-gradient(100deg,#fbf8f4 0%,#f4eee8 100%)!important;
+  radial-gradient(ellipse at 76% -95%,rgba(190,150,184,.18),transparent 58%),
+  linear-gradient(100deg,#fffdfd 0%,#f8f2f7 100%)!important;
 }
 html[data-crm-mode="dark"] .reference-top-tools{
  background:
-  radial-gradient(1px 1px at 13% 30%,rgba(255,226,194,.72) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 29% 68%,rgba(255,226,194,.45) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 57% 24%,rgba(255,226,194,.5) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 83% 54%,rgba(255,226,194,.62) 0 1px,transparent 1.6px),
-  radial-gradient(ellipse at 77% -110%,rgba(160,103,85,.28),transparent 60%),
-  linear-gradient(100deg,#171213 0%,#110e0f 100%)!important;
+  radial-gradient(1px 1px at 13% 30%,rgba(255,225,216,.72) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 29% 68%,rgba(255,225,216,.45) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 57% 24%,rgba(255,225,216,.5) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 83% 54%,rgba(255,225,216,.62) 0 1px,transparent 1.6px),
+  radial-gradient(ellipse at 77% -110%,rgba(164,107,147,.28),transparent 60%),
+  linear-gradient(100deg,#19121c 0%,#110d14 100%)!important;
 }
 html[data-crm-mode] .blackhole-shell-breadcrumb,
 html[data-crm-mode] .blackhole-shell-breadcrumb a,
@@ -113,8 +113,8 @@ html[data-crm-mode="light"] .reference-dashboard,
 html[data-crm-mode="light"] .task-main{background:var(--ui-page)!important;color:var(--ui-ink)!important}
 html[data-crm-mode="dark"] body{
  background:
-  radial-gradient(ellipse at 78% 0%,rgba(147,91,78,.16),transparent 34%),
-  radial-gradient(ellipse at 7% 88%,rgba(120,78,67,.10),transparent 30%),
+  radial-gradient(ellipse at 78% 0%,rgba(163,109,149,.16),transparent 34%),
+  radial-gradient(ellipse at 7% 88%,rgba(143,92,126,.10),transparent 30%),
   var(--ui-page)!important;color:var(--ui-ink)!important;
 }
 html[data-crm-mode="dark"] .app-shell,
@@ -126,18 +126,18 @@ html[data-crm-mode="dark"] .report-dashboard,
 html[data-crm-mode="dark"] .settings-dashboard,
 html[data-crm-mode="dark"] .inf-studio{background:transparent!important;color:var(--ui-ink)!important}
 html[data-crm-mode="light"] .reference-header{
- background:linear-gradient(100deg,#fbf8f4 0%,#f5f0ea 68%,#eee4da 100%)!important;
+ background:linear-gradient(100deg,#fffdfd 0%,#faf5f9 68%,#f0e6ef 100%)!important;
  border-color:var(--ui-border)!important;
 }
 html[data-crm-mode="dark"] .reference-header{
  background:
-  radial-gradient(ellipse at 86% -85%,rgba(179,125,100,.24),transparent 57%),
-  linear-gradient(105deg,#21191a 0%,#191314 65%,#24191a 100%)!important;
+  radial-gradient(ellipse at 86% -85%,rgba(194,132,155,.24),transparent 57%),
+  linear-gradient(105deg,#211a24 0%,#17111b 65%,#281d28 100%)!important;
  border-color:var(--ui-border)!important;color:var(--ui-ink)!important;
  box-shadow:var(--inf-shadow)!important;
 }
 html[data-crm-mode="dark"] .reference-header::after{
- border-color:rgba(221,174,135,.24)!important;opacity:.7!important;
+ border-color:rgba(225,176,166,.24)!important;opacity:.7!important;
 }
 html[data-crm-mode] :is(.reference-header h1,.reference-header h2,.reference-panel h2,.reference-panel h3,
  .reference-panel-title h2,.reference-client-name b,.reference-kpi strong,.reference-detail-head h2,
@@ -244,17 +244,17 @@ html[data-crm-mode] .office-workflow-screen .office-kanban-card :is(p,small,.off
 html[data-crm-mode] .office-workflow-screen .office-kanban-quickadd{
  background:var(--ui-surface)!important;color:var(--ui-muted)!important;border-color:var(--ui-border)!important;
 }
-html[data-crm-mode="dark"] .office-workflow-screen .office-kanban-column{background:#191314!important}
+html[data-crm-mode="dark"] .office-workflow-screen .office-kanban-column{background:#19121b!important}
 html[data-crm-mode="dark"] .report-executive-hero{
  background:
-  radial-gradient(ellipse at 82% -65%,rgba(219,171,131,.27),transparent 56%),
-  linear-gradient(105deg,#21191a,#30201e 60%,#211719)!important;
+  radial-gradient(ellipse at 82% -65%,rgba(219,161,178,.27),transparent 56%),
+  linear-gradient(105deg,#211a24,#2b2030 60%,#211824)!important;
  border-color:var(--ui-border)!important;color:var(--ui-ink)!important;
 }
 html[data-crm-mode="dark"] .report-executive-hero :is(h1,h2,h3,strong,p,small){color:var(--ui-ink)!important}
 html[data-crm-mode="dark"] .report-priority-item{background:var(--ui-tint)!important;border-color:var(--ui-border)!important}
 html[data-crm-mode="dark"] .report-segments{background:var(--ui-tint)!important;border-color:var(--ui-border)!important}
-html[data-crm-mode="dark"] .report-dashboard .report-bar{background:linear-gradient(90deg,#8d6c53,#dfb38d)!important}
+html[data-crm-mode="dark"] .report-dashboard .report-bar{background:linear-gradient(90deg,#956d8c,#d8a58e)!important}
 html[data-crm-mode="dark"] .office-ai-console,
 html[data-crm-mode="dark"] .office-ai-main,
 html[data-crm-mode="dark"] .office-ai-content,
@@ -269,7 +269,7 @@ html[data-crm-mode="dark"] .wa-chat-layout,
 html[data-crm-mode="dark"] .wa-chat-messages,
 html[data-crm-mode="dark"] .wa-conversation-list{background:var(--ui-surface)!important;color:var(--ui-ink)!important}
 html[data-crm-mode="dark"] .wa-message-bubble{background:var(--ui-tint)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
-html[data-crm-mode="dark"] .wa-message-bubble.outgoing{background:#47342d!important;color:#fff3e8!important}
+html[data-crm-mode="dark"] .wa-message-bubble.outgoing{background:#473343!important;color:#fff3e8!important}
 
 /* Configurações: cartões de escolha e formulários continuam utilizáveis nos dois modos */
 html[data-crm-mode] .settings-theme-option{
@@ -337,8 +337,8 @@ html[data-crm-mode="light"] .app-shell.blackhole-studio-shell .app-sidebar{
 }
 html[data-crm-mode="dark"] .app-shell.blackhole-studio-shell .app-sidebar{
  background:
-  radial-gradient(ellipse at 10% 95%,rgba(151,94,76,.16),transparent 48%),
-  linear-gradient(180deg,#171213 0%,#100d0e 72%,#181112 100%)!important;
+  radial-gradient(ellipse at 10% 95%,rgba(153,97,138,.16),transparent 48%),
+  linear-gradient(180deg,#19121c 0%,#110d14 72%,#1a111d 100%)!important;
  color:var(--ui-nav-ink)!important;border-right:1px solid var(--ui-border)!important;
 }
 html[data-crm-mode] .app-shell.blackhole-studio-shell .app-content{
@@ -346,18 +346,18 @@ html[data-crm-mode] .app-shell.blackhole-studio-shell .app-content{
 }
 html[data-crm-mode="light"] .app-shell.blackhole-studio-shell .reference-top-tools{
  background:
-  radial-gradient(ellipse at 76% -95%,rgba(190,151,117,.18),transparent 58%),
-  linear-gradient(100deg,#fbf8f4 0%,#f4eee8 100%)!important;
+  radial-gradient(ellipse at 76% -95%,rgba(190,150,184,.18),transparent 58%),
+  linear-gradient(100deg,#fffdfd 0%,#f8f2f7 100%)!important;
  border-bottom:1px solid var(--ui-border)!important;
 }
 html[data-crm-mode="dark"] .app-shell.blackhole-studio-shell .reference-top-tools{
  background:
-  radial-gradient(1px 1px at 13% 30%,rgba(255,226,194,.72) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 29% 68%,rgba(255,226,194,.45) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 57% 24%,rgba(255,226,194,.5) 0 1px,transparent 1.6px),
-  radial-gradient(1px 1px at 83% 54%,rgba(255,226,194,.62) 0 1px,transparent 1.6px),
-  radial-gradient(ellipse at 77% -110%,rgba(160,103,85,.28),transparent 60%),
-  linear-gradient(100deg,#171213 0%,#110e0f 100%)!important;
+  radial-gradient(1px 1px at 13% 30%,rgba(255,225,216,.72) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 29% 68%,rgba(255,225,216,.45) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 57% 24%,rgba(255,225,216,.5) 0 1px,transparent 1.6px),
+  radial-gradient(1px 1px at 83% 54%,rgba(255,225,216,.62) 0 1px,transparent 1.6px),
+  radial-gradient(ellipse at 77% -110%,rgba(164,107,147,.28),transparent 60%),
+  linear-gradient(100deg,#19121c 0%,#110d14 100%)!important;
  border-bottom:1px solid var(--ui-border)!important;
 }
 html[data-crm-mode] .app-shell.blackhole-studio-shell .app-sidebar .app-nav-link{

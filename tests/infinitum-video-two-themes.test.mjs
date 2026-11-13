@@ -21,6 +21,23 @@ test('Infinitum Light e Dark são selecionáveis e a opção Light é o padrão'
  assert.match(read('app/layout.jsx'),/data-crm-mode="light"/);
 });
 
+
+test('paletas seguem as referencias Light perolado/rose e Dark plum/rose-gold',()=>{
+ const light=CRM_THEMES.find(t=>t.mode==='light'),dark=CRM_THEMES.find(t=>t.mode==='dark');
+ assert.equal(light.page,'#fbf7f8');
+ assert.equal(light.accent,'#8d6686');
+ assert.equal(light.nav,'#f4edf3');
+ assert.equal(light.border,'#e5d8e3');
+ assert.equal(dark.page,'#110d14');
+ assert.equal(dark.surface,'#211a24');
+ assert.equal(dark.accent,'#d5a48e');
+ assert.equal(dark.nav,'#140f17');
+ const css=read('app/infinitum-dual-themes.css');
+ assert.match(css,/rgba\(190,150,184/);
+ assert.match(css,/rgba\(194,132,155/);
+ assert.doesNotMatch(css,/#89684f|#d7aa80|#100e0e/);
+});
+
 test('as duas paletas têm contraste AA em texto, navegação, acento e etiquetas',()=>{
  for(const t of CRM_THEMES){
   for(const [text,bg] of [['ink','page'],['ink','surface'],['muted','page'],['navInk','nav'],['accentInk','accent'],['tintInk','tint']]){
