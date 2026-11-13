@@ -576,3 +576,11 @@ html[data-crm-theme="infinitum"] .reference-auth-card h1{
     box-shadow:none!important;
   }
 }
+
+html[data-crm-theme="infinitum"] .reference-auth.blackhole-auth-fault{
+  width:100%!important;
+  max-width:none!important;
+}
+html[data-crm-theme="infinitum"] .reference-auth.blackhole-auth-fault .office-action-row{
+  width:min(100%,680px)!important;
+}
