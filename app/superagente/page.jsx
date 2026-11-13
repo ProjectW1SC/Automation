@@ -5,7 +5,10 @@ import {Plus,Search,BriefcaseBusiness,BookOpen,Layers3,PlugZap,Send,Copy,ShieldC
 import SecuredWorkspace from '../../components/secured-workspace';
 import {OFFICE_AGENTS} from '../../lib/office-core.mjs';
 import {runBlackholeQwen,stopBlackholeQwen} from '../../lib/blackhole-local-llm.mjs';
+import {requestedOfficialQuery} from '../../lib/superagent-official-query.mjs';
 const ACTIONS=[
+ {label:'Consultar DJEN / DataJud',prompt:'Consulte DJEN e DataJud do processo CNJ ',icon:Search},
+ {label:'Consultar apenas DJEN',prompt:'Consulte publicações DJEN do processo CNJ ',icon:BookOpen},
  {label:'Analisar processos',prompt:'Analise os processos cadastrados e indique pendências documentadas sem inventar movimentações.',icon:Scale},
  {label:'Revisar prazos',prompt:'Faça um relatório dos processos e consultas oficiais para orientar a conferência dos próximos prazos.',icon:Clock3},
  {label:'Preparar petição',prompt:'Indique os documentos e os fatos que devem ser conferidos antes de elaborar uma petição com base no processo.',icon:FileText},
@@ -37,13 +40,13 @@ function Console({db,session}){
   setBusy(true);setNotice('');setModelProgress('');
   try{
    let payload;
-   if(engine==='qwen'){
+   if(engine==='qwen'&&!requestedOfficialQuery(q)){
     const out=await runBlackholeQwen(q,messages.slice(-2).map(x=>({role:x.role,content:x.content})),progress=>{
      setModelProgress(progress.status==='progress'?'Baixando Qwen: '+progress.progress+'%':String(progress.message||'Gerando resposta local...'));
     },{consent:qwenConsent});
     payload={ok:true,reply:out.reply,model:out.model,notice:'Resposta gerada no navegador com Qwen 0.5B (WebGPU). Não foi enviado conteúdo a APIs de IA.'};
    }else{
-    if(engine==='online'&&!externalAiConsent)throw Error('Marque a autorização para enviar esta pergunta ao modelo online.');
+    if(engine==='online'&&!externalAiConsent&&!requestedOfficialQuery(q))throw Error('Marque a autorização para enviar esta pergunta ao modelo online.');
     const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
     const response=await fetch('/api/superagente',{method:'POST',
      headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
@@ -110,8 +113,8 @@ function Console({db,session}){
     <form onSubmit={ask} className="office-ai-composer"><textarea required minLength={1} maxLength={3500} rows={2} value={prompt}
       onChange={e=>setPrompt(e.target.value)}
       onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();ask()}}}
-      placeholder="Envie uma mensagem, uma tarefa ou um número CNJ..."/>
-      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {engine==='qwen'?'Qwen 0.5B · WebGPU':engine==='online'?'IA online · somente com autorização':'Motor de evidências gratuito'}</span><button type="submit" disabled={busy||!prompt.trim()||(engine==='online'&&!externalAiConsent)||(engine==='qwen'&&!qwenConsent)}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
+      placeholder="Ex.: consulte DJEN e DataJud do processo 0000000-00.2026.8.26.0001"/>
+      <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {engine==='qwen'?'Qwen 0.5B · WebGPU':engine==='online'?'IA online · somente com autorização':'Motor de evidências gratuito'}</span><button type="submit" disabled={busy||!prompt.trim()||(engine==='online'&&!externalAiConsent&&!requestedOfficialQuery(prompt))||(engine==='qwen'&&!qwenConsent&&!requestedOfficialQuery(prompt))}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
     </form>
     <div className="blackhole-chat-models" role="group" aria-label="Selecionar o motor da conversa">
       <button type="button" aria-pressed={engine==='evidencias'} onClick={()=>setEngine('evidencias')}>Respostas rápidas</button>
@@ -123,7 +126,7 @@ function Console({db,session}){
      {engine==='online'&&externalAiConsent&&allowEngineFallback&&<label className="office-ai-consent office-motor-preference"><span>Motor preferido</span><select aria-label="Selecionar motor preferido" value={preferredMotor} onChange={e=>setPreferredMotor(e.target.value)}><option value="auto">Automático · Lexis + PredictLM</option><option value="predictlm">PredictLM · se configurado</option>{['colibri','minicpm','minimax','claude','groq','xai','openrouter','gemini'].map(id=><option value={id} key={id}>{id.toUpperCase()} · se configurado</option>)}</select></label>}
     {engine==='qwen'&&<label className="office-ai-consent"><input type="checkbox" checked={qwenConsent} onChange={e=>setQwenConsent(e.target.checked)}/> Autorizo baixar os pesos do Qwen para este navegador. Exige WebGPU e memória suficiente; sem fallback CPU.</label>}
     {modelProgress&&<p className="office-ai-progress" role="status">{modelProgress}</p>}
-    <p className="office-ai-disclaimer">BLACKHOLE pode errar. Confirme informações judiciais na fonte oficial antes de agir.</p>
+    <p className="office-ai-disclaimer">Para consultar, escreva "Consulte DJEN do processo" e o CNJ de 20 dígitos. A busca usa as fontes oficiais com acesso autorizado ao processo, mesmo quando o motor de IA está selecionado. Os resultados do DataJud não são publicações DJEN.</p>
    </div>
   </div>
  </main>;

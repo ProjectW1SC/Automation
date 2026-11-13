@@ -1,4 +1,6 @@
 import {NextResponse} from 'next/server';
+import {GET as consultOfficialProcess} from '../processos/consulta/route.js';
+import {requestedOfficialQuery,reportOfficialQuery} from '../../../lib/superagent-official-query.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildSuperAgentReview,targetCNJ} from '../../../lib/superagent-core.mjs';
@@ -20,6 +22,23 @@ export async function POST(request){
   if(error||!user||!await checkCrmAccess(db,user))return json({ok:false,error:'Conta sem acesso à carteira.'},403);
   const body=await request.json();
   let prompt;try{prompt=validateBlackholePrompt(body?.prompt)}catch(e){return json({ok:false,error:e.message},400)}
+  // Consulta sob solicitacao explicita: reutiliza a autorizacao, fontes, cache e
+  // backoff da propria rota manual. Nunca pede que o modelo invente publicacoes.
+  const official=requestedOfficialQuery(prompt);
+  if(official){
+   const params=new URLSearchParams({numero:official.number,fonte:official.source});
+   const queryRequest=new Request(new URL('/api/processos/consulta?'+params.toString(),request.url),{
+    method:'GET',headers:{Authorization:'Bearer '+token}
+   });
+   const response=await consultOfficialProcess(queryRequest);
+   const officialResult=await response.json();
+   if(response.status===401||response.status===403||officialResult.code==='crm_access')
+    return json({ok:false,error:officialResult.error||'Processo fora da carteira autorizada.'},response.status===401?401:403);
+   const report=reportOfficialQuery({number:formatProcessNumber(official.number),source:official.source,result:officialResult});
+   return json({ok:true,...report,model:'consulta-oficial',isGenerativeModel:false,
+    notice:officialResult.ok?report.notice:
+     'Consulta judicial nao confirmada: '+String(officialResult.error||'fonte indisponivel').slice(0,180)+'. Nenhum dado foi inventado.'});
+  }
   const provider=configuredBlackholeProvider(process.env);
   const cascaded=body?.allowEngineFallback===true?configuredLexisMotors(process.env):[];
   const predictlm=body?.allowEngineFallback===true?predictLmConfig(process.env):null;
