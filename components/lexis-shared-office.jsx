@@ -105,6 +105,10 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  },[area,profile,loadDeadlinesFromProcessos,loadHearings]);
 
  const [page,setPage]=useState(0),[type,setType]=useState('cliente'),[draft,setDraft]=useState(''),[search,setSearch]=useState('');
+ useEffect(()=>{if(typeof window==='undefined'||!['cases','clients'].includes(area))return;
+  const cnj=new URLSearchParams(window.location.search).get('buscar');
+  if(cnj){setType('numero');setSearch(cnj);setDraft(cnj);setPage(0)}
+ },[area]);
  const [activeFilter,setActiveFilter]=useState('em_andamento'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
  const [notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[mode,setMode]=useState('processo'),[form,setForm]=useState({});
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
@@ -374,15 +378,15 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   {editing&&<section className="inf-panel" aria-label="Edição de cadastro"><h2>Editar {mode==='cliente'?'cliente':'processo'} · #{editing.id}</h2>
    <form onSubmit={saveEdit}><div className="inf-fields">
     {(mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref')).map(field=>(
-     <label key={field}>{({cliente:'Cliente',telefone:'Telefone',email:'E-mail',cpf:'CPF',tribunal:'Tribunal',advogado:'Advogado',observacoes:'Observações',proximo_retorno:'Próximo atendimento',status_interno:'Situação interna'})[field]||field}
-      {field==='status_interno'?<select value={form[field]||'ativo'} onChange={e=>setForm({...form,[field]:e.target.value})}><option value="ativo">Ativo</option><option value="em_andamento">Em andamento</option><option value="suspenso">Suspenso</option><option value="encerrado">Encerrado</option><option value="excluido">Excluído (arquivado)</option></select>:
+     <label key={field}>{({cliente:'Cliente',telefone:'Telefone',email:'E-mail',cpf:'CPF',tribunal:'Tribunal',advogado:'Advogado',observacoes:'Observações',proximo_retorno:'Próximo atendimento',proximo_prazo:'Próximo prazo',status_interno:'Situação interna'})[field]||field}
+      {field==='status_interno'?<select value={form[field]||'ativo'} onChange={e=>setForm({...form,[field]:e.target.value})}>{form.status_interno==='preservar'&&<option value="preservar">Manter situação atual ({editing.status_detail||'Especial'})</option>}<option value="ativo">Ativo</option><option value="em_andamento">Em andamento</option><option value="suspenso">Suspenso</option><option value="encerrado">Encerrado</option><option value="excluido">Excluído (arquivado)</option></select>:
        field==='observacoes'?<textarea value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>:
-       <input type={field==='proximo_retorno'?'date':'text'} value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>}</label>
+       <input type={['proximo_retorno','proximo_prazo'].includes(field)?'date':'text'} value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>}</label>
     ))}
    </div><div className="inf-row-end"><button className="inf-btn primary" disabled={busy}>Salvar alterações</button><button type="button" className="inf-btn" onClick={()=>setEditing(null)}>Cancelar</button></div></form>
   </section>}
   {selected&&<section className="inf-panel" aria-label="Registrar atendimento"><h2><History size={18}/> Atendimento · {selected.client_name||selected.process_number}</h2>
-   <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: {selected.last_responsible||'Não registrado'}</p>
+   <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: <strong>{responsibleDisplay(selected.last_responsible,team)}</strong></p>
    {selectedMode==='atendimento'&&<form onSubmit={saveAttendance}><div className="inf-fields">
     <label>Resumo do atendimento realizado<textarea value={attendNote} onChange={e=>setAttendNote(e.target.value)} minLength={3} maxLength={3000} required/></label>
     <label>Próximo atendimento<input type="date" value={nextDate} onChange={e=>setNextDate(e.target.value)}/></label>
