@@ -22,7 +22,7 @@ function sleep(ms,signal){return new Promise((resolve,reject)=>{
  signal?.addEventListener('abort',onAbort,{once:true});
 })}
 export function djenPageInfo(payload,page=1){
- const rows=Array.isArray(payload)?payload:payload?.items||payload?.content;
+ const rows=Array.isArray(payload)?payload:payload?.items||payload?.content||payload?.comunicacoes||payload?.resultado;
  if(!Array.isArray(rows))throw officialError('DJEN não retornou uma lista verificável.',502,'invalid_payload');
  const count=Number(payload?.count),hasCount=payload?.count!==null&&payload?.count!==''&&Number.isInteger(count)&&count>=0;
  const offset=(page-1)*50;

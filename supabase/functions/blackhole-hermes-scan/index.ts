@@ -28,9 +28,8 @@ async function fetchJson(url:string,init:RequestInit={}){
  return requestOfficialJson(url,init,{source:url.includes('datajud.cnj.jus.br')?'datajud':'djen'});
 }
 function djenUrl(number:string,today:string){
- const start=new Date(Date.parse(today+"T12:00:00Z")-29*86400000).toISOString().slice(0,10);
- const q=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),dataDisponibilizacaoInicio:start,
-  dataDisponibilizacaoFim:today,pagina:"1",itensPorPagina:"50"});
+ // Varredura automatica por CNJ, inclusive publicacoes historicas (nao somente 30 dias).
+ const q=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),pagina:"1",itensPorPagina:"50"});
  return "https://comunicaapi.pje.jus.br/api/v1/comunicacao?"+q.toString();
 }
 async function fetchDataJud(number:string,checkedAt:string){

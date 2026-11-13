@@ -12,16 +12,17 @@ const json=(x:unknown,status=200)=>new Response(JSON.stringify(x),{status,header
 const fail=(message:string,status:number,code:string)=>Object.assign(new Error(message),{status,code});
 const isDate=(value:string)=>/^20\d{2}-\d\d-\d\d$/.test(value)&&new Date(value+"T12:00:00Z").toISOString().startsWith(value);
 function djenUrl(number:string,body:any){
- const now=new Date().toISOString().slice(0,10);
- const start=String(body.start||new Date(Date.now()-30*86400000).toISOString().slice(0,10));
- const end=String(body.end||now);
- if(!isDate(start)||!isDate(end)||start>end)throw fail("Intervalo de datas inválido.",400,"bad_dates");
- const days=(Date.parse(end+"T12:00:00Z")-Date.parse(start+"T12:00:00Z"))/86400000;
- if(days>31)throw fail("DJEN: intervalo superior a 31 dias.",400,"date_range");
  const page=Number(body.page||1);
  if(!Number.isInteger(page)||page<1||page>100)throw fail("Página DJEN inválida.",400,"bad_page");
- const qs=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),dataDisponibilizacaoInicio:start,
-  dataDisponibilizacaoFim:end,pagina:String(page),itensPorPagina:"50"});
+ // Consulta por numero, sem datas, devolve o historico oficial, nao apenas o mes atual.
+ const qs=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),pagina:String(page),itensPorPagina:"50"});
+ if(body.start||body.end){
+  const start=String(body.start||""),end=String(body.end||"");
+  if(!isDate(start)||!isDate(end)||start>end)throw fail("Intervalo de datas inválido.",400,"bad_dates");
+  const days=(Date.parse(end+"T12:00:00Z")-Date.parse(start+"T12:00:00Z"))/86400000;
+  if(days>31)throw fail("DJEN: intervalo superior a 31 dias.",400,"date_range");
+  qs.set("dataDisponibilizacaoInicio",start);qs.set("dataDisponibilizacaoFim",end);
+ }
  return "https://comunicaapi.pje.jus.br/api/v1/comunicacao?"+qs.toString();
 }
 Deno.serve(async(req:Request)=>{

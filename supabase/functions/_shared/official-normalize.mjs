@@ -9,5 +9,5 @@ export function officialDateIso(raw){
  return Number.isFinite(ms)?new Date(ms).toISOString():null;
 }
 export function officialProcessDigits(row){
- return String(row?.numeroProcesso||row?.numero_processo||row?.numeroProcessoFormatado||row?.numeroprocessocommascara||'').replace(/\D/g,'');
+ return String(row?.numeroProcesso||row?.numero_processo||row?.numeroProcessoFormatado||row?.numeroprocessocommascara||row?.numero_processo_com_mascara||'').replace(/\D/g,'');
 }

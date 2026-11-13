@@ -52,12 +52,12 @@ export function normalizeDataJudSnapshot(payload,number,checkedAt=new Date().toI
 }
 export function normalizeDjenSnapshot(payload,number,checkedAt=new Date().toISOString()){
  const cnj=formatCnj(number),expected=digits(cnj);
- const rows=Array.isArray(payload)?payload:Array.isArray(payload?.items)?payload.items:Array.isArray(payload?.content)?payload.content:null;
+ const rows=Array.isArray(payload)?payload:Array.isArray(payload?.items)?payload.items:Array.isArray(payload?.content)?payload.content:Array.isArray(payload?.comunicacoes)?payload.comunicacoes:Array.isArray(payload?.resultado)?payload.resultado:null;
  if(!rows)throw new Error('DJEN retornou formato de lista não reconhecido.');
  const seen=new Set(),items=[];
  for(const [i,row] of rows.entries()){
   if(!row||officialProcessDigits(row)!==expected)continue;
-  const hash=String(row.hash||row.id||i),date=dateOf(row.data_disponibilizacao||row.dataDisponibilizacao||row.data_publicacao||row.dataPublicacao);
+  const hash=String(row.hash||row.id||i),date=dateOf(row.data_disponibilizacao||row.dataDisponibilizacao||row.datadisponibilizacao||row.data_publicacao||row.dataPublicacao);
   const rawLink=row.link||row.url||(row.hash?'https://comunica.pje.jus.br/consulta?hash='+encodeURIComponent(String(row.hash)):null);
   const link=officialLink(rawLink);
   const item={id:'djen-'+hash+'-'+String(date||i),source:'DJEN',date,
