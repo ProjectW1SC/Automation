@@ -24,6 +24,8 @@ export default function LexisOperations({db,session,area='deadlines'}){
  const [profile,setProfile]=useState(null),[team,setTeam]=useState([]),[sourceRows,setSourceRows]=useState({processes:[],hearings:[],tasks:[],manual:[]});
  const [errors,setErrors]=useState([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[search,setSearch]=useState('');
  const [month,setMonth]=useState(brazilToday().slice(0,7)),[filter,setFilter]=useState('todos'),[showPast,setShowPast]=useState(false),[view,setView]=useState('month');
+ const [visibleLimit,setVisibleLimit]=useState(60);
+ useEffect(()=>{setVisibleLimit(60)},[area,search,filter,month]);
  const [selected,setSelected]=useState(null),[editing,setEditing]=useState(false),[form,setForm]=useState({title:'',due_on:brazilToday(),kind:'tarefa',priority:'normal',notes:'',responsible:''});
  const currentYear=Number(month.slice(0,4)),currentMonth=Number(month.slice(5,7))-1;
  const first=iso(currentYear,currentMonth,1),last=iso(currentYear,currentMonth+1,0);
@@ -80,19 +82,21 @@ export default function LexisOperations({db,session,area='deadlines'}){
  },[db,profile?.empresa_id,area,rangeStart,rangeEnd]);
  useEffect(()=>{load()},[load]);
  const items=useMemo(()=>buildLexisEvents({...sourceRows,members:team,today:brazilToday()}),[sourceRows,team]);
- const listing=useMemo(()=>{
+ const areaRows=useMemo(()=>{
   let filtered=items;
   if(area==='audiencias')filtered=filtered.filter(x=>x.kind==='audiencia');
   if(area==='deadlines')filtered=filtered.filter(x=>x.kind!=='audiencia');
   if(area==='agenda')filtered=filtered.filter(x=>x.due_on&&x.due_on>=rangeStart&&x.due_on<=rangeEnd);
   if(area==='audiencias'&&!showPast)filtered=filtered.filter(x=>!x.due_on||x.due_on>=brazilToday());
-  if(filter!=='todos')filtered=filtered.filter(x=>x.status===filter);
   if(search.trim()){const term=search.toLocaleLowerCase('pt-BR').trim();
     filtered=filtered.filter(x=>[x.title,x.client_name,x.process_number,x.responsible,x.notes].some(z=>String(z||'').toLocaleLowerCase('pt-BR').includes(term)))}
   return filtered;
- },[items,area,filter,search,showPast,rangeStart,rangeEnd]);
- const counts=useMemo(()=>({total:listing.length,overdue:listing.filter(x=>x.status==='vencido').length,
-  attention:listing.filter(x=>x.status==='atencao').length,ok:listing.filter(x=>x.status==='em_dia').length}),[listing]);
+ },[items,area,search,showPast,rangeStart,rangeEnd]);
+ const listing=useMemo(()=>filter==='todos'?areaRows:areaRows.filter(x=>x.status===filter),[areaRows,filter]);
+ const counts=useMemo(()=>({total:areaRows.length,overdue:areaRows.filter(x=>x.status==='vencido').length,
+  attention:areaRows.filter(x=>x.status==='atencao').length,
+  ok:areaRows.filter(x=>x.status==='em_dia').length,
+  closed:areaRows.filter(x=>x.status==='encerrado').length}),[areaRows]);
  const save=async e=>{
   e.preventDefault();if(busy||!profile?.empresa_id)return;
   if(form.title.trim().length<3||form.title.length>250){setErrors(['O compromisso precisa ter título de 3 a 250 caracteres.']);return}
@@ -131,7 +135,7 @@ export default function LexisOperations({db,session,area='deadlines'}){
   {errors.map((e,i)=><p key={i} className="inf-note error" role="status">{e}</p>)}
   {loading&&<p className="inf-note">Consultando registros da organização no Supabase do LexisPredict...</p>}
   <div className="lx-kpis">
-   {[['Registros',counts.total,'todos'],['Vencidos',counts.overdue,'vencido'],['Atenção',counts.attention,'atencao'],['Em dia',counts.ok,'em_dia']].map(([label,value,status])=>
+   {[['Registros',counts.total,'todos'],['Vencidos',counts.overdue,'vencido'],['Atenção',counts.attention,'atencao'],['Em dia',counts.ok,'em_dia'],['Encerrados',counts.closed,'encerrado']].map(([label,value,status])=>
     <button key={status} type="button" className={'lx-kpi '+(filter===status?'is-active':'')} onClick={()=>setFilter(status)} aria-pressed={filter===status}>
      <span>{label}</span><strong>{Number(value).toLocaleString('pt-BR')}</strong><span className={'lx-kpi-mark lx-kpi-mark--'+status}/></button>)}
   </div>
@@ -155,7 +159,8 @@ export default function LexisOperations({db,session,area='deadlines'}){
      {(groups.get(d)||[]).length>3&&<small>+{groups.get(d).length-3} registros</small>}
     </div>)}
    </div>}
-   {(area!=='agenda'||view==='list')&&<div className="lx-event-list">{listing.map(x=><Card key={x.id} item={x} onSelect={setSelected}/>)}
+   {(area!=='agenda'||view==='list')&&<div className="lx-event-list">{listing.slice(0,visibleLimit).map(x=><Card key={x.id} item={x} onSelect={setSelected}/>)}
+    {listing.length>visibleLimit&&<div className="lx-load-more"><span>Mostrando {visibleLimit} de {listing.length} registros</span><button type="button" className="inf-btn" onClick={()=>setVisibleLimit(v=>v+60)}>Carregar mais</button></div>}}
     {!loading&&!listing.length&&<p className="pr-list-empty">Nenhum registro corresponde aos filtros. Confira as fontes e altere o período quando necessário.</p>}
    </div>}
    {area==='audiencias'&&<p className="inf-note">Audiências sem data são apresentadas como pendentes de confirmação, nunca como audiência futura. Confira sempre a fonte oficial.</p>}
