@@ -165,6 +165,19 @@ function OfficeUI({area,db,session}){
      },{onConflict:'actor_id,process_number,source,query_key'});
      return saved.error?{ok:false,error:saved.error.message}:{ok:true};
     },
+    recordBrowserBlock:async({number,source,status})=>{
+     if(![403,429].includes(Number(status)))return {ok:false};
+     const failedAt=new Date(),duration=Number(status)===403?20*60*1000:15*60*1000;
+     const retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+     const [local,global]=await Promise.all([
+      db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+       actor_id:s.user.id,process_number,source,status:Number(status),
+       failed_at:failedAt.toISOString(),retry_after:retryAfter
+      })),{onConflict:'actor_id,process_number,source'}),
+      db.rpc('record_office_source_cooldown',{p_source:source,p_status:Number(status)})
+     ]);
+     return {ok:!local.error&&!global.error,error:local.error?.message||global.error?.message||null};
+    },
     onProgress:({current,total,start,end})=>setNotice('Consultando DataJud e DJEN: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias')+' · navegador primeiro, servidor como alternativa')
    });
    setCheckResult({...result,number:row.process_number});
