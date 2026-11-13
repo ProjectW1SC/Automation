@@ -99,7 +99,9 @@ export default function SecuredWorkspace({active,children}){
    <button type="button" className="office-google-btn" onClick={google} disabled={busy||googleEnabled===false}>
     <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M21.35 12.2c0-.7-.07-1.36-.18-2H12v3.8h5.25a4.5 4.5 0 0 1-1.94 2.96v2.45h3.14c1.84-1.69 2.9-4.19 2.9-7.21Z"/><path fill="#34A853" d="M12 21.5c2.62 0 4.83-.87 6.44-2.35l-3.14-2.45c-.87.58-1.98.92-3.3.92-2.53 0-4.67-1.7-5.44-3.98H3.3v2.51A9.75 9.75 0 0 0 12 21.5Z"/><path fill="#FBBC05" d="M6.56 13.64a5.86 5.86 0 0 1 0-3.28V7.84H3.3a9.76 9.76 0 0 0 0 8.32l3.26-2.52Z"/><path fill="#EA4335" d="M12 6.38c1.4 0 2.65.48 3.64 1.43l2.8-2.8C16.8 3.47 14.62 2.5 12 2.5a9.75 9.75 0 0 0-8.7 5.34l3.26 2.52C7.33 8.08 9.47 6.38 12 6.38Z"/></svg>
     {googleEnabled===false?'Google ainda não configurado':'Continuar com Google'}
-   </button>{!registration&&<button type="button" className="crm-magic-link-btn" onClick={magicLink} disabled={busy}>Receber link de acesso por e-mail (grátis)</button>}
+   </button>
+   {googleEnabled===false&&<p className="auth-google-help" role="note">O acesso Google ainda não está habilitado no projeto de autenticação. O administrador deve configurar o provedor Google no Supabase, incluindo as credenciais OAuth e o domínio de retorno. <a href="https://supabase.com/docs/guides/auth/social-sign-in/auth-google" target="_blank" rel="noopener noreferrer">Como ativar o login Google</a></p>}
+   {!registration&&<button type="button" className="crm-magic-link-btn" onClick={magicLink} disabled={busy}>Receber link de acesso por e-mail (grátis)</button>}
   </ProfessionalAuth>;
  }
  if(recovery||mode==='recover'){
