@@ -14,6 +14,8 @@ test('prazos e audiências usam o banco principal e não voltam à tabela legada
  }
  assert.match(sources,/\.eq\('empresa_id',company\)/);
  assert.match(sources,/\.range\(from,from\+pageSize-1\)/);
+ assert.match(sources,/ultimo_retorno/);
+ assert.match(operations,/summarizeLexisReturns/);
 });
 test('agenda suporta retornos, prazos e audiências no tema Infinitum',()=>{
  const agenda=src('app/agenda/page.jsx');
