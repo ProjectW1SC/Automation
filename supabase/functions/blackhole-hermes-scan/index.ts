@@ -55,7 +55,7 @@ function sourceStatus(result:any,source:string){
  const status=Number(result?.status);
  const error=String(result?.error||"Fonte indisponível");
  return {source,status:status===403?"blocked_403":status===429?"rate_limited_429":result?.cooldown?"cooldown":
-  /timeout|tempo esgotado/i.test(error)?"timeout":"unavailable",found:null,checked_at:null,count:null,error:error.slice(0,220)};
+  /timeout|timed\s*out|tempo esgotado|abort(?:ed)?/i.test(error)?"timeout":"unavailable",found:null,checked_at:null,count:null,error:error.slice(0,220)};
 }
 async function callSource(db:any,actorId:string,number:string,source:"datajud"|"djen",today:string){
  const {data:pause,error:pauseError}=await db.from("office_source_cooldowns").select("status,retry_after").eq("source",source).maybeSingle();
