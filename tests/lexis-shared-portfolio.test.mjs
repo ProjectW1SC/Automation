@@ -43,3 +43,18 @@ test('consulta CNJ aceita só identificação processual sem presumir número au
  assert.equal(normalizedCnj('0000000-00.2026.8.26.0100'),'0000000-00.2026.8.26.0100');
  assert.equal(normalizedCnj('sem número'),null);
 });
+import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
+test('adaptação do relatório literal usa indicadores reais e não inventa edições',()=>{
+ const data=adaptLexisTeamReport({
+  teamStats:[{auth_user_id:'u1',nome:'Maria',cargo:'Operadora',carteira_total:12,carteira_ativos:10,carteira_encerrados:2,historico_atividades:30,historico_atendimentos:11}],
+  activities:[{id:'x',responsavel_auth_user_id:'u1',processo_id:2,categoria:'atendimento',data_realizacao:'2026-11-13',descricao:'Conversa registrada',contato_cliente_confirmado:true}],
+  period:'mes',bounds:{start:'2026-11-01',endExclusive:'2026-12-01'}
+ });
+ const m=data.pessoas[0];
+ assert.equal(m.carteira.total,12);
+ assert.equal(m.atendimentos.eventos,1);
+ assert.equal(m.atividades.registrosTotal,30);
+ assert.equal(m.edicoes.processos,null);
+ assert.equal(m.encerramentos.processos,null);
+ assert.equal(m.atividades.recentes[0].detalhe,'Conversa registrada');
+});
