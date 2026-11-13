@@ -34,3 +34,10 @@
 .office-hint{font-size:11px;color:#78716c}
 @media(max-width:1100px){.office-agent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.office-panel-grid,.office-agent-grid{grid-template-columns:1fr}.office-document{padding:12px;font-size:12px}}
+
+/* Leitura segura do documento de origem e alertas de validacao em pecas. */
+.office-document-source-check{display:flex;flex-direction:column;gap:5px;padding:12px 14px;border:1px solid var(--crm-border,#d5dbe2);border-left:3px solid #b58436;border-radius:8px;background:var(--crm-surface,#fff);color:var(--crm-ink,#292524);font-size:12px;overflow-wrap:anywhere}
+.office-document-source-check strong{font-size:13px}.office-document-source-check small{line-height:1.5;color:var(--crm-muted,#57534e)}
+.office-original-document{margin:12px 0;padding:12px;border:1px solid var(--crm-border,#d5dbe2);border-radius:8px;color:var(--crm-ink,#292524);background:var(--crm-surface,#fff)}
+.office-original-document summary{cursor:pointer;font-weight:700;font-size:12px}
+.office-original-document pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.65 Georgia,serif;max-height:370px;overflow:auto;color:var(--crm-ink,#292524);margin:12px 0 0}

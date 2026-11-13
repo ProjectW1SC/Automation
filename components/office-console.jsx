@@ -326,7 +326,7 @@ function OfficeUI({area,db,session}){
       <button type="button" className="inf-btn" onClick={()=>setShowPreview(x=>!x)}>{showPreview?'Ocultar folha A4':'Visualizar folha A4'}</button>
       <button type="button" className="inf-btn primary" onClick={()=>exportPdf(docResult.body)}>Imprimir / Salvar PDF A4</button></div>
     <textarea className="office-document" aria-label="Texto da minuta" value={docResult.body} onChange={e=>setDocResult({...docResult,body:e.target.value})}/>
-     {docResult.evidence?.importedDocument&&<details className="office-original-document"><summary>Ver documento original preservado (não verificado)</summary><pre>{docResult.evidence.sourceDocument}</pre></details>
+     {docResult.evidence?.importedDocument&&<details className="office-original-document"><summary>Ver documento original preservado (não verificado)</summary><pre>{docResult.evidence.sourceDocument}</pre></details>}
      <section className="legal-qwen-panel"><label><input type="checkbox" checked={qwenPetitionConsent} onChange={e=>setQwenPetitionConsent(e.target.checked)}/> Autorizo baixar e executar o Qwen 0.5B local para sugerir ajustes de redação.</label>
       <button type="button" className="inf-btn" disabled={busy||!qwenPetitionConsent||webGpuAvailable===false} onClick={askQwenPetition}>Revisar trecho com Qwen 0.5B</button>
       {webGpuAvailable===false&&<p role="status" className="office-hint">Qwen 0.5B exige WebGPU. Este navegador não o suporta. O editor, Word e PDF permanecem disponíveis.</p>}
