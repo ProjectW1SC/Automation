@@ -176,7 +176,7 @@ export default function WaAutoInbox({db,userId}){
  const visibleChats=useMemo(()=>chats.filter(c=>(!groups||c.is_group)&&
   [c.name,c.phone,c.jid].some(x=>String(x||'').toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')))),[chats,groups,query]);
  return <main className="wa-workspace">
-  <header className="wa-heading"><div><small>PROJECTW1SC / COMUNICAÇÃO</small><h1>WhatsApp <span>Workspace</span></h1><p>Suas conversas e seus atendimentos dentro do CRM, com conexão WA.Auto / Baileys.</p></div>
+  <header className="wa-heading"><div><small>PROJECTW1SC / COMUNICAÇÃO</small><h1>WhatsApp <span>Workspace</span></h1><p>Uma sessão WhatsApp por usuário do CRM. Cada pessoa vincula seu próprio aparelho pelo QR Code; não existe número fixo do escritório.</p></div>
    <div className="wa-heading-actions">
     <span className={'wa-state '+(connected?'online':'offline')}><span className="wa-dot"/>{connected?'WhatsApp conectado':status?.configured?'Desconectado':'Aguardando configuração'}</span>
     <button className="wa-icon-btn" aria-label="Atualizar WhatsApp" type="button" disabled={!!busy} onClick={refresh}><RefreshCw size={17}/></button>
@@ -187,8 +187,9 @@ export default function WaAutoInbox({db,userId}){
   {archiveWarning&&<div className="wa-alert" role="status">{archiveWarning}<button type="button" aria-label="Fechar aviso de histórico" onClick={()=>setArchiveWarning('')}><X size={15}/></button></div>}
   {notice&&<div className="wa-alert" role="status"><CheckCircle2 size={17}/>{notice}</div>}
   {(!status?.configured||showConnect||!connected)&&<section className="wa-connection">
-    <div className="wa-connection-title"><div className="wa-device-icon">{connected?<Wifi size={21}/>:<WifiOff size={21}/>}</div><div><strong>WA.Auto · Conexão individual</strong><p>{status?.configured?tiny(connection.message)||'Conexão segura com o serviço persistente.':'O CRM ainda não possui o token de integração WA.Auto no ambiente Vercel.'}</p></div></div>
-    {!status?.configured?<div className="wa-help">Configure <code>WA_AUTO_URL</code> e <code>WA_AUTO_TOKEN</code> no servidor Vercel deste CRM. Não cole tokens na página. A sessão será vinculada ao usuário autenticado.</div>:<div className="wa-connect-content">
+    <div className="wa-connection-title"><div className="wa-device-icon">{connected?<Wifi size={21}/>:<WifiOff size={21}/>}</div><div><strong>Seu WhatsApp · Conexão individual</strong><p>{status?.configured?tiny(connection.message)||'Sessão vinculada à sua conta do CRM.':'Serviço WA.Auto indisponível no servidor. Não informe credenciais nesta página.'}</p></div></div>
+    {!status?.configured?<div className="wa-help">O servidor WhatsApp precisa estar disponível para gerar o QR. A identidade e as credenciais são verificadas no servidor; nunca cole tokens nesta página.</div>:<div className="wa-connect-content">
+     {connected&&connection.account?.phone&&<p className="wa-linked-number">Número vinculado somente à sua conta: <strong>+{String(connection.account.phone).replace(/\D/g,'')}</strong></p>}
      {qrImage&&connection.status!=='ready'&&<div className="wa-qr"><img src={qrImage} alt="QR Code para vincular WhatsApp" width={235} height={235}/><small>Abra o WhatsApp no celular → Aparelhos conectados → Conectar aparelho. QR vincula somente sua sessão.</small></div>}
      {connection.pairingCode&&<div className="wa-pair-code">Código de pareamento: <strong>{connection.pairingCode}</strong></div>}
      <div className="wa-connect-actions">
