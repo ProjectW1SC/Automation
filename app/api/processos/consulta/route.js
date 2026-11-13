@@ -119,6 +119,12 @@ export async function GET(request){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
    }
+   // O navegador consulta primeiro quando não há snapshot recente. Esta opção
+   // apenas verifica cache/RLS e nunca faz chamada externa nem cria cooldown.
+   if(params.get('cache')==='only'){
+    return {ok:false,cacheMiss:true,code:'cache_miss',source:kind,
+     error:'Não há consulta recente para esta janela; navegador pode consultar a fonte pública.'};
+   }
    const [localPause,globalPause,platformPause]=await Promise.all([
     db.from('office_official_backoff').select('status,retry_after')
      .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle(),
