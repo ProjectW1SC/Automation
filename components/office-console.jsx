@@ -14,6 +14,7 @@ import {PrestigeClients,PrestigeCases} from './prestige-office-lists';
 import BlackholeHermesAgent from './blackhole-hermes-agent';
 import BlackholeOfficialHearings from './blackhole-official-hearings';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
+import {loadOfficeCollections} from '../lib/office-paginated-data.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {APPEAL_TYPES,inspectJudicialDocument} from '../lib/legal-draft-engine.mjs';
 import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
@@ -61,17 +62,13 @@ function OfficeUI({area,db,session}){
  const need=LOADED[area]||LOADED.dashboard;
  const load=useCallback(async()=>{
   setLoading(true);
-  let entries;
- try{entries=await withAuthDeadline(Promise.all(need.map(async key=>{
-   const limit=key==='deadlines'?600:key==='messages'?350:key==='clients'||key==='cases'?500:200;
-   const sort=key==='deadlines'?'due_on':key==='clients'?'name':key==='cases'?'updated_at':'created_at';
-   const res=await db.from(TABLES[key]).select('*').order(sort,{ascending:key==='clients'||key==='deadlines'}).limit(limit);
-   return {key,res}
-  })),12000)}catch(e){setNotice('Falha ao carregar: '+e.message+' Atualize para tentar novamente.');setLoading(false);return}
-  setData(old=>({...old,...Object.fromEntries(entries.map(({key,res})=>[key,res.data||[]]))}));
-  const problems=entries.filter(({res})=>res.error);
-  if(problems.length)setNotice('Não foi possível acessar: '+problems.map(x=>x.key+': '+x.res.error.message).join(' · '));
-  setLoading(false);
+  try{
+   const {datasets,errors}=await withAuthDeadline(loadOfficeCollections(db,need),30000);
+   // Só fontes completas podem substituir o estado. Não transformar erro em zero.
+   if(Object.keys(datasets).length)setData(old=>({...old,...datasets}));
+   if(errors.length)setNotice('Carregamento incompleto: '+errors.join(' · ')+'. Os dados incompletos não foram exibidos como totais.');
+  }catch(error){setNotice('Falha ao carregar a carteira: '+String(error?.message||'Erro de conexão')+'. Atualize para tentar novamente.')}
+  finally{setLoading(false)}
  },[db,area]);
  useEffect(()=>{load()},[load]);
  const clients=data.clients,cases=data.cases,deadlines=data.deadlines,documents=data.documents,messages=data.messages,leads=data.leads,runs=data.runs;
