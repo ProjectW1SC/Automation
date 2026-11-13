@@ -12,7 +12,7 @@ test('a sidebar expande ao entrar e recolhe ao sair sem depender de foco preso n
  assert.match(shell,/aria-expanded=\{sidebarExpanded\}/);
 });
 
-test('animações visíveis ocorrem na navegação e no rail em ambos os temas',()=>{
+test('animações visíveis ocorrem na navegação e no rail no tema principal',()=>{
  const src=read('components/crm-shell.jsx');
  const style=read('app/infinitum-video-motion.css');
  assert.match(src,/usePathname/);
