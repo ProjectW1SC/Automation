@@ -160,7 +160,7 @@ export default function LexisOperations({db,session,area='deadlines'}){
     </div>)}
    </div>}
    {(area!=='agenda'||view==='list')&&<div className="lx-event-list">{listing.slice(0,visibleLimit).map(x=><Card key={x.id} item={x} onSelect={setSelected}/>)}
-    {listing.length>visibleLimit&&<div className="lx-load-more"><span>Mostrando {visibleLimit} de {listing.length} registros</span><button type="button" className="inf-btn" onClick={()=>setVisibleLimit(v=>v+60)}>Carregar mais</button></div>}}
+    {listing.length>visibleLimit&&<div className="lx-load-more"><span>Mostrando {visibleLimit} de {listing.length} registros</span><button type="button" className="inf-btn" onClick={()=>setVisibleLimit(v=>v+60)}>Carregar mais</button></div>}
     {!loading&&!listing.length&&<p className="pr-list-empty">Nenhum registro corresponde aos filtros. Confira as fontes e altere o período quando necessário.</p>}
    </div>}
    {area==='audiencias'&&<p className="inf-note">Audiências sem data são apresentadas como pendentes de confirmação, nunca como audiência futura. Confira sempre a fonte oficial.</p>}
