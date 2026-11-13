@@ -53,6 +53,7 @@ export default function LexisOperatorWorkspace({area='atividades',db,session}){
  useEffect(()=>{load()},[load]);
  const pages=Math.max(1,Math.ceil(count/LIMIT));
  const categoryOptions=['todos','atendimento','analise_processual','auditoria','auditoria_documental','triagem_replica_provas','dossie','investigacao','investigacao_externa','sistema','automacao','outro'];
+ const selectableCategories=isAnalyses?categoryOptions:categoryOptions.filter(x=>!['auditoria_documental','triagem_replica_provas','investigacao_externa'].includes(x));
  const save=async e=>{
   e.preventDefault();if(saving||isAnalyses||!profile?.empresa_id)return;
   const title=form.titulo.trim(),details=form.descricao.trim(),cnj=form.protocolo_ref.trim();
@@ -112,7 +113,7 @@ export default function LexisOperatorWorkspace({area='atividades',db,session}){
    <form className="lx-operator-form" onSubmit={save}>
     <label>Título<input required minLength={4} maxLength={180} value={form.titulo} onChange={e=>setForm({...form,titulo:e.target.value})}/></label>
     <label>Data<input required type="date" max={todayBrazil()} value={form.data_realizacao} onChange={e=>setForm({...form,data_realizacao:e.target.value})}/></label>
-    <label>Categoria<select value={form.categoria} onChange={e=>setForm({...form,categoria:e.target.value,contato_cliente_confirmado:false})}>{categoryOptions.filter(x=>x!=='todos').map(x=><option key={x} value={x}>{kindName(x)}</option>)}</select></label>
+    <label>Categoria<select value={form.categoria} onChange={e=>setForm({...form,categoria:e.target.value,contato_cliente_confirmado:false})}>{selectableCategories.filter(x=>x!=='todos').map(x=><option key={x} value={x}>{kindName(x)}</option>)}</select></label>
     <label>Número CNJ (opcional)<input value={form.protocolo_ref} onChange={e=>setForm({...form,protocolo_ref:e.target.value})} placeholder="0000000-00.0000.0.00.0000"/></label>
     <label className="full">Descrição<textarea maxLength={3000} rows={3} value={form.descricao} onChange={e=>setForm({...form,descricao:e.target.value})}/></label>
     <label className="full"><input type="checkbox" disabled={form.categoria!=='atendimento'} checked={form.contato_cliente_confirmado} onChange={e=>setForm({...form,contato_cliente_confirmado:e.target.checked})}/> Houve contato real com o cliente</label>
@@ -122,7 +123,7 @@ export default function LexisOperatorWorkspace({area='atividades',db,session}){
   <section className="inf-panel"><div className="reference-panel-title"><BookOpen size={19}/><div><h2>Histórico do responsável</h2><p>Dados originais do LexisPredict — sem registros fictícios.</p></div></div>
    <form className="lx-operator-filters" onSubmit={e=>{e.preventDefault();setSearch(draft.trim());setPage(0)}}>
     <label className="lx-operator-search"><Search size={15}/><input aria-label="Buscar número de processo" placeholder="Filtrar pelo número do processo" value={draft} onChange={e=>setDraft(e.target.value)}/></label>
-    <select aria-label="Filtrar categoria" value={category} onChange={e=>{setCategory(e.target.value);setPage(0)}}>{categoryOptions.map(x=><option key={x} value={x}>{x==='todos'?'Todas as categorias':kindName(x)}</option>)}</select>
+    <select aria-label="Filtrar categoria" value={category} onChange={e=>{setCategory(e.target.value);setPage(0)}}>{selectableCategories.map(x=><option key={x} value={x}>{x==='todos'?'Todas as categorias':kindName(x)}</option>)}</select>
     <button className="inf-btn primary" type="submit">Buscar</button><button className="inf-btn" type="button" onClick={()=>{setSearch('');setDraft('');setPage(0);setCategory('todos')}}>Limpar</button>
    </form>
    {loading&&<p className="inf-note">Carregando registros...</p>}

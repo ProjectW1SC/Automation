@@ -23,7 +23,7 @@ html[data-crm-theme="infinitum"] [data-lexis-operator] input:not([type=checkbox]
 html[data-crm-theme="infinitum"] [data-lexis-operator] select,
 html[data-crm-theme="infinitum"] [data-lexis-operator] textarea{background:#fff;color:#2e281f;font-size:12px;border:1px solid #ded6c9;border-radius:7px;min-height:37px;padding:8px 11px;max-width:100%}
 html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-search input{border:0;min-width:0;width:100%;flex:1}
-html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form,.lx-operator-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:700;color:#645b4e}
 html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label.full,
 html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form .full{grid-column:1/-1}
