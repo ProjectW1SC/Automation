@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "lib/processos-oficiais.mjs",
+    "lib/djen-generator.mjs",
+    "lib/judicial-source-recovery.mjs",
+    "lib/combined-judicial-history.mjs",
+    "lib/wa-auto-bridge.mjs",
+    "lib/office-candidate-save.mjs",
+    "lib/crm-themes.mjs"
+  ]
+}
