@@ -1,16 +1,26 @@
 <div align="center">
 
-<img src="./public/branding/projectw1sc-wordmark.svg" alt="Logotipo ProjectW1SC" width="96" />
+<!-- Símbolo branco: legível no tema escuro do GitHub -->
+<img src="./public/branding/infinitum-symbol-branco.svg" alt="INFINITUM" width="140" />
 
-# ProjectW1SC
+# INFINITUM
 
-**CRM de negociações, relacionamento e acompanhamento operacional**
+**Plataforma de inteligência operacional, CRM jurídico e automação de carteiras**
 
-Uma plataforma para organizar a carteira de clientes, acompanhar pendências, registrar atendimentos e transformar informações dispersas em uma rotina de trabalho clara e rastreável.
+Organização de clientes, processos, atendimentos, captção de leads e rotinas de trabalho em um único ambiente — com foco em rastreabilidade, DataJud/DJEN e produtividade.
 
-[**Acessar o CRM**](https://projectw1sc-crm.vercel.app)
+[**Acessar a aplicação**](https://projectw1sc-crm.vercel.app)
 
-[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-682a47)](./LICENSE)
+**Licença:** MIT License — Copyright (c) 2026 W1 Capital.
+
+[![Licença: MIT](https://img.shields.io/badge/licença-MIT-0a0a0a)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14+-black)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E)](https://supabase.com/)
+
+<br/>
+
+<!-- Logo horizontal (preto) — melhor em fundo claro / light mode -->
+<img src="./public/branding/infinitum-horizontal-preto.png" alt="INFINITUM logotipo" width="320" />
 
 </div>
 
@@ -18,151 +28,161 @@ Uma plataforma para organizar a carteira de clientes, acompanhar pendências, re
 
 ## Sobre o projeto
 
-O ProjectW1SC nasceu da necessidade de reunir, em um só ambiente, as informações que fazem parte do dia a dia de uma operação de negociações: contatos, instituições, retornos, tarefas, registros de atendimento e relatórios.
+O **INFINITUM** é a evolução do ambiente operacional W1 Capital / ProjectW1SC: uma plataforma para reunir carteira de clientes, processos judiciais, retornos, tarefas, captção e registros de atendimento em um fluxo claro e auditável.
 
-A proposta é simples: permitir que cada pessoa saiba **o que precisa fazer, por que aquilo é prioridade e o que já aconteceu em cada acompanhamento**. Para isso, o sistema combina uma carteira centralizada, histórico de atividades, filtros operacionais e indicadores calculados a partir dos registros disponíveis.
+A proposta é permitir que cada pessoa saiba **o que precisa fazer, por que aquilo é prioridade e o que já aconteceu em cada acompanhamento**. O sistema combina carteira centralizada, histórico de atividades, filtros operacionais, indicadores e consultas a fontes públicas (DataJud e DJEN), respeitando os limites de cada origem.
 
-O CRM também permite importar planilhas e consultar informações processuais públicas, respeitando os limites de cada fonte. Não substitui a conferência dos documentos originais nem presume a existência de pagamentos, movimentações ou contatos que não foram confirmados.
+Não substitui a conferência de documentos originais nem presume pagamentos, movimentações ou contatos que não foram confirmados.
+
+### Identidade visual
+
+| Asset | Uso |
+| --- | --- |
+| `public/branding/infinitum-symbol-preto.svg` | Símbolo infinito (fundo claro) |
+| `public/branding/infinitum-symbol-branco.svg` | Símbolo infinito (fundo escuro) |
+| `public/branding/infinitum-horizontal-preto.png` | Logotipo horizontal completo |
+| `public/branding/logo-ia-infinitum-branco.png` | Variante IA / wordmark branco |
+| `public/branding/leadbroker-logotipo-preto.png` | Lead Broker (parceiro / módulo de leads) |
+| `public/branding/leadbroker-logotipo-branco.png` | Lead Broker (fundo escuro) |
+
+---
 
 ## Funcionalidades
 
 | Área | O que você encontra |
 | --- | --- |
 | **Visão geral** | Indicadores da carteira, gráficos, retornos e acesso rápido aos acompanhamentos. |
-| **Tarefas** | Fila de prioridades, vencimentos, registro de atendimento, edição e histórico de ações. |
+| **Tarefas** | Fila de prioridades, vencimentos, registro de atendimento, edição e histórico. |
 | **Clientes** | Cadastro, busca, filtros, detalhes das negociações e acompanhamento individual. |
-| **Processos** | Cadastro de números CNJ e consultas às fontes públicas DataJud e DJEN, quando disponíveis. |
-| **Finalizados** | Registros encerrados, consulta ao histórico e reabertura justificada. |
-| **Instituições** | Cadastro de financeiras, bancos, assessorias, contatos e imagens institucionais. |
-| **Minhas atividades** | Registro, consulta e edição de atividades, com vínculo opcional a clientes e processos. |
-| **Relatórios** | Resumos operacionais, indicadores por período, exportação e versão preparada para PDF. |
+| **Processos** | Cadastro de números CNJ e consultas às fontes públicas DataJud e DJEN. |
+| **Captção / Leads** | Fluxos de entrada e integração com operações de lead (Lead Broker). |
+| **Finalizados** | Registros encerrados, histórico e reabertura justificada. |
+| **Instituições** | Financeiras, bancos, assessorias, contatos e imagens institucionais. |
+| **Minhas atividades** | Registro e edição de atividades, com vínculo opcional a clientes e processos. |
+| **Relatórios** | Resumos operacionais, indicadores por período, exportação e PDF. |
 | **Configurações** | Preferências da conta, senha, foto, temas, cores e imagem de fundo. |
+| **Integrações** | WhatsApp (bridge/status), Office AI, sincronização e scanners. |
 
-Além das áreas principais, a aplicação oferece importação de Excel, acompanhamento da origem dos registros e personalização visual. A aparência pode ser alterada sem modificar os dados da carteira.
+Além das áreas principais: importação de Excel, origem dos registros e personalização visual sem alterar os dados da carteira.
 
-## Tecnologias utilizadas
+---
 
-- **Next.js e React:** páginas, componentes e interações do sistema.
-- **Supabase:** banco de dados PostgreSQL, autenticação, políticas de acesso (RLS) e armazenamento privado de arquivos.
-- **JavaScript e CSS:** regras operacionais, gráficos e identidade visual.
-- **Vercel:** hospedagem e publicação da aplicação.
-- **Excel e Google Sheets:** fontes de importação e integração, conforme as permissões e credenciais configuradas.
-- **DataJud e DJEN:** consultas a informações processuais públicas, sujeitas à disponibilidade e às regras das fontes oficiais.
+## Tecnologias
+
+- **Next.js e React** — páginas, componentes e interações
+- **Supabase** — PostgreSQL, Auth, RLS e Storage privado
+- **JavaScript / CSS** — regras operacionais, gráficos e identidade visual
+- **Vercel** — hospedagem e deploy
+- **Excel / Google Sheets** — importação e sincronização (quando autorizadas)
+- **DataJud e DJEN** — consultas processuais públicas (sujeitas à disponibilidade)
+- **WhatsApp bridge** — status, envio e webhook (quando configurados)
+
+---
 
 ## Executar localmente
 
-Para trabalhar no projeto, é necessário ter o **Node.js 20 ou superior**, o Git e acesso a um projeto Supabase devidamente configurado.
+Requisitos: **Node.js 20+**, Git e um projeto Supabase configurado.
 
 ```bash
-git clone https://github.com/ProjectW1SC/Automation.git
-cd Automation
+git clone https://github.com/ProjectW1SC/INFINITUM.git
+cd INFINITUM
 npm install
 ```
 
-Crie o arquivo `.env.local` a partir do modelo `.env.example` e preencha **somente as credenciais do seu próprio ambiente**. No Windows, você pode fazer a cópia com:
+Crie `.env.local` a partir de `.env.example`:
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
-Em seguida, inicie a aplicação:
-
 ```bash
 npm run dev
 ```
 
-Abra `http://localhost:3000` no navegador. Sem um Supabase configurado e uma conta autorizada, as áreas protegidas não terão acesso aos registros.
+Abra `http://localhost:3000`. Sem Supabase e conta autorizada, as áreas protegidas não terão dados.
 
 ### Variáveis de ambiente
 
-O arquivo [`.env.example`](./.env.example) reúne os nomes das configurações utilizadas pelo projeto. Entre as principais estão:
+Consulte [`.env.example`](./.env.example). Principais:
 
 | Variável | Finalidade |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Endereço do projeto Supabase. |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública do Supabase, utilizada no navegador em conjunto com RLS. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Chave privilegiada, restrita ao servidor e a operações autorizadas. |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | Credencial de serviço, quando houver integração autorizada com planilhas. |
-| `GOOGLE_SHEETS_IDS` | Identificadores das planilhas permitidas para sincronização. |
-| `CRON_SECRET` | Proteção de chamadas automatizadas, quando configuradas. |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública (navegador + RLS) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço (somente servidor) |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Credencial de planilhas (se houver) |
+| `GOOGLE_SHEETS_IDS` | IDs das planilhas permitidas |
+| `CRON_SECRET` | Proteção de rotas automatizadas |
 
-**Importante:** nunca publique arquivos `.env.local`, senhas, tokens ou chaves privilegiadas. Variáveis com o prefixo `NEXT_PUBLIC_` podem ser expostas ao navegador e não devem conter segredos.
+**Nunca** publique `.env.local`, senhas ou chaves privilegiadas. Prefixo `NEXT_PUBLIC_` é exposto ao browser.
+
+---
 
 ## Banco de dados e autenticação
 
-As estruturas e regras do banco estão versionadas em [`supabase/migrations/`](./supabase/migrations). Em uma instalação nova, as migrações precisam ser aplicadas **na ordem correta**, em um projeto Supabase sob seu controle.
+Estruturas em [`supabase/migrations/`](./supabase/migrations). Aplique as migrações na ordem em um projeto sob seu controle.
 
-O sistema utiliza o Supabase Auth para identificação dos usuários e políticas **Row Level Security (RLS)** para limitar o acesso aos dados. O armazenamento de imagens de perfil, fundos personalizados e imagens de instituições também utiliza áreas privadas do Supabase Storage.
+- Supabase Auth + **Row Level Security (RLS)**
+- Storage privado para fotos de perfil, fundos e imagens de instituições
 
-Antes de usar a aplicação com dados reais:
+Antes de dados reais:
 
-1. Configure a autenticação e as contas que terão permissão de acesso.
-2. Aplique e revise as migrações do banco em um ambiente de teste.
-3. Confirme as políticas RLS e as permissões dos buckets de arquivos.
-4. Verifique os endereços de redirecionamento da autenticação.
-5. Realize um backup antes de migrar ou alterar uma base de produção.
+1. Configure autenticação e contas autorizadas  
+2. Aplique e revise migrações em ambiente de teste  
+3. Confirme políticas RLS e buckets  
+4. Verifique redirect URLs  
+5. Faça backup antes de alterar produção  
 
-A existência de uma sessão autenticada não deve ser tratada, por si só, como autorização para acessar todos os registros. As permissões precisam ser conferidas também no banco e nas rotas do servidor.
+---
 
 ## Estrutura do repositório
 
 ```text
-app/
-  page.jsx                 Tela inicial e navegação por abas
-  tarefas/                 Fila de atendimento
-  processos/               Acompanhamento processual
-  minhas-atividades/       Registro de atividades
-  report/                  Relatórios
-  configuracoes/           Preferências e conta
-  api/                     Rotas executadas no servidor
-components/                Elementos compartilhados das telas
-lib/                       Regras, cálculos, integrações e validações
-public/themes/             Identidade visual e imagens dos temas
-supabase/migrations/       Estrutura e regras do banco de dados
-tests/                     Testes automatizados
+app/                    Páginas e rotas (agenda, captção, processos, API…)
+components/             Elementos compartilhados
+lib/                    Regras, integrações e validações
+public/branding/        Logotipos INFINITUM, Lead Broker e assets de login
+supabase/migrations/    Schema e políticas
+tests/                  Testes automatizados
 ```
 
-Algumas áreas, como **Clientes**, **Finalizados** e **Instituições**, compartilham componentes da página inicial. Por isso, nem todas as abas correspondem a uma pasta independente.
-
-Para localizar um ponto específico, comece por [`lib/crm-navigation.mjs`](./lib/crm-navigation.mjs) e [`components/reference-pages.jsx`](./components/reference-pages.jsx).
+---
 
 ## Testes e publicação
-
-Antes de publicar uma alteração, execute:
 
 ```bash
 npm test
 npm run build
 ```
 
-Os testes verificam regras como classificação de prazos, autenticação, tratamento de dados, relatórios e partes da interface. Eles ajudam a identificar problemas, mas não substituem a revisão visual e funcional no navegador.
+Deploy pela **Vercel** a partir deste repositório. Configure as variáveis de ambiente na plataforma e valide o resultado antes de considerar a mudança concluída.
 
-A publicação é realizada pela **Vercel**, a partir do repositório GitHub conectado ao projeto. Configure as variáveis de ambiente necessárias na plataforma e confira o resultado da implantação antes de considerar uma mudança concluída.
-
-A sincronização com planilhas depende de credenciais válidas e de autorização explícita às fontes. Uma rota de integração presente no código **não significa** que a sincronização automática esteja habilitada ou funcionando continuamente.
+---
 
 ## Critérios de operação
 
-O ProjectW1SC foi desenvolvido para manter uma distinção importante entre **informação registrada** e **informação comprovada**.
+- Finalizado = encerramento operacional, **não** quitação financeira comprovada  
+- Status importado de planilha não substitui comprovante  
+- Ausência em DataJud/DJEN ≠ ausência real de movimentação  
+- Atendimentos devem ser registrados com dados reais; o sistema não envia mensagens automaticamente  
+- Dados parciais devem ser apresentados como tais  
 
-- Um acompanhamento marcado como finalizado representa o encerramento da rotina operacional; não comprova quitação financeira.
-- Um status importado de planilha não substitui a análise de um comprovante.
-- A ausência de resultados em DataJud ou DJEN não significa necessariamente ausência de movimentações no processo.
-- Ações de atendimento precisam ser registradas com dados reais. O sistema não envia mensagens, e-mails ou ligações automaticamente.
-- Informações parciais ou indisponíveis devem ser apresentadas como tais, sem preenchimento fictício.
-
-Os dados dos clientes pertencem ao ambiente privado de operação. Não inclua informações pessoais, planilhas reais, documentos ou credenciais em commits, exemplos públicos ou solicitações de suporte.
-
-## Evolução do projeto
-
-As melhorias são desenvolvidas de maneira incremental, procurando preservar os dados existentes e manter a operação estável. Correções, novas funcionalidades e ajustes visuais devem passar por revisão, testes e verificação da implantação.
-
-O objetivo do ProjectW1SC é continuar evoluindo como uma ferramenta de trabalho **prática, organizada e confiável**, com atenção à segurança, à rastreabilidade e à experiência de quem utiliza o CRM todos os dias.
+Não inclua dados pessoais, planilhas reais ou credenciais em commits ou exemplos públicos.
 
 ---
 
 ## Licença e direitos autorais
 
-**© 2026 W1 Capital.** O código-fonte original do ProjectW1SC é distribuído sob a [Licença MIT (MIT License)](./LICENSE). É permitido estudar, modificar, compartilhar e utilizar o software nos termos dessa licença, preservando os avisos de copyright.
+**© 2026 W1 Capital.** O código-fonte é distribuído sob a [Licença MIT](./LICENSE).
 
-A marca ProjectW1SC/W1 Capital, seus logotipos, obras visuais de personagens e marcas de terceiros não recebem automaticamente uma licença de reutilização comercial pela licença MIT do código. Respeite os direitos de seus titulares.
+A marca **INFINITUM**, o símbolo infinito, o logotipo Lead Broker e demais elementos visuais de marca **não** são licenciados automaticamente pelo MIT do código. Respeite os direitos de titularidade antes de reutilizar.
+
+---
+
+<div align="center">
+
+<img src="./public/branding/infinitum-symbol-branco.svg" alt="INFINITUM" width="48" />
+
+**INFINITUM** · W1 Capital
+
+</div>
