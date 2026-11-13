@@ -55,18 +55,27 @@ function Scanner({db,session}){
    const {data:{session:s},error:se}=await withAuthDeadline(db.auth.getSession(),9500);
    if(se||!s?.access_token)throw Error('Sessão expirada. Faça login novamente.');
    let index=0,success=0,failed=0;
+   const browserPaused={datajud:false,djen:false};
    for(const row of list){
     if(controller.signal.aborted)break;
     try{
      const browserResults={};
      const browserSource=async(source,queryKey,fetcher)=>{
+      if(browserPaused[source])return null;
       const cached=await db.from('crm_judicial_snapshots').select('checked_at')
        .eq('actor_id',s.user.id).eq('process_number',row.process_number)
        .eq('source',source).eq('query_key',queryKey).maybeSingle();
       if(cached.error)return null;
       if(snapshotIsFresh(cached.data,source))return null;
-      try{return await fetcher()}catch(e){return {ok:false,source:source==='datajud'?'DataJud':'DJEN',
-       number:row.process_number,status:e?.status,reason:e?.code||'network_error',error:String(e?.message||'Falha no navegador').slice(0,240)}}
+      try{
+       const result=await fetcher();
+       if([403,429].includes(Number(result?.status))||['blocked_403','rate_limited','network_error','browser_cooldown'].includes(result?.reason))browserPaused[source]=true;
+       return result;
+      }catch(e){
+       if([403,429].includes(Number(e?.status))||e?.code==='network_error')browserPaused[source]=true;
+       return {ok:false,source:source==='datajud'?'DataJud':'DJEN',
+        number:row.process_number,status:e?.status,reason:e?.code||'network_error',error:String(e?.message||'Falha no navegador').slice(0,240)};
+      }
      };
      const [datajudBrowser,djenBrowser]=await Promise.all([
       browserSource('datajud','latest',()=>browseOfficialDataJudNumber({number:row.process_number,signal:controller.signal})),
