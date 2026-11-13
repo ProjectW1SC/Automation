@@ -30,7 +30,7 @@ test('editar mantem os mesmos campos validos e nao altera autor, origem ou data 
 });
 
 test('todos os temas possuem contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
- assert.equal(CRM_THEMES.length,1);assert.equal(CRM_THEMES[0].id,'infinitum');assert.equal(resolveTheme('sasuke'),'infinitum');
+ assert.deepEqual(CRM_THEMES.map(x=>x.id),['infinitum','blackhole']);assert.equal(resolveTheme('blackhole'),'blackhole');assert.equal(resolveTheme('sasuke'),'infinitum');
  assert.ok(new Set(CRM_THEMES.map(x=>x.id)).size===CRM_THEMES.length);
  assert.equal(resolveTheme('tema-inexistente'),'infinitum');
  for(const theme of CRM_THEMES){
