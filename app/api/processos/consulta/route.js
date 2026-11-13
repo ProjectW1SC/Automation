@@ -119,12 +119,6 @@ export async function GET(request){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};
    }
-   // O navegador consulta primeiro quando não há snapshot recente. Esta opção
-   // apenas verifica cache/RLS e nunca faz chamada externa nem cria cooldown.
-   if(cacheOnly){
-    return {ok:false,cacheMiss:true,code:'cache_miss',source:kind,
-     error:'Não há consulta recente para esta janela; navegador pode consultar a fonte pública.'};
-   }
    const [localPause,globalPause,platformPause]=await Promise.all([
     db.from('office_official_backoff').select('status,retry_after')
      .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).maybeSingle(),
@@ -141,6 +135,9 @@ export async function GET(request){
    }
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
+   // Cache-only respeita também os cooldowns globais e por operador.
+   if(cacheOnly)return {ok:false,cacheMiss:true,code:'cache_miss',source:kind,
+    error:'Não há consulta recente nem bloqueio ativo; navegador pode consultar a fonte pública.'};
    let result;
    try{
     if(kind==='djen'){
