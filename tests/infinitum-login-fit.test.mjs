@@ -11,17 +11,19 @@ test('login keeps readable controls and grows naturally on short screens',()=>{
  assert.match(css,/overflow:visible!important/);
  assert.match(css,/min-height:48px!important/);
  assert.match(css,/font-size:16px!important/);
- const login=css.slice(0,css.indexOf('/* Telas pré-login'));
- assert.doesNotMatch(login,/font-size:clamp\([^)]*dvh|height:100dvh!important/);
+ const panel=css.match(/\.w1-auth-panel\{([^}]+)\}/)[1];
+ assert.match(panel,/height:auto!important/);
+ assert.doesNotMatch(css,/font-size:clamp\([^)]*dvh/);
  assert.match(css,/justify-content:flex-start!important/);
  assert.match(css,/margin-top:auto!important/);
 });
 
-test('mobile prioritizes the form and keeps branding outside the raster video',()=>{
+test('mobile keeps the galaxy and a naturally sized form with independent branding',()=>{
  const css=read('app/infinitum-login-video.css');
  const mobile=css.slice(css.indexOf('@media(max-width:920px)'),css.indexOf('@media(max-width:480px)'));
  assert.match(mobile,/grid-template-columns:minmax\(0,1fr\)!important/);
- assert.match(mobile,/\.w1-auth-hero\{display:none!important\}/);
+ assert.match(mobile,/height:min\(101\.7vw,440px\)!important/);
+ assert.match(mobile,/object-position:center top!important/);
  assert.match(mobile,/min-height:100svh!important/);
  assert.match(read('components/professional-auth.jsx'),/<span>INFINITUM<\/span>/);
 });

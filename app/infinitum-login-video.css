@@ -1,18 +1,19 @@
+/* GALAXY LOGIN FINAL */
 /* Login: dimensões fluidas e texto legível, sem escalar o formulário pela altura da tela. */
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{
- min-height:100svh!important;padding:20px!important;background:#f5f3ef!important;color:#292524!important;
- display:block!important;overflow:visible!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;
+ min-height:100svh!important;padding:0!important;background:#fff!important;color:#292524!important;
+ display:block!important;overflow-x:hidden!important;overflow-y:auto!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
- display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:0!important;
- width:100%!important;max-width:1600px!important;min-height:calc(100svh - 40px)!important;height:auto!important;
- margin:0 auto!important;border:1px solid #e7e1d8!important;border-radius:20px!important;background:#fff!important;
- box-shadow:0 12px 48px #29201608!important;overflow:clip!important;
+ display:grid!important;grid-template-columns:min(55.3125vw,98.3333dvh) minmax(0,1fr)!important;gap:0!important;
+ width:100%!important;max-width:none!important;min-height:100svh!important;height:auto!important;
+ margin:0!important;border:0!important;border-radius:0!important;background:#fff!important;
+ box-shadow:none!important;overflow:visible!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
- position:sticky!important;top:20px!important;align-self:start!important;width:100%!important;
- height:calc(100svh - 40px)!important;min-height:0!important;max-height:none!important;aspect-ratio:710 / 720!important;
- display:block!important;padding:0!important;margin:0!important;background:#353737!important;
+ position:sticky!important;top:0!important;align-self:start!important;width:100%!important;
+ height:100dvh!important;min-height:0!important;max-height:none!important;aspect-ratio:710 / 720!important;
+ display:block!important;padding:0!important;margin:0!important;background:#161e27!important;
  border:0!important;border-radius:0!important;isolation:isolate!important;overflow:hidden!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero::before,
@@ -21,13 +22,13 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video-poster{
  position:absolute!important;inset:0!important;z-index:0!important;
- background:#353737 url('/branding/infinitum-login-poster.webp') center/contain no-repeat!important;
+ background:#161e27 url('/branding/infinitum-login-poster.webp?v=20261113-galaxy') center/cover no-repeat!important;background-size:cover!important;
  transform:none!important;animation:none!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
  position:absolute!important;inset:0!important;z-index:1!important;display:block!important;
  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;
- object-fit:contain!important;object-position:center center!important;pointer-events:none!important;
+ object-fit:cover!important;object-position:center center!important;pointer-events:none!important;
  border:0!important;border-radius:0!important;filter:none!important;animation:none!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero-transcript{
@@ -36,7 +37,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
  display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-self:stretch!important;
- width:100%!important;min-width:0!important;min-height:calc(100svh - 40px)!important;height:auto!important;
+ width:100%!important;min-width:0!important;min-height:100dvh!important;height:auto!important;
  padding:28px clamp(24px,4.5vw,72px)!important;gap:24px!important;overflow:visible!important;
  background:#fff!important;color:#292524!important;border:0!important;border-radius:0!important;box-shadow:none!important;
 }
@@ -120,12 +121,14 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
  border-top:1px solid #ece6df!important;color:#756a5f!important;font-size:11px!important;line-height:1.6!important;text-align:center!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] :is(input,button,a):focus-visible{outline:2px solid #8b6d48!important;outline-offset:3px!important}
-/* O formulário vem primeiro em telas estreitas; o vídeo não empurra os campos para baixo. */
+/* Em telas estreitas, preserva a galáxia original e deixa o formulário crescer sem cortes. */
 @media(max-width:920px){
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{padding:0!important}
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{grid-template-columns:minmax(0,1fr)!important;min-height:100svh!important;border:0!important;border-radius:0!important;overflow:visible!important}
- html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{display:none!important}
- html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{min-height:100svh!important;padding:24px clamp(20px,6vw,56px)!important;gap:32px!important}
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{display:block!important;position:relative!important;height:min(101.7vw,440px)!important;max-height:440px!important;min-height:0!important;aspect-ratio:auto!important}
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{object-position:center top!important}
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video-poster{background-position:center top!important}
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{min-height:0!important;padding:24px clamp(20px,6vw,56px)!important;gap:32px!important}
 }
 @media(max-width:480px){
  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{padding:20px!important;gap:28px!important}
