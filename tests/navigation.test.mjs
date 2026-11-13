@@ -5,7 +5,7 @@ import {CRM_AREAS,crmAreaHref,areaFromQuery} from '../lib/crm-navigation.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('a navegação principal é de um escritório jurídico e não de quitações',()=>{
  const labels=CRM_AREAS.map(x=>x.label);
- assert.deepEqual(labels,['Painel jurídico','Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Integrações','Configurações']);
+ assert.deepEqual(labels,['Painel jurídico','Clientes','Processos','Encerrados','Atividades','Análises internas','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Gerador de processos','Superagente','Mini Agentes','Relatórios','Integrações','Configurações']);
  assert.equal(crmAreaHref('Clientes'),'/clientes');assert.equal(crmAreaHref('Processos'),'/processos');
  assert.equal(crmAreaHref('Peças e petições'),'/pecas');
  assert.equal(labels.filter(x=>x==='WhatsApp').length,1);
