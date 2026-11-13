@@ -3,13 +3,14 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {Archive,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,Clock3,ExternalLink,FileText,Gavel,Plus,RefreshCw,Search,Users,X} from 'lucide-react';
 import {buildLexisEvents} from '../lib/lexis-operations.mjs';
+import {summarizeLexisReturns} from '../lib/lexis-return-kpis.mjs';
 import {loadLexisCompanySources} from '../lib/lexis-company-data.mjs';
 import LexisEventDetails from './lexis-event-details';
 const brazilToday=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const iso=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
 const fmt=d=>d?String(d).slice(0,10).split('-').reverse().join('/'):'Data não confirmada';
 const kinds={retorno:'Retorno',prazo:'Prazo',audiencia:'Audiência',tarefa:'Tarefa'};
-const statuses={vencido:'Vencido',atencao:'Atenção',em_dia:'Em dia',encerrado:'Encerrado',sem_data:'Sem data'};
+const statuses={vencido:'Vencido',atencao:'Atenção',em_dia:'Em dia',atendido:'Atendido',encerrado:'Encerrado',sem_data:'Sem data'};
 function Chip({value,label}){return <span className={'lx-status lx-status--'+(statuses[value]?value:'sem_data')} data-status={value}>{label||statuses[value]||'Sem data'}</span>}
 function Card({item,onSelect}){
  return <article className="lx-event-card">
@@ -19,7 +20,7 @@ function Card({item,onSelect}){
    <span>{item.process_number||item.source||'Registro da empresa'}</span>
    <small>Responsável: {item.responsible||'Não informado'}</small>
   </div>
-  <div className="lx-event-right"><Chip value={item.status}/><button className="lx-event-open" type="button" onClick={()=>onSelect(item)}>Detalhes <ChevronRight size={14}/></button></div>
+  <div className="lx-event-right"><Chip value={item.status} label={item.status_label}/><button className="lx-event-open" type="button" onClick={()=>onSelect(item)}>Detalhes <ChevronRight size={14}/></button></div>
  </article>;
 }
 export default function LexisOperations({db,session,area='deadlines'}){
@@ -63,18 +64,25 @@ export default function LexisOperations({db,session,area='deadlines'}){
  const areaRows=useMemo(()=>{
   let filtered=items;
   if(area==='audiencias')filtered=filtered.filter(x=>x.kind==='audiencia');
-  if(area==='deadlines')filtered=filtered.filter(x=>x.kind!=='audiencia');
+  if(area==='deadlines')filtered=filtered.filter(x=>x.kind==='retorno'&&x.process_id!=null);
   if(area==='agenda')filtered=filtered.filter(x=>x.due_on&&x.due_on>=rangeStart&&x.due_on<=rangeEnd);
   if(area==='audiencias'&&!showPast)filtered=filtered.filter(x=>!x.due_on||x.due_on>=brazilToday());
   if(search.trim()){const term=search.toLocaleLowerCase('pt-BR').trim();
     filtered=filtered.filter(x=>[x.title,x.client_name,x.process_number,x.responsible,x.notes].some(z=>String(z||'').toLocaleLowerCase('pt-BR').includes(term)))}
   return filtered;
  },[items,area,search,showPast,rangeStart,rangeEnd]);
- const listing=useMemo(()=>filter==='todos'?areaRows:areaRows.filter(x=>area==='audiencias'&&filter==='futuras'?!!x.due_on&&x.due_on>=brazilToday()&&x.status!=='encerrado':x.status===filter),[areaRows,filter,area]);
- const counts=useMemo(()=>({total:areaRows.length,overdue:areaRows.filter(x=>x.status==='vencido').length,
-  attention:areaRows.filter(x=>x.status==='atencao').length,
-  ok:areaRows.filter(x=>x.status==='em_dia').length,
-  closed:areaRows.filter(x=>x.status==='encerrado').length}),[areaRows]);
+ const listing=useMemo(()=>areaRows.filter(x=>{
+  if(filter==='todos')return true;
+  if(area==='audiencias')return filter==='futuras'?!!x.due_on&&x.due_on>=brazilToday()&&x.status!=='encerrado':x.status===filter;
+  if(x.kind!=='retorno'||!x.process_id)return false;
+  if(filter==='hoje')return x.due_on===brazilToday()&&x.status!=='atendido'&&x.status!=='encerrado';
+  if(filter==='proximos'){
+   const end=new Date(brazilToday()+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+   return x.due_on>=brazilToday()&&x.due_on<=end.toISOString().slice(0,10)&&x.status!=='atendido'&&x.status!=='encerrado';
+  }
+  return x.status===filter;
+ }),[areaRows,filter,area]);
+ const returnKpis=useMemo(()=>summarizeLexisReturns(sourceRows.processes,brazilToday()),[sourceRows.processes]);
  const allHearings=useMemo(()=>items.filter(x=>x.kind==='audiencia'),[items]);
  const hearingMetrics=[
   ['Registradas',allHearings.length,'todos'],
@@ -83,8 +91,13 @@ export default function LexisOperations({db,session,area='deadlines'}){
   ['Passadas',allHearings.filter(x=>x.due_on&&x.due_on<brazilToday()&&x.status!=='encerrado').length,'vencido'],
   ['Canceladas',allHearings.filter(x=>x.status==='encerrado').length,'encerrado']
  ];
- const displayedMetrics=area==='audiencias'?hearingMetrics:
-  [['Registros no período',counts.total,'todos'],['Vencidos',counts.overdue,'vencido'],['Atenção',counts.attention,'atencao'],['Em dia',counts.ok,'em_dia'],['Encerrados',counts.closed,'encerrado']];
+ const displayedMetrics=area==='audiencias'?hearingMetrics:[
+  ['Retornos agendados',returnKpis.scheduled,'todos'],
+  ['Retornos vencidos',returnKpis.overdue,'vencido'],
+  ['Retornos hoje',returnKpis.today,'hoje'],
+  ['Próximos 7 dias',returnKpis.next7,'proximos'],
+  ['Já atendidos',returnKpis.attended,'atendido']
+ ];
  function chooseFilter(value){if(area==='audiencias'&&value==='vencido')setShowPast(true);setFilter(value)}
  const save=async e=>{
   e.preventDefault();if(busy||!profile?.empresa_id)return;
@@ -113,14 +126,14 @@ export default function LexisOperations({db,session,area='deadlines'}){
  const offset=(new Date(first+'T12:00:00Z').getUTCDay()+6)%7;
  const grid=Array.from({length:42},(_,i)=>iso(currentYear,currentMonth,1+i-offset));
  const groups=useMemo(()=>{const g=new Map();for(const x of listing){if(!x.due_on)continue;g.set(x.due_on,[...(g.get(x.due_on)||[]),x])}return g},[listing]);
- const subtitles={agenda:'Compromissos e audiências da organização, em uma única visão.',deadlines:'Prazos judiciais, retornos e tarefas, com situação real.',audiencias:'Audiências registradas pelo LexisPredict e suas fontes.'};
+ const subtitles={agenda:'Compromissos e audiências da organização, em uma única visão.',deadlines:'Retornos ao cliente com número CNJ e histórico de atendimento registrado.',audiencias:'Audiências registradas pelo LexisPredict e suas fontes.'};
  const titles={agenda:'Agenda',deadlines:'Prazos e retornos',audiencias:'Audiências'};
  if(!profile&&!loading)return <main className="inf-studio lx-workspace"><p role="alert" className="inf-note error">{errors[0]||'Acesso não autorizado.'}</p></main>;
  return <main className="inf-studio lx-workspace" data-lexis-operation={area}>
   <header className="inf-heading lx-workspace-heading"><div><small>INFINITUM / INTELIGÊNCIA JURÍDICA</small><h1>{titles[area]||'Agenda operacional'}</h1>
    <p>{subtitles[area]||subtitles.agenda}</p></div>
    <div className="inf-actions"><button className="inf-btn" type="button" onClick={load} disabled={loading}><RefreshCw size={15}/> Atualizar</button>
-    <button className="inf-btn primary" type="button" onClick={()=>setEditing(x=>!x)}><Plus size={15}/> Novo compromisso</button></div>
+    {area==='deadlines'?<Link className="inf-btn primary" href="/agenda"><Plus size={15}/> Novo compromisso na Agenda</Link>:<button className="inf-btn primary" type="button" onClick={()=>setEditing(x=>!x)}><Plus size={15}/> Novo compromisso</button>}</div>
   </header>
   {errors.map((e,i)=><p key={i} className="inf-note error" role="status">{e}</p>)}
   {loading&&<p className="inf-note">Consultando registros da organização no Supabase do LexisPredict...</p>}
@@ -131,10 +144,10 @@ export default function LexisOperations({db,session,area='deadlines'}){
   </div>
   <section className="pr-module lx-panel">
    <div className="pr-module-intro"><span>CARTEIRA DA ORGANIZAÇÃO</span><h2>{area==='audiencias'?'Compromissos judiciais.':area==='agenda'?'Calendário compartilhado.':'Controle de vencimentos.'}</h2>
-    <p>Os indicadores distinguem vencido, atenção, em dia e encerrado. Datas não confirmadas não são inventadas.</p></div>
+    <p>Os KPIs de retorno usam o mesmo cálculo global do Dashboard: último atendimento e próximo retorno, somente processos com CNJ. A Agenda filtra apenas a lista pelo mês.</p></div>
    <div className="lx-toolbar"><label className="lx-search"><Search size={16}/><input aria-label="Buscar nos compromissos" placeholder="Buscar cliente, processo ou responsável" value={search} onChange={e=>setSearch(e.target.value)}/></label>
     <select aria-label="Situação" value={filter} onChange={e=>chooseFilter(e.target.value)}>
-     <option value="todos">Todas as situações</option>{area==='audiencias'&&<option value="futuras">Futuras</option>}{Object.entries(statuses).map(([k,v])=><option key={k} value={k}>{area==='audiencias'&&k==='vencido'?'Passadas':v}</option>)}</select>
+     <option value="todos">Todas as situações</option>{area==='audiencias'?<><option value="futuras">Futuras</option>{Object.entries(statuses).filter(([k])=>k!=='atendido').map(([k,v])=><option key={k} value={k}>{k==='vencido'?'Passadas':v}</option>)}</>:<><option value="hoje">Para hoje</option><option value="proximos">Próximos 7 dias</option><option value="atendido">Atendidos</option>{Object.entries(statuses).filter(([k])=>!['atendido','encerrado'].includes(k)).map(([k,v])=><option key={k} value={k}>{v}</option>)}</>}</select>
     {area==='audiencias'&&<label className="lx-check"><input type="checkbox" checked={showPast} onChange={e=>setShowPast(e.target.checked)}/> Incluir audiências anteriores</label>}
     {area==='agenda'&&<div className="lx-view-toggle"><button className="inf-btn" onClick={()=>setView('month')} aria-pressed={view==='month'}>Mês</button><button className="inf-btn" onClick={()=>setView('list')} aria-pressed={view==='list'}>Lista</button></div>}
    </div>
@@ -154,7 +167,7 @@ export default function LexisOperations({db,session,area='deadlines'}){
     {!loading&&!listing.length&&<p className="pr-list-empty">Nenhum registro corresponde aos filtros. Confira as fontes e altere o período quando necessário.</p>}
    </div>}
    {area==='audiencias'&&<p className="inf-note">Audiências passadas não são prazos vencidos. Marque "Incluir audiências anteriores" para conferir eventos anteriores. As sem data ainda exigem confirmação oficial.</p>}
-   {area==='deadlines'&&<p className="inf-note">Prazos e retornos são datas distintas. O encerramento de um processo não é tratado como atraso.</p>}
+   {area==='deadlines'&&<p className="inf-note">Regra do LexisPredict: retorno vencido = próximo retorno anterior a hoje, sem atendimento na data combinada ou posterior, em processo ativo com CNJ. Datas antigas de proximo_prazo e compromissos manuais não são contabilizados. Confira tarefas manuais na Agenda.</p>}
   </section>
   {selected&&<LexisEventDetails key={selected.id} event={selected} db={db} profile={profile} onClose={()=>setSelected(null)} onSaved={load} onFinish={finish} busy={busy}/>}
   {editing&&<section className="pr-module lx-detail"><div className="lx-detail-head"><div><small>CADASTRO OPERACIONAL</small><h2>Novo compromisso</h2></div><button className="inf-btn" onClick={()=>setEditing(false)}><X size={14}/> Cancelar</button></div>

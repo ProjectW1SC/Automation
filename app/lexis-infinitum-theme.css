@@ -192,3 +192,9 @@ html[data-crm-theme="infinitum"] .lx-shared .lx-judicial-event h4{font-size:15px
 html[data-crm-theme="infinitum"] .lx-shared .lx-judicial-description{white-space:pre-wrap}
 html[data-crm-theme="infinitum"] .lx-shared .lx-judicial-event a{display:inline-flex;padding:10px 0;color:#685031;text-decoration:underline;font-size:13px}
 @media(max-width:600px){html[data-crm-theme="infinitum"] .lx-shared .lx-source-results{grid-template-columns:minmax(0,1fr)}}
+
+html[data-crm-theme="infinitum"] .lx-status--atendido{background:#eaf5ee;color:#2c7147;border-color:#c9e7d4}
+html[data-crm-theme="infinitum"] .lx-calendar-entry--atendido{background:#eaf5ee;color:#2c7147}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--atendido{background:#458f6d}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--hoje{background:#c49b4f}
+html[data-crm-theme="infinitum"] .lx-kpi-mark--proximos{background:#6e92b8}
