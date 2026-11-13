@@ -3,6 +3,8 @@ import {consultBothOfficialSources} from '../../../../lib/combined-judicial-hist
 import {snapshotIsFresh,snapshotQueryKey,shrinkOfficialResult} from '../../../../lib/judicial-triage.mjs';
 import {officialBackoffDuration,officialBackoffActive} from '../../../../lib/judicial-source-recovery.mjs';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
+import {isDemoCompany} from '../../../../lib/demo-tenant.mjs';
+import {buildDemoJudicialResult} from '../../../../lib/demo-judicial-query.mjs';
 import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl,dataJudSnapshotIsFromCourt} from '../../../../lib/processos-oficiais.mjs';
@@ -109,6 +111,15 @@ export async function GET(request){
    return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
   if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length&&!lexisCase.data?.length)
    return json({ok:false,code:'crm_access',error:'Este CNJ não consta da carteira autorizada da empresa.'},403);
+  // O tenant ficticio nunca realiza requisicoes judiciais verdadeiras.
+  if(shared&&await isDemoCompany(db,empresaId)){
+   const {data,error}=await db.from('crm_judicial_snapshots').select('source,payload,checked_at')
+    .eq('empresa_id',empresaId).eq('process_number',number)
+    .in('source',['djen','datajud']).order('checked_at',{ascending:false}).limit(6);
+   if(error)return json({ok:false,error:'Histórico demonstrativo indisponível.'},503);
+   return json(buildDemoJudicialResult({number,source,snapshots:data||[],
+    start:params.get('inicio')||'',end:params.get('fim')||'',page:Number(params.get('pagina')||1)}));
+  }
   async function consultOne(kind){
    const queryKey=snapshotQueryKey(kind,params);
    const {data:rawCached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
