@@ -44,6 +44,15 @@ Deno.serve(async(req:Request)=>{
   // Repete a autorização do servidor, incluindo a carteira compartilhada Lexis.
   if(!await authorizeJudicialCase(db,user.id,number))
    return json({ok:false,error:"Processo não encontrado na carteira autorizada da empresa."},403);
+  // O tenant de demonstracao pode ler snapshots ficticios no aplicativo,
+  // mas nunca efetuar requisicoes reais ao CNJ diretamente pela Edge Function.
+  const profile=await db.from("usuarios").select("empresa_id").eq("auth_user_id",user.id).limit(2);
+  if(profile.error||profile.data?.length!==1||!profile.data[0]?.empresa_id)
+   return json({ok:false,error:"Empresa da sessão não pôde ser validada."},403);
+  const company=await db.from("empresas").select("branding").eq("id",profile.data[0].empresa_id).maybeSingle();
+  if(company.error||!company.data)return json({ok:false,error:"Organização não pôde ser validada."},503);
+  if(company.data.branding?.infinitum_demo===true)
+   return json({ok:false,demo:true,code:"demo_mode",error:"Conta demonstrativa: consulta externa ao DJEN e ao DataJud desativada. Use a consulta simulada do Infinitum."},403);
   const region=Deno.env.get("SB_REGION")||"unknown";
   if(region!=="sa-east-1")return json({ok:false,error:"Consulta regional não ocorreu em São Paulo.",region},503);
   const started=Date.now(),checkedAt=new Date().toISOString();
