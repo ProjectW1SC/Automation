@@ -10,6 +10,7 @@ import {useCrmAccess} from '../../lib/use-crm-access';
 import {ADMIN_EMAIL,signInWithPassword} from '../../lib/login.mjs';
 import {todayBrazil} from '../../lib/tarefas.mjs';
 import {buildReport,periodBounds,exportReportCsv} from '../../lib/report.mjs';
+import {adaptLexisToExecutiveReport} from '../../lib/lexis-report-adapter.mjs';
 import {categoryLabel} from '../../lib/minhas-atividades.mjs';
 import {sortTaskQueue} from '../../lib/tarefas.mjs';
 import {priorityDigest,limitSnippet} from '../../lib/report-priority.mjs';
@@ -98,6 +99,43 @@ function LegacyReportPage(){
   if(!db||!access.allowed)return;
   setLoading(true);setNotice('');
   const bounds=periodBounds(period,today);
+  if(process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1'){
+   // O relatório executivo Infinitum usa o próprio visual original, PDF e gráficos.
+   // A consulta é sob demanda e paginada para não esconder os processos após 1.000 registros.
+   try{
+    const user=await db.from('usuarios').select('auth_user_id,empresa_id').eq('auth_user_id',session.user.id).limit(2);
+    if(user.error||user.data?.length!==1||!user.data[0].empresa_id)
+      throw Error(user.error?.message||'Usuário sem vínculo único à organização Lexis.');
+    const empresaId=user.data[0].empresa_id;
+    const col='id,cliente,protocolo_ref,tribunal,advogado,atendido_por,status_interno,proximo_retorno,proximo_prazo,ultimo_retorno,observacoes';
+    const tasks=db.from('tarefas_realizadas')
+     .select('id,processo_id,empresa_id,categoria,data_realizacao,responsavel_auth_user_id,contato_cliente_confirmado,descricao,titulo,created_at')
+     .eq('empresa_id',empresaId)
+     .gte('data_realizacao',bounds.start).lt('data_realizacao',bounds.endExclusive)
+     .order('data_realizacao',{ascending:false}).limit(2500);
+    const queries=[
+     db.from('processos').select(col).eq('empresa_id',empresaId).order('id').range(0,999),
+     db.from('processos').select(col).eq('empresa_id',empresaId).order('id').range(1000,1999),
+     db.from('processos').select(col).eq('empresa_id',empresaId).order('id').range(2000,2999),
+     db.from('usuarios').select('id,auth_user_id,empresa_id,nome').eq('empresa_id',empresaId).limit(200),
+     tasks
+    ];
+    const [one,two,three,users,acts]=await Promise.all(queries);
+    const fails=[one,two,three,users,acts].filter(x=>x.error);
+    if(fails.length)throw Error(fails.map(x=>x.error.message).join(' · '));
+    const processes=[...(one.data||[]),...(two.data||[]),...(three.data||[])];
+    const adapted=adaptLexisToExecutiveReport({processes,activities:acts.data||[],members:users.data||[]});
+    setClients(adapted.clients);setAudit(adapted.audit);setManual(adapted.manual);
+    setPriorityAudit(adapted.priorityAudit);setPriorityManual(adapted.priorityManual);
+    const warnings=[];
+    if((three.data||[]).length===1000)warnings.push('Acima de 3.000 processos: relatório limitado às primeiras 3.000 linhas.');
+    if((acts.data||[]).length===2500)warnings.push('Histórico limitado a 2.500 registros neste período.');
+    setNotice(warnings.join(' · '));setUpdated(new Date());
+   }catch(e){setNotice('Não foi possível gerar os indicadores da organização: '+e.message);
+    setClients([]);setAudit([]);setManual([]);setPriorityAudit([]);setPriorityManual([]);
+   }finally{setLoading(false)}
+   return;
+  }
   // Previous UTC day avoids omitting events around the Sao Paulo midnight boundary.
   const prev=new Date(Date.parse(bounds.start+'T12:00:00Z')-86400000).toISOString().slice(0,10);
   const [c,a,m]=await Promise.all([
@@ -154,7 +192,7 @@ function LegacyReportPage(){
  return <CrmShell active="Relatórios" email={session.user.email||''} overdueCount={report.portfolio.overdue} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard report-dashboard" data-projectw1sc-report="operational">
    <header className="reference-header report-header">
-    <div><div className="reference-overline">INFINITUM · INTELIGÊNCIA OPERACIONAL</div><h1>Relatórios operacionais</h1><p>Carteira, atendimentos e atividades registradas. Dados do Supabase, sem estimativas.</p></div>
+    <div><div className="reference-overline">INFINITUM · INTELIGÊNCIA OPERACIONAL</div><h1>Relatórios operacionais</h1><p>Processos, atendimentos e atividades registrados. Dados do Supabase Lexis, sem estimativas nem contatos presumidos.</p></div>
     <div className="reference-actions">
      <button className="reference-outline" onClick={load} disabled={loading}><RefreshCw size={16}/> Atualizar</button>
      <button className="reference-outline" onClick={()=>exportAggregate(report)} disabled={loading}><Download size={16}/> Exportar CSV</button>
@@ -228,9 +266,6 @@ function LegacyReportPage(){
  </CrmShell>;
 }
 
-// /report conserva a identidade e a rota do Infinitum. O modo Lexis lê o banco principal.
-export default function ReportPage(){
- if(process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1')
-  return <SecuredWorkspace active="Relatórios">{({db,session})=><LexisSharedOffice area="reports" db={db} session={session}/>}</SecuredWorkspace>;
- return <LegacyReportPage/>;
-}
+// /report mantém todos os painéis, o gráfico e o PDF originais do tema Infinitum.
+// No modo compartilhado, o carregamento acima substitui dados legados pelos dados Lexis.
+export default function ReportPage(){return <LegacyReportPage/>;}
