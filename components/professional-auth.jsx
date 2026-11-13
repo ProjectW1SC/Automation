@@ -23,9 +23,9 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
    <section className="w1-auth-hero" aria-label="Infinitum — gestão jurídica com método e alta performance">
     <div className="w1-auth-video-poster" aria-hidden="true"/>
     <video ref={videoRef} className="w1-auth-video" autoPlay muted loop playsInline preload="metadata"
-      poster="/branding/infinitum-login-poster.webp" aria-hidden="true"
+      poster="/branding/infinitum-login-poster.webp?v=20261113-galaxy" aria-hidden="true"
       onError={event=>{event.currentTarget.style.display='none'}}>
-     <source src="/branding/infinitum-login-hero.mp4?v=20261113-hq" type="video/mp4"/>
+     <source src="/branding/infinitum-login-hero.mp4?v=20261113-galaxy" type="video/mp4"/>
     </video>
     <div className="w1-auth-hero-transcript">
      <span>∞ INFINITUM | CRM JURÍDICO</span>
@@ -33,7 +33,7 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
      <p>Organize processos, clientes, prazos, compromissos e sua operação jurídica em um só lugar.</p>
     </div>
    </section>
-   <section className="w1-auth-panel" aria-label="Entrar no ProjectW1SC">
+   <section className="w1-auth-panel" aria-label="Acesso ao INFINITUM">
     <div className="w1-auth-panel-top">
      <a className="w1-auth-mark" href="/" title="BLACKHOLE — Gestão jurídica" aria-label="BLACKHOLE">
       <img src="/branding/projectw1sc-symbol.svg" width="60" height="42" alt="BLACKHOLE"/> <svg viewBox="0 0 80 42" role="img" aria-label="Marca do BLACKHOLE" style={{display:"none"}}>
@@ -46,7 +46,7 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
      <div className="w1-auth-heading"><span className="w1-auth-eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>
      {children}
     </div>
-    <div className="w1-auth-panel-footer"><ShieldCheck size={14}/> PROJECTW1SC · Acesso seguro para membros autorizados</div>
+    <div className="w1-auth-panel-footer"><ShieldCheck size={14}/> INFINITUM · Acesso seguro para membros autorizados</div>
    </section>
   </div>
  </main>
