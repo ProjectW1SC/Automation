@@ -12,7 +12,7 @@ test('constraint do gerador permite DJEN e DataJud mantendo RLS e dados',()=>{
 });
 test('o modo IA indisponível não descarta minuta baseada no processo',()=>{
  const s=read('components/office-console.jsx');
- assert.match(s,/avisoAi/);assert.match(s,/estrutura-verificavel/);assert.match(s,/Minuta estruturada salva/);
+ assert.match(s,/avisoAi/);assert.match(s,/estrutura-documental-local/);assert.match(s,/Minuta salva/);assert.match(s,/usedRemoteAi/);
 });
 test('a página aplica Infinitum antes da hidratação e respeita a seleção persistente de tema',()=>{
  const a=read('app/layout.jsx'),b=read('components/crm-shell.jsx');
