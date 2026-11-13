@@ -58,3 +58,27 @@ test('a successful official response preserves a history-storage failure for the
  const result=await consultHistoricalCase({number,fetchServer:async()=>combined});
  assert.deepEqual(result.persistenceErrors,['Histórico não armazenado']);
 });
+
+test('falha de DJEN em modo independente não perde os movimentos DataJud nem deixa status checking',async()=>{
+ const updates=[];
+ const result=await consultHistoricalCase({number,source:'auto',independentSources:true,fetchServer:async ({source})=>{
+  if(source==='djen')throw Error('DJEN recusou acesso HTTP 403');
+  return {ok:true,source:'DataJud',items:[{id:'jud-1',source:'DataJud',date:'2026-11-12',title:'Movimento'}]};
+ },onResult:state=>updates.push(state)});
+ assert.equal(result.ok,true);assert.equal(result.items.length,1);assert.equal(result.partial,true);
+ assert.equal(result.sourceStatus.datajud,'ok');assert.notEqual(result.sourceStatus.djen,'checking');
+ assert.match(result.notice,/parcial/i);assert.equal(updates.length>=2,true);
+});
+test('sem sessão não permite resultado parcial nem retry de navegador na consulta independente',async()=>{
+ await assert.rejects(()=>consultHistoricalCase({number,source:'auto',independentSources:true,
+ fetchServer:async()=>({ok:false,code:'crm_access',error:'Sem carteira autorizada'})}),/Sem carteira/);
+});
+test('consulta demo em duas fontes permanece simulada e nunca vira evento confirmado',async()=>{
+ let browser=0;
+ const result=await consultHistoricalCase({number,source:'auto',independentSources:true,
+ fetchServer:async({source})=>({ok:true,demo:true,items:[{id:source,source:source==='djen'?'DJEN':'DataJud',title:'[SIMULAÇÃO] Movimento'}],
+  sourceStatus:{[source]:'simulated'}}),fetchBrowser:async()=>{browser++;throw Error('nunca acessar')}});
+ assert.equal(browser,0);assert.equal(result.demo,true);assert.equal(result.partial,false);
+ assert.equal(result.sourceStatus.djen,'simulated');
+ assert.equal(result.sourceStatus.datajud,'simulated');
+});

@@ -51,3 +51,9 @@ test('cartoes da carteira usam o mesmo criterio com dados mapeados',()=>{
  assert.equal(classifyLexisReturn(mapped,today).status,'atendido');
  assert.equal(classifyLexisReturn({...mapped,last_attendance:'2026-11-01'},today).status,'vencido');
 });
+
+test('proximoPrazo legado em camelCase não cria alerta de retorno',()=>{
+ const legacy=row(23,{proximoPrazo:'2024-01-01',proximo_prazo:'2024-01-01',proximo_retorno:null});
+ assert.equal(classifyLexisReturn(legacy,today).status,'sem_data');
+ assert.equal(summarizeLexisReturns([legacy],today).overdue,0);
+});

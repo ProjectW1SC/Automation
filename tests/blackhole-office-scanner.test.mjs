@@ -36,3 +36,12 @@ test('navegação mostra scanner independente, agentes reusam evidências',()=>{
  assert.match(page,/SecuredWorkspace/);assert.match(page,/api\/scanner/);
  assert.match(page,/DataJud/);assert.match(page,/DJEN/);
 });
+
+test('demonstração nunca conta 8 atos fictícios como publicações oficiais confirmadas',()=>{
+ const fake=[{process_number:cnj,source:'djen',payload:{demo:true,official:false,items:[{source:'DJEN',date:'2026-11-10',title:'Audiência designada em 18/11/2026 às 13:00'},{source:'DJEN',date:'2026-11-09',title:'Sentença: julgo procedente'}]}}];
+ const review=buildScannerReview(fake,{today:'2026-11-13'});
+ assert.equal(review.confirmedOfficialEvents,0);assert.equal(review.hearings.length,0);assert.equal(review.verdicts.length,0);
+ const summary=sourceSummary({djen:{ok:true,demo:true,items:fake[0].payload.items,found:true},datajud:{ok:false,error:'Indisponível'}});
+ assert.equal(summary.djen.status,'simulated');assert.equal(summary.djen.count,null);
+ assert.equal(summary.djen.simulatedCount,2);assert.equal(summary.complete,false);
+});
