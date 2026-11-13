@@ -131,7 +131,7 @@ test('portfolio actions open immediately, save the correct record and retain fai
   await click(button('Consultar',document.querySelector('.lx-process-record')));
   assert.match(dialog().textContent,/Histórico judicial não confirmado/);
   assert.match(dialog().textContent,/A função regional não foi encontrada/);
-  assert.match(dialog().textContent,/DJEN: publicações de/);
+  assert.match(dialog().textContent,/DJEN: pesquisa por CNJ em todo o histórico/);
   await act(async()=>db.history.at(-1).done({data:Array.from({length:4},(_,i)=>({id:'att-'+i,descricao:'Atendimento salvo '+i,categoria:'atendimento',data_realizacao:'2026-11-13'}))}));
   assert.match(dialog().textContent,/Histórico de atendimentos e atividades \(4\)/);
   assert.match(dialog().textContent,/Atendimento salvo 3/);
