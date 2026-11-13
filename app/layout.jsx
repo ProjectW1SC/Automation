@@ -33,10 +33,11 @@ import './infinitum-prestige-all-tabs.css';
 import './lexis-infinitum-theme.css';
 import './lexis-operator-views.css';
 import './lexis-dashboard.css';
-// Carregada por último para limitar o vídeo real ao login, sem alterar o CRM.
+// Vídeo permanece restrito ao login; a camada de temas é aplicada por último no CRM.
 import './infinitum-login-video.css';
+import './infinitum-dual-themes.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'INFINITUM • CRM Jurídico W1',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
-// Restaura o único tema principal antes da primeira pintura; migra a preferência legada.
-const hydrateTheme='try{if(localStorage.getItem("projectw1sc.crm-theme")!=="infinitum")localStorage.setItem("projectw1sc.crm-theme","infinitum")}catch(e){}document.documentElement.dataset.crmTheme="infinitum"';
-export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:hydrateTheme}}/></head><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}
+// Restaura Light ou Dark antes da primeira pintura; Light é o padrão e Blackhole migra para Dark.
+const hydrateTheme='try{const k="projectw1sc.crm-theme",v=String(localStorage.getItem(k)||"").toLowerCase(),t=(v==="infinitum-dark"||v==="blackhole"||v==="dark")?"infinitum-dark":"infinitum";localStorage.setItem(k,t);document.documentElement.dataset.crmTheme="infinitum";document.documentElement.dataset.crmMode=t==="infinitum-dark"?"dark":"light"}catch(e){document.documentElement.dataset.crmTheme="infinitum";document.documentElement.dataset.crmMode="light"}';
+export default function RootLayout({children}){return <html lang="pt-BR" data-crm-theme="infinitum" data-crm-mode="light" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:hydrateTheme}}/></head><body><WorkspaceSessionProvider>{children}</WorkspaceSessionProvider></body></html>}

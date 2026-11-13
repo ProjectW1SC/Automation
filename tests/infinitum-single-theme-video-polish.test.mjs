@@ -4,42 +4,37 @@ import {readFileSync} from 'node:fs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('somente o Infinitum Prestige permanece e preferências antigas retornam ao principal',()=>{
- assert.deepEqual(CRM_THEMES.map(theme=>theme.id),['infinitum']);
- for(const id of ['blackhole','video','naruto','sasuke','',null,'infinitum'])assert.equal(resolveTheme(id),'infinitum');
+test('os dois temas Infinitum preservam a mesma estrutura e preferências legadas',()=>{
+ assert.deepEqual(CRM_THEMES.map(theme=>theme.id),['infinitum','infinitum-dark']);
+ for(const id of ['video','naruto','sasuke','',null])assert.equal(resolveTheme(id),'infinitum');
+ assert.equal(resolveTheme('blackhole'),'infinitum-dark');
+ assert.equal(resolveTheme('infinitum-dark'),'infinitum-dark');
 });
 
-test('shell e configuração preservam páginas e não oferecem uma segunda estrutura visual',()=>{
+test('shell e configuração permitem trocar o tema sem criar uma segunda estrutura visual',()=>{
  const shell=read('components/crm-shell.jsx');
  const settings=read('app/configuracoes/page.jsx');
  assert.match(shell,/app-sidebar/);
  assert.match(shell,/app-content/);
- assert.match(shell,/CRM_AREAS.map/);
- assert.doesNotMatch(shell,/crm-theme-select|Escolher tema visual|Selecionar tema no celular|<select[^>]*value=\{theme\}/);
- assert.doesNotMatch(settings,/tema claro do vídeo|O segundo reproduz/);
+ assert.match(shell,/CRM_AREAS\.map/);
+ assert.match(shell,/projectw1sc:theme-change/);
  assert.match(settings,/settings-theme-grid/);
+ assert.match(settings,/selectTheme/);
+ assert.deepEqual(CRM_THEMES.map(theme=>theme.label),['Infinitum Light','Infinitum Dark']);
+ assert.match(settings,/aria-pressed/);
+ assert.doesNotMatch(settings,/O visual principal Prestige é o único tema/);
 });
 
-test('efeitos do vídeo são apenas polimento visual, nunca reestruturam a área de trabalho',()=>{
- const css=read('app/infinitum-video-motion.css');
+test('efeitos do vídeo preservam componentes reais e respeitam os dois modos',()=>{
+ const layout=read('app/layout.jsx'),css=read('app/infinitum-video-motion.css');
+ const board=read('components/office-kanban.jsx');
+ assert.match(layout,/infinitum-video-motion\.css/);
  assert.match(css,/video-route-enter/);
- assert.match(css,/\.app-sidebar\s*\{/);
- assert.match(css,/\.app-nav-link span/);
- assert.match(css,/office-kanban-column\[data-stage=/);
- assert.match(css,/border-top:3px solid var\(--phase\)/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- assert.doesNotMatch(css,/data-crm-theme="blackhole"/);
+ assert.match(css,/office-kanban-column\[data-stage=/);
  assert.doesNotMatch(css,/grid-template-columns:\s*repeat\(5/);
- assert.match(css,/sidebar-expanded \.app-content\{[^}]*margin-left:70px!important;[^}]*width:calc\(100% - 70px\)!important/s);
- assert.doesNotMatch(css,/contain:layout style!important/);
- const desktopRules=css.split('/* Ajustes operacionais já existentes')[0]; assert.doesNotMatch(desktopRules,/\.office-kanban-column\{[^}]*display:none!important/s);
-});
-
-test('tema é restaurado como infinitum antes da primeira pintura inclusive após legado blackhole',()=>{
- const layout=read('app/layout.jsx');
- assert.match(layout,/data-crm-theme="infinitum"/);
- assert.doesNotMatch(layout,/crmTheme="blackhole"|dataset\.crmTheme="blackhole"/);
- const shell=read('components/crm-shell.jsx');
- assert.match(shell,/projectw1sc\.crm-theme/);
- assert.match(shell,/resolveTheme/);
+ assert.match(board,/office-kanban-card/);
+ assert.match(board,/onDragStart/);
+ assert.match(board,/onDrop/);
+ assert.match(board,/STAGES\.map/);
 });

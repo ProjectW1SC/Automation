@@ -17,14 +17,14 @@ export default function SettingsPage(){
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
  const [newMemberEmail,setNewMemberEmail]=useState(''),[newMemberPassword,setNewMemberPassword]=useState(''),[memberSaving,setMemberSaving]=useState(false);
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
- const theme='infinitum';
+ const [theme,setTheme]=useState('infinitum');
  const [saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
  const [colors,setColors]=useState(()=>appearanceDefaults(CRM_THEMES[0]));
  const [backgroundFile,setBackgroundFile]=useState(null),[backgroundPreview,setBackgroundPreview]=useState(''),[backgroundUrl,setBackgroundUrl]=useState(''),[removeBackground,setRemoveBackground]=useState(false);
  const user=session?.user;
  useEffect(()=>{
   let saved='infinitum';try{saved=localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
-  const selected=resolveTheme(saved);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)));
+  const selected=resolveTheme(saved);setTheme(selected);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)));
   if(!db){setLoading(false);return}
   let active=true;
   const {data:{subscription}}=db.auth.onAuthStateChange((_,s)=>{if(active){setSession(s);setLoading(false)}});
@@ -34,9 +34,14 @@ export default function SettingsPage(){
  useEffect(()=>{
   if(!user)return;
   setDisplayName(String(user.user_metadata?.display_name||user.user_metadata?.full_name||''));
-  const t=CRM_THEMES.find(x=>x.id===resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum'));
-  try{setColors(validateAppearance(user.user_metadata?.crm_colors||{},t))}
-  catch{setColors(appearanceDefaults(t))}
+  const savedTheme=resolveTheme(user.user_metadata?.crm_theme||window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum');
+  setTheme(savedTheme);
+  const t=CRM_THEMES.find(x=>x.id===savedTheme);
+  let savedColors;
+  try{savedColors=validateAppearance(user.user_metadata?.crm_colors||{},t)}
+  catch{savedColors=appearanceDefaults(t)}
+  setColors(savedColors);
+  applyAppearanceToDocument(document.documentElement,t,savedColors,'');
   const path=user.user_metadata?.avatar_path;
   if(!ownerAvatarPath(user.id,path)){setAvatarUrl('');return}
   let active=true;
@@ -44,7 +49,7 @@ export default function SettingsPage(){
    if(active)setAvatarUrl(error?'':data?.signedUrl||'');
   });
   return()=>{active=false};
- },[db,user?.id,user?.user_metadata?.display_name,user?.user_metadata?.avatar_path]);
+ },[db,user?.id,user?.user_metadata?.display_name,user?.user_metadata?.avatar_path,user?.user_metadata?.crm_theme]);
  useEffect(()=>{
   if(!photo){setPhotoPreview('');return}
   const url=URL.createObjectURL(photo);setPhotoPreview(url);
@@ -63,6 +68,30 @@ export default function SettingsPage(){
   const url=URL.createObjectURL(backgroundFile);setBackgroundPreview(url);
   return()=>URL.revokeObjectURL(url);
  },[backgroundFile]);
+ async function selectTheme(value){
+  const selected=resolveTheme(value),palette=CRM_THEMES.find(t=>t.id===selected);
+  if(!palette||selected===theme||saving)return;
+  setTheme(selected);
+  try{localStorage.setItem('projectw1sc.crm-theme',selected)}catch{}
+  let nextColors;
+  try{nextColors=validateAppearance(user?.user_metadata?.crm_colors||{},palette)}
+  catch{nextColors=appearanceDefaults(palette)}
+  setColors(nextColors);
+  applyAppearanceToDocument(document.documentElement,palette,nextColors,removeBackground?'':backgroundUrl);
+  window.dispatchEvent(new Event('projectw1sc:theme-change'));
+  setError('');setMessage('');
+  if(!db||!user)return;
+  setSaving('theme');
+  try{
+   const result=await db.auth.updateUser({data:{crm_theme:selected}});
+   if(result.error)throw new Error(result.error.message||'Falha ao salvar o tema.');
+   const updatedUser=result.data?.user||user;
+   setSession(previous=>previous?{...previous,user:updatedUser}:previous);
+   setMessage(palette.label+' salvo na sua conta e aplicado em todas as abas.');
+  }catch(err){
+   setError(palette.label+' aplicado neste dispositivo, mas não foi possível sincronizar a preferência na conta: '+(err.message||'erro de conexão.'));
+  }finally{setSaving('')}
+ }
  function changeColor(field,value){
   const changed={...colors,[field]:value};
   setColors(changed);
@@ -188,9 +217,9 @@ export default function SettingsPage(){
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
-   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>O visual principal Prestige é o único tema do CRM. Ajuste seu perfil, suas cores e a segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
+   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Escolha entre as duas aparências oficiais do Infinitum e mantenha a mesma organização, navegação e funcionalidades em todas as abas.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
    {(error||message)&&<div role={error?'alert':'status'} className={'settings-feedback '+(error?'bad':'good')}>{error||message}<button type="button" onClick={()=>{setError('');setMessage('')}} aria-label="Fechar aviso">×</button></div>}
-   <section className="reference-panel settings-panel" aria-label="Seleção de tema"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Visual do CRM</h2><p>Prestige mantido em todas as páginas, com detalhes visuais e animações leves inspirados no vídeo, sem reorganizar as funcionalidades.</p></div></div><div className="settings-theme-grid">{CRM_THEMES.map(t=><div key={t.id} className="settings-theme-option selected" role="note" aria-label="Tema principal ativo"><span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.tint,borderColor:t.border}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span><span className="settings-theme-option-label">{t.label}<Check size={15}/></span></div>)}</div><div className="settings-hint"><ShieldCheck size={16}/> Tema principal único. Cores personalizadas e fundo continuam disponíveis; animações suaves sem alterar a estrutura.</div></section>
+   <section className="reference-panel settings-panel" aria-label="Seleção de tema"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Visual do CRM</h2><p>O Light é o padrão. O Dark reproduz a identidade noturna cósmica. Ambos preservam as mesmas abas, rotas, quadros e recursos.</p></div></div><div className="settings-theme-grid">{CRM_THEMES.map(t=><button key={t.id} type="button" className={'settings-theme-option '+(theme===t.id?'selected':'')} aria-pressed={theme===t.id} onClick={()=>selectTheme(t.id)} disabled={saving==='theme'}><span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.tint,borderColor:t.border}}/><i style={{background:t.accent,borderColor:t.border}}/></span></span><span className="settings-theme-option-label">{t.label}{theme===t.id&&<Check size={15}/>}</span><span className="settings-theme-option-description">{t.description}</span></button>)}</div><div className="settings-hint"><ShieldCheck size={16}/> A preferência é salva na conta e neste dispositivo. A mudança é aplicada sem recarregar a página.</div></section>
    <div className="settings-grid">
     <section className="reference-panel settings-panel">
      <div className="settings-section-heading"><span className="settings-section-icon"><UserRound size={21}/></span><div><h2>Meu perfil</h2><p>Seu nome e sua foto serão exibidos no menu do CRM.</p></div></div>
