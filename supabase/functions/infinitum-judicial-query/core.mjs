@@ -5,7 +5,7 @@ const COURTS={
  '8.22':'tjro','8.23':'tjrr','8.24':'tjsc','8.25':'tjse','8.26':'tjsp','8.27':'tjto',
  '4.01':'trf1','4.02':'trf2','4.03':'trf3','4.04':'trf4','4.05':'trf5','4.06':'trf6',
  ...Object.fromEntries(Array.from({length:24},(_,i)=>['5.'+String(i+1).padStart(2,'0'),'trt'+(i+1)])),
- '2.00':'stj','2.01':'stj','3.00':'tst','3.01':'tst','6.00':'tse','7.00':'stm'
+ '3.00':'stj','5.00':'tst','6.00':'tse','7.00':'stm'
 };
 const clean=(v,n=1800)=>String(v??'').replace(/<[^>]+>/g,' ').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,n);
 const digits=v=>String(v||'').replace(/\D/g,'');
