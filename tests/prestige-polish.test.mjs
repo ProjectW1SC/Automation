@@ -1,4 +1,4 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';const r=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-test('tema branco prestigio migra o antigo BLACKHOLE apenas na primeira abertura',()=>{const c=r('components/crm-shell.jsx');assert.match(c,/projectw1sc.prestige-v1/);assert.match(c,/stored==='blackhole'/);assert.match(c,/preferredTheme/);});
+test('Infinitum é o único tema e não depende de migração antiga',()=>{const c=r('components/crm-shell.jsx');assert.match(c,/preferredTheme/);assert.doesNotMatch(c,/projectw1sc.prestige-v1/);assert.match(r('lib/crm-themes.mjs'),/resolveTheme=\(\)=> 'infinitum'/);});
 test('dashboard preserva atualizacao manual com acao visivel',()=>{const c=r('components/office-console.jsx'),d=r('components/prestige-dashboard.jsx');assert.match(c,/onRefresh=\{load\}/);assert.match(d,/pr-refresh-button/);});
 test('agenda mensal inicia na segunda, seguindo a referencia editorial',()=>{const s=r('app/agenda/page.jsx');assert.match(s,/getUTCDay\(\)\+6\)%7/);assert.match(s,/\['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'\]/);});

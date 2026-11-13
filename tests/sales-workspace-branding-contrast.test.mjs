@@ -21,7 +21,7 @@ test('dashboard chart groups are real and never mix finished clients with overdu
  assert.equal(chart.urgents,1);
 });
 test('appearance uses three independently editable text roles, validated against surface and custom page',()=>{
- const theme=CRM_THEMES.find(x=>x.id==='vinho');
+ const theme=CRM_THEMES[0];
  const valid=validateAppearance({page:'#fefdfd',primary:'#38202a',secondary:'#594452',tertiary:'#66505a'},theme);
  assert.equal(valid.page,'#fefdfd');assert.equal(valid.primary,'#38202a');
  for(const key of APP_COLORS){assert.ok(contrastRatio(valid[key],theme.surface)>=4.5);}
@@ -67,7 +67,5 @@ test('report hero and PDF enforce explicit high contrast regardless of theme ove
 });
 test('custom appearance stored in user settings and applied across all sections',()=>{
  const settings=file('app/configuracoes/page.jsx'),shell=file('components/crm-shell.jsx');
- assert.match(settings,/Cor primária do texto/);assert.match(settings,/Cor secundária do texto/);
- assert.match(settings,/Cor terciária do texto/);assert.match(settings,/Imagem de fundo/);
- assert.match(shell,/applyAppearanceToDocument/);assert.match(shell,/crm_background_path/);
+ assert.match(settings,/Infinitum Prestige/);assert.doesNotMatch(settings,/settings-theme-grid/);assert.match(shell,/applyAppearanceToDocument/);assert.doesNotMatch(shell,/w1-theme-picker/);
 });

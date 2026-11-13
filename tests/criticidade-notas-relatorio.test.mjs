@@ -61,7 +61,7 @@ test('completed status flag uses neutral gray in all themes',()=>{
  assert.match(tasks,/Finalizado/);
 });
 test('themes expand with WCAG AA contrast in ordinary and semantic labels',()=>{
- assert.ok(CRM_THEMES.length>=9);
+ assert.equal(CRM_THEMES.length,1);
  assert.equal(new Set(CRM_THEMES.map(x=>x.id)).size,CRM_THEMES.length);
  assert.equal(resolveTheme('unknown'),'infinitum');
  for(const t of CRM_THEMES){
