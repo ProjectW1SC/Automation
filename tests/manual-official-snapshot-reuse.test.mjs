@@ -18,8 +18,8 @@ test('current manual scan uses Hermes default window and avoids browser retry on
    sourceStatus:{djen:'cached_previous',datajud:'timeout'},
    items:[{id:'pub1',source:'DJEN',date:'2026-11-12',title:'Publicação anterior'}]};},
   fetchBrowser:async()=>{browserCalls++;throw Error('não deveria executar')}});
- assert.equal(requests.length,1);
- assert.deepEqual(requests[0],{number:num,source:'auto',start:'',end:'',page:1});
+ assert.equal(requests.length,2);
+ assert.deepEqual(requests.map(({source,cacheOnly})=>[source,cacheOnly]),[['datajud',true],['djen',true]]);
  assert.equal(browserCalls,0);
  assert.equal(result.sourceStatus.djen,'cached_previous');
  assert.equal(result.partial,true);
@@ -29,7 +29,8 @@ test('explicit historical window keeps month partitioning',async()=>{
  const requests=[];
  await consultHistoricalCase({number:num,start:'2026-10-15',end:'2026-11-13',source:'djen',
   fetchServer:async args=>{requests.push(args);return {ok:true,items:[]}}});
- assert.deepEqual(requests.map(r=>[r.start,r.end]),[['2026-10-15','2026-10-31'],['2026-11-01','2026-11-13']]);
+ assert.deepEqual(requests.filter(r=>!r.cacheOnly).map(r=>[r.start,r.end]),[['2026-10-15','2026-10-31'],['2026-11-01','2026-11-13']]);
+ assert.equal(requests.filter(r=>r.cacheOnly).length,2);
 });
 
 test('consulta manual DataJud usa cache antes e navegador antes do servidor',async()=>{
