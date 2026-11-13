@@ -9,7 +9,7 @@ import {buildScannerReview,sourceSummary} from '../../lib/blackhole-office-scann
 import {browseOfficialDjenNumber} from '../../lib/blackhole-public-djen-browser.mjs';
 import {withAuthDeadline} from '../../lib/auth-deadline.mjs';
 const label={confirmed:'Consulta confirmada',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite atingido (429)',
- cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Indisponível'};
+ cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Indisponível',cached_previous:'Histórico confirmado (não atualizado)'};
 function fmtDate(value){try{return new Date(value).toLocaleString('pt-BR')}catch{return String(value||'—')}}
 function Scanner({db,session}){
  const [cases,setCases]=useState([]),[history,setHistory]=useState([]),[loading,setLoading]=useState(true);
@@ -63,7 +63,7 @@ function Scanner({db,session}){
      if(!response.ok||!answer.ok)throw Error(answer.error||'Consulta não concluída.');
      const outcome={number:row.process_number,title:row.title||'Processo',...answer};
      setLive(items=>[outcome,...items].slice(0,35));
-     if(answer.sourceStatus.confirmedSources>0)success++;else failed++;
+     if((answer.sourceStatus.availableSources??answer.sourceStatus.confirmedSources)>0)success++;else failed++;
     }catch(e){
      if(controller.signal.aborted)break;
      failed++;
@@ -73,7 +73,7 @@ function Scanner({db,session}){
     // Evita varreduras agressivas em IP compartilhado e preserva as fontes oficiais.
     if(index<list.length&&!controller.signal.aborted)await new Promise(resolve=>setTimeout(resolve,1100));
    }
-   setNotice('Scanner: '+index+' processo(s) examinados; '+success+' com pelo menos uma fonte confirmada; '+failed+' sem fonte confirmada. Eventos requerem revisão humana.');
+   setNotice('Scanner: '+index+' processo(s) examinados; '+success+' com evidência oficial atual ou anterior (identificada); '+failed+' sem fonte confirmada. Eventos requerem revisão humana.');
    await read();
   }catch(e){setError(e.message)}finally{active.current=false;setBusy(false);aborter.current=null}
  },[db,read]);
@@ -174,6 +174,7 @@ function Scanner({db,session}){
    <div className="office-records">{live.map((r,i)=><article key={r.number+'-'+i} className="office-record">
     <strong>{r.title} · {r.number}</strong>
     {r.ok?<><p><CheckCircle2 size={14}/> DataJud: {label[r.sourceStatus?.datajud?.status]||'—'} · DJEN: {label[r.sourceStatus?.djen?.status]||'—'}</p>
+     {(r.sourceStatus?.djen?.error||r.sourceStatus?.datajud?.error)&&<p>Motivos: {[r.sourceStatus?.djen?.error&&'DJEN: '+r.sourceStatus.djen.error,r.sourceStatus?.datajud?.error&&'DataJud: '+r.sourceStatus.datajud.error].filter(Boolean).join(' · ')}</p>}
      <p>{r.review?.hearings?.length||0} possíveis audiências futuras · {r.review?.verdicts?.length||0} atos de julgamento para revisar · {r.review?.confirmedOfficialEvents||0} movimentos/publicações recebidos</p>
      <small>Retorno sugerido: revisar em {r.review?.nextReturnDays||30} dia(s) — não é prazo judicial.</small>
      {!r.persisted&&<p className="inf-note error">{r.saveError||'Não foi possível registrar o histórico.'}</p>}

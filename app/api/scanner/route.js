@@ -14,7 +14,7 @@ async function checkOne(number,source,token,force=false){
  try{
   const response=await consultOfficial(req);
   const r=await response.json();
-  if(!response.ok||r?.ok!==true)return {ok:false,source,error:String(r?.error||'Fonte indisponível').slice(0,450)};
+  if(!response.ok||r?.ok!==true)return {ok:false,source,status:response.status,code:r?.code||null,error:String(r?.error||'Fonte indisponível').slice(0,450)};
   return {...r,source:source==='datajud'?'DataJud':'DJEN'};
  }catch(e){
   return {ok:false,source,error:e?.name==='TimeoutError'?'Tempo esgotado na consulta oficial.':String(e?.message||'Erro inesperado').slice(0,250)};

@@ -167,6 +167,13 @@ export async function GET(request){
       db.rpc('record_office_source_cooldown',{p_source:kind,p_status:error.status})
      ]);
     }
+    // Só recuperar snapshot verificado para a mesma janela/página e usuário.
+    // Fonte bloqueada não converte cache em uma nova consulta.
+    if(cached?.payload?.ok===true){
+     return {...cached.payload,stale:true,fromCache:true,checkedAt:cached.checked_at,
+      sourceError:String(error?.message||'Fonte indisponível').slice(0,240),
+      notice:'Consulta atual não confirmada. Exibindo apenas histórico oficial de '+cached.checked_at+'.'};
+    }
     throw error;
    }
    // A resposta foi confirmada pelo serviço oficial; não registrar falhas como "sem movimentações".

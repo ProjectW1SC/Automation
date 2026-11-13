@@ -150,7 +150,7 @@ function OfficeUI({area,db,session}){
     },
     // Somente API pública, sem CAPTCHA, token ou requisição automática em segundo plano.
     fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page}),
-    onProgress:({current,total,start,end})=>setNotice('Consultando fontes oficiais: '+current+'/'+total+' · DJEN '+start+' a '+end)
+    onProgress:({current,total,start,end})=>setNotice('Consultando fontes oficiais: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias'))
    });
    setCheckResult({...result,number:row.process_number});
    const coverage=result.windowsTotal>1?' · '+result.windowsChecked+'/'+result.windowsTotal+' meses consultados':'';
