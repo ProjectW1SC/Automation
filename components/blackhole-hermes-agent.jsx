@@ -3,9 +3,18 @@ import {useCallback,useEffect,useState} from 'react';
 import Link from 'next/link';
 import {Bot,ScanSearch,RefreshCw,CalendarDays,AlertTriangle,CheckCircle2,ClipboardList} from 'lucide-react';
 import {withAuthDeadline} from '../lib/auth-deadline.mjs';
+import {reconcileHermesScan} from '../lib/hermes-snapshot-reconciliation.mjs';
 const names={confirmed:'Confirmada',blocked_403:'Bloqueada · 403',rate_limited_429:'Limite · 429',
  cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Não confirmada'};
 const source=x=>names[x?.status]||'Sem dados';
+const stamp=x=>x?new Date(x).toLocaleString('pt-BR'):'sem data confirmada';
+function visibleSource(row,kind){
+ const later=row.overlay?.[kind];
+ if(later?.state==='verified_after_scan')
+  return 'Consulta posterior confirmada em '+stamp(later.checkedAt)+
+   (later.publicationWindows?' · '+later.publicationWindows+' janela(s) com registro(s) oficial(is)':' · sem registros nesta(s) janela(s)');
+ return source(row.source_status?.[kind])+' · relatório de '+stamp(row.checked_at);
+}
 const addDays=(days)=>{
  const dt=new Date();dt.setUTCDate(dt.getUTCDate()+Math.max(1,Math.min(45,Math.floor(Number(days)||15))));
  return dt.toISOString().slice(0,10);
@@ -18,11 +27,21 @@ export default function BlackholeHermesAgent({db,session}){
     .select('id,process_number,source_status,review,checked_at').order('checked_at',{ascending:false}).limit(55),12000);
    if(error)throw error;
    const seen=new Set();
-   setRuns((data||[]).filter(row=>{if(seen.has(row.process_number))return false;seen.add(row.process_number);return true}).slice(0,25));
+   const selected=(data||[]).filter(row=>{const key=row.actor_id+'|'+row.process_number;if(seen.has(key))return false;seen.add(key);return true}).slice(0,25);
+   let snapshots=[];
+   if(selected.length){
+    const numbers=[...new Set(selected.map(x=>x.process_number))];
+    const history=await withAuthDeadline(db.from('crm_judicial_snapshots')
+     .select('actor_id,process_number,source,checked_at,found,payload')
+     .in('process_number',numbers).order('checked_at',{ascending:false}).limit(250),12000);
+    if(!history.error)snapshots=history.data||[];
+   }
+   setRuns(selected.map(row=>reconcileHermesScan(row,snapshots)));
    setError('');
   }catch(e){setError('Histórico Hermes indisponível: '+e.message)}
  },[db]);
- useEffect(()=>{load()},[load]);
+ // Refresh the read-only view when the page remains open; never trigger a judicial API here.
+ useEffect(()=>{load();const interval=setInterval(()=>{if(!document.hidden)load()},90000);return ()=>clearInterval(interval)},[load]);
  async function createTask(row){
   const title='Revisar fontes judiciais · '+row.process_number;
   setBusy(row.id);setNotice('');setError('');
@@ -63,12 +82,16 @@ export default function BlackholeHermesAgent({db,session}){
   {!runs.length?<div className="inf-note">Nenhuma varredura concluída nesta carteira. Abra o Scanner para consultar os CNJs reais.</div>:
    <div className="office-records">{runs.map(r=><article key={r.id} className="office-record">
     <div className="inf-toolbar"><strong>{r.process_number}</strong><small>{new Date(r.checked_at).toLocaleString('pt-BR')}</small></div>
-    <p>DataJud: {source(r.source_status?.datajud)} · DJEN: {source(r.source_status?.djen)}</p>
-    <p>{r.review?.returnReason||'Conferir as fontes oficiais antes da próxima decisão.'}</p>
+    <p>DataJud: {visibleSource(r,'datajud')}</p>
+    <p>DJEN: {visibleSource(r,'djen')}</p>
+    <p>{r.hasNewerPublicationEvidence
+     ?'O DJEN/DataJud trouxe registros oficiais em consultas posteriores à varredura acima. O relatório antigo não é o estado atual. Consulte datas e teor no módulo Processos.'
+     :r.review?.returnReason||'Conferir as fontes oficiais antes da próxima decisão.'}</p>
     <div className="office-action-row">
      {!!r.review?.hearings?.length&&<span className="inf-badge"><CalendarDays size={13}/> {r.review.hearings.length} possível(is) audiência(s)</span>}
      {!!r.review?.verdicts?.length&&<span className="inf-badge">Possível decisão: {r.review.verdicts.length}</span>}
-     {(!r.source_status?.complete)&&<span className="inf-badge"><AlertTriangle size={13}/> Fontes incompletas</span>}
+     {r.hasNewerPublicationEvidence&&<span className="inf-badge"><CheckCircle2 size={13}/> Registro oficial posterior identificado</span>}
+     {(!r.allSourcesRecentlyChecked)&&<span className="inf-badge"><AlertTriangle size={13}/> Fontes ainda não verificadas em conjunto</span>}
     </div>
     <div className="office-action-row">
      <button type="button" className="inf-btn" onClick={()=>createTask(r)} disabled={!!busy}><ClipboardList size={13}/>
