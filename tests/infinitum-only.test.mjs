@@ -22,7 +22,7 @@ test('tema claro é padrão e a escolha escura pode ser restaurada antes da prim
  assert.match(layout,/infinitum-dark/);
  assert.match(shell,/localStorage\.getItem\('projectw1sc\.crm-theme'\)/);
  assert.match(shell,/localStorage\.setItem\('projectw1sc\.crm-theme'/);
- assert.match(shell,/data\.user_metadata\?\.crm_theme/);
+ assert.match(shell,/user\.user_metadata\?\.crm_theme/);
  assert.match(read('app/configuracoes/page.jsx'),/selectTheme/);
  assert.match(read('app/configuracoes/page.jsx'),/aria-pressed/);
  assert.match(layout,/infinitum-dual-themes\.css/);
