@@ -204,7 +204,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <p>Cada linha representa um processo real. Clientes homônimos não são unidos automaticamente.</p>
    <div className="office-records">{rows.map(p=><article className="office-record" key={p.id}>
     <div className="inf-row-end" style={{justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><div><strong>{p.client_name||'Cliente não identificado'}</strong><p>{p.process_number||'Sem número CNJ'} · {p.tribunal||'Tribunal não informado'}</p>
-     <small>{STATUS[p.status]||'Em andamento'} · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo: {DATE_LABEL(p.next_attendance)} · Responsável: {p.last_responsible||'Não registrado'}</small></div>
+     <small>{STATUS[p.status]||p.status_detail||'Situação não registrada'} · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo: {DATE_LABEL(p.next_attendance)} · Responsável: {p.last_responsible||'Não registrado'}</small></div>
     </div>
     <div className="inf-row-end" style={{justifyContent:'flex-start',gap:6,flexWrap:'wrap'}}>
      <button className="inf-btn" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
