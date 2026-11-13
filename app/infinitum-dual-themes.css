@@ -83,3 +83,43 @@ html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-google-btn{backgro
 html[data-crm-theme="infinitum-dark"] ::selection{background:#754e70;color:#fff}
 html[data-crm-theme="infinitum"] ::selection{background:#dfc9dc;color:#392c39}
 @media(prefers-reduced-motion:reduce){html[data-crm-theme] .app-sidebar,html[data-crm-theme] .app-content,html[data-crm-theme] .app-nav-link,html[data-crm-theme] .settings-theme-option{transition:none!important;animation:none!important}}
+
+/* LexisPredict-derived operational views inherit the selected Infinitum palette too. */
+html[data-crm-theme] .lxd-shell,html[data-crm-theme] [data-lexis-operator]{
+ background:transparent!important;color:var(--ui-ink)!important;
+}
+html[data-crm-theme] [data-lexis-operator]{
+ --op-line:var(--ui-border);--op-ink:var(--ui-ink);--op-muted:var(--ui-muted);
+}
+html[data-crm-theme] :is(.lx-operator-list,.lx-operator-record,.lx-event-card,.lx-calendar-day,.lx-operator-search,.lx-source-status,.lx-consult-range,.lx-source-results>section,.lx-judicial-event,.lx-process-record,.lx-action-dialog,.lx-load-more){
+ background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important;
+}
+html[data-crm-theme] :is(.lx-operator-record p,.lx-operator-record small,.lx-event-main>span,.lx-event-main small,.lx-detail-meta,.lx-operator-pagination,.lx-operator-form label,.lx-form>label,.lx-calendar-header,.lx-detail-head small){
+ color:var(--ui-muted)!important;
+}
+html[data-crm-theme] :is(.lx-operator-record h3,.lx-event-main strong,.lx-calendar-header strong,.lx-operator-form input,.lx-operator-form select,.lx-form input,.lx-form select,.lx-form textarea){
+ color:var(--ui-ink)!important;
+}
+html[data-crm-theme] :is(.lx-operator-record:hover,.lx-event-card:hover){background:var(--ui-tint)!important}
+html[data-crm-theme] .lx-calendar-grid{background:var(--ui-border)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .lx-calendar-weekday{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .lx-calendar-day{background:var(--ui-surface)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .lx-calendar-day.is-outside{background:var(--ui-tint)!important;color:var(--ui-muted)!important}
+html[data-crm-theme] .lx-calendar-day.is-today{background:color-mix(in srgb,var(--ui-accent) 14%,var(--ui-surface))!important;box-shadow:inset 0 0 0 2px var(--ui-accent)!important}
+html[data-crm-theme] .lx-calendar-entry{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .lx-calendar-entry--vencido,html[data-crm-theme] .lx-status--atencao{background:var(--ui-danger-bg)!important;color:var(--ui-danger-ink)!important}
+html[data-crm-theme] .lx-calendar-entry--atencao{background:var(--ui-warning-bg)!important;color:var(--ui-warning-ink)!important}
+html[data-crm-theme] .lx-calendar-entry--encerrado,html[data-crm-theme] .lx-status--encerrado{background:var(--ui-neutral-bg)!important;color:var(--ui-neutral-ink)!important}
+html[data-crm-theme] .lx-status--em_dia,html[data-crm-theme] .lx-status--atendido{background:var(--ui-success-bg)!important;color:var(--ui-success-ink)!important}
+html[data-crm-theme] .lx-status--em_andamento{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .lx-source-error{color:var(--ui-danger-ink)!important}
+html[data-crm-theme] .lx-dialog-notice{background:var(--ui-warning-bg)!important;color:var(--ui-warning-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .lx-action-dialog{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .lx-action-dialog label,html[data-crm-theme] .lx-dialog-header h2{color:var(--ui-ink)!important}
+html[data-crm-theme] .lx-action-dialog :is(input,select,textarea){background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .lx-dialog-actions{border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-workflow-screen .office-kanban-column[data-stage="entrada"]{--phase:#b36a76!important}
+html[data-crm-theme] .office-workflow-screen .office-kanban-column[data-stage="triagem"]{--phase:#b48b75!important}
+html[data-crm-theme] .office-workflow-screen .office-kanban-column[data-stage="producao"]{--phase:var(--ui-accent)!important}
+html[data-crm-theme] .office-workflow-screen .office-kanban-column[data-stage="revisao"]{--phase:#887b8a!important}
+html[data-crm-theme] .office-workflow-screen .office-kanban-column[data-stage="concluido"]{--phase:#5d9072!important}

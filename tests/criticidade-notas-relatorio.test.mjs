@@ -60,8 +60,8 @@ test('completed status flag uses neutral gray in all themes',()=>{
  assert.match(css,/--ui-neutral-ink/);
  assert.match(tasks,/Finalizado/);
 });
-test('single Prestige palette meets WCAG AA contrast in ordinary and semantic labels',()=>{
- assert.equal(CRM_THEMES.length,1);
+test('Infinitum Light and Dark palettes meet WCAG AA contrast in ordinary and semantic labels',()=>{
+ assert.equal(CRM_THEMES.length,2);
  assert.equal(new Set(CRM_THEMES.map(x=>x.id)).size,CRM_THEMES.length);
  assert.equal(resolveTheme('unknown'),'infinitum');
  for(const t of CRM_THEMES){
