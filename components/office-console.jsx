@@ -14,6 +14,8 @@ import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
 import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs';
+import {browseOfficialDataJudNumber} from '../lib/blackhole-public-datajud-browser.mjs';
+import {snapshotQueryKey,shrinkOfficialResult} from '../lib/judicial-triage.mjs';
 import {consultHistoricalCase} from '../lib/judicial-history-client.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
@@ -145,12 +147,25 @@ function OfficeUI({area,db,session}){
     number:row.process_number,source:fonte,start:period?.inicio||undefined,end:period?.fim||undefined,page:period?.pagina||1,
     fetchServer:async({number,source,start,end,page})=>{
      const args=new URLSearchParams({numero:number,fonte:source,...(start?{inicio:start}:{}),...(end?{fim:end}:{}),pagina:String(page)});
+     if(arguments[0]?.cacheOnly)args.set('cache','only');
      const response=await fetch('/api/processos/consulta?'+args,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-     try{return await response.json()}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
+     try{return {...await response.json(),status:response.ok?undefined:response.status}}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
     },
-    // Somente API pública, sem CAPTCHA, token ou requisição automática em segundo plano.
+    // Cache recente primeiro; sem cache, API pública no navegador; servidor apenas como alternativa de rede/CORS.
+    fetchDataJudBrowser:async({number})=>browseOfficialDataJudNumber({number}),
     fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page}),
-    onProgress:({current,total,start,end})=>setNotice('Consultando fontes oficiais: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias'))
+    saveBrowser:async({number,source,start,end,page,result:official})=>{
+     const params=new URLSearchParams();
+     if(start)params.set('inicio',start);if(end)params.set('fim',end);
+     params.set('pagina',String(page));
+     const queryKey=snapshotQueryKey(source,params);
+     const saved=await db.from('crm_judicial_snapshots').upsert({
+      actor_id:s.user.id,process_number:number,source,query_key:queryKey,
+      checked_at:official.checkedAt,found:!!official.found,payload:shrinkOfficialResult(official)
+     },{onConflict:'actor_id,process_number,source,query_key'});
+     return saved.error?{ok:false,error:saved.error.message}:{ok:true};
+    },
+    onProgress:({current,total,start,end})=>setNotice('Consultando DataJud e DJEN: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias')+' · navegador primeiro, servidor como alternativa')
    });
    setCheckResult({...result,number:row.process_number});
    const coverage=result.windowsTotal>1?' · '+result.windowsChecked+'/'+result.windowsTotal+' meses consultados':'';
