@@ -32,7 +32,7 @@ test('as duas paletas têm contraste AA em texto, navegação, acento e etiqueta
 test('os tokens completos de cada tema chegam ao documento e os estilos cobrem as duas aparências',()=>{
  const appearance=read('lib/appearance-settings.mjs'),css=read('app/infinitum-dual-themes.css'),layout=read('app/layout.jsx');
  for(const token of ['--ui-nav','--ui-nav-ink','--ui-surface','--ui-border','--ui-accent','--ui-tint'])assert.ok(appearance.includes(token));
- assert.match(appearance,/data-crm-mode/);
+ assert.match(appearance,/crmMode/);
  assert.match(css,/data-crm-mode="light"/);
  assert.match(css,/data-crm-mode="dark"/);
  assert.match(css,/prefers-reduced-motion:reduce/);
