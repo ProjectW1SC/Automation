@@ -84,9 +84,9 @@ function Board({db,session}){
     <button type="submit" className="inf-btn primary" disabled={busy}>Salvar no fluxo</button>
    </form></section>}
   <div className="office-kanban-columns" role="list" aria-label="Kanban jurídico">
-   {columns.map((stage,idx)=><section key={stage.key} className="office-kanban-column" aria-label={stage.name} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||dragged;move(id,stage.key)}}>
+   {columns.map((stage,idx)=><section key={stage.key} data-stage={stage.key} className="office-kanban-column" aria-label={stage.name} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||dragged;move(id,stage.key)}}>
     <header className="office-kanban-head"><span className={'office-phase-dot office-phase-'+stage.key}/><div><strong>{stage.name}</strong><small>{stage.hint}</small></div><b>{stage.items.length}</b></header>
-    <div className="office-kanban-stack">{stage.items.map(x=><article className="office-kanban-card" key={x.id} draggable={!busy} onDragStart={e=>{setDragged(x.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',x.id)}}>
+    <div className="office-kanban-stack"><button type="button" className="office-kanban-quickadd" onClick={()=>{setForm(previous=>({...previous,stage:stage.key}));setAdding(true)}}><Plus size={15}/> Novo card</button>{stage.items.map(x=><article className="office-kanban-card" key={x.id} draggable={!busy} onDragStart={e=>{setDragged(x.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',x.id)}}>
      <div className="office-kanban-line"><GripVertical size={13} aria-hidden="true"/><span>{x.card_type}</span><span className={'office-kanban-priority pr-'+x.priority}>{x.priority}</span></div>
      <strong>{x.title}</strong><p>{x.description?.slice(0,150)||'Sem descrição.'}</p><small>{x.assigned_to||'Sem responsável'} {x.due_on?' · '+x.due_on:''}</small>
      <div className="office-kanban-actions">{idx<STAGES.length-1&&<button className="inf-btn" type="button" disabled={busy} onClick={()=>move(x.id,STAGES[idx+1].key)}><ArrowRight size={13}/> Avançar</button>}
