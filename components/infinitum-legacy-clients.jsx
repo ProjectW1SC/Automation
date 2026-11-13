@@ -6,7 +6,7 @@ const safe=x=>String(x??'').trim();
 const formFrom=x=>({name:x.name||'',phone:x.phone||'',notes:x.notes||'',next_return:x.next_return||'',workflow_status:x.workflow_status||'ativo'});
 const allowedStatus=new Set(['ativo','finalizado','arquivado']);
 export default function InfinitumLegacyClients({db,profile,team=[]}){
- const [clients,setClients]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
+ const [showArchived,setShowArchived]=useState(false),[clients,setClients]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[search,setSearch]=useState('');
  const [editing,setEditing]=useState(null),[form,setForm]=useState(null);
  const [selected,setSelected]=useState(null),[note,setNote]=useState(''),[date,setDate]=useState(''),[confirmed,setConfirmed]=useState(false),[history,setHistory]=useState([]);
  const load=useCallback(async()=>{
@@ -22,7 +22,7 @@ export default function InfinitumLegacyClients({db,profile,team=[]}){
   finally{setBusy(false)}
  },[db,profile?.empresa_id]);
  useEffect(()=>{load()},[load]);
- const rows=useMemo(()=>clients.filter(c=>[c.name,c.phone,c.doc_digits].some(x=>safe(x).toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR')))),[clients,search]);
+ const rows=useMemo(()=>clients.filter(c=>(showArchived||c.workflow_status!=='arquivado')&&[c.name,c.phone,c.doc_digits].some(x=>safe(x).toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR')))),[clients,search,showArchived]);
  const responsible=id=>team.find(u=>u.auth_user_id===id)?.nome||(id?'Responsável legado (identificador preservado)':'Não registrado');
  const edit=c=>{setEditing(c);setForm(formFrom(c));setSelected(null);setNotice('')};
  const save=async e=>{
@@ -78,7 +78,7 @@ export default function InfinitumLegacyClients({db,profile,team=[]}){
    </div>
    {notice&&<p className="inf-note" role="status">{notice}</p>}
    <label>Buscar cliente histórico <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nome, telefone ou documento" aria-label="Pesquisar clientes do Infinitum"/></label>
-   <p>Exibindo {rows.length} de {clients.length} cadastros da organização.</p>
+   <label><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/> Incluir clientes arquivados (recuperação)</label><p>Exibindo {rows.length} de {clients.length} cadastros da organização.</p>
    <div className="office-records">{rows.map(c=><article className="office-record" key={c.id}>
      <strong>{c.name}</strong><p>{c.phone||'Telefone não informado'} · {c.doc_digits||'Documento não informado'}</p>
      <small>Último atendimento: {formatDate(c.last_attendance_at)} · Responsável: {responsible(c.last_attended_by)} · Próximo: {formatDate(c.next_return)} · Situação: {c.workflow_status||'ativo'}</small>
