@@ -4,7 +4,8 @@ import Link from 'next/link';
 import {Plus,Search,BriefcaseBusiness,BookOpen,Layers3,PlugZap,Send,Copy,ShieldCheck,Bot,PanelLeftClose,PanelLeftOpen,FileText,Scale,Clock3} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
 import {OFFICE_AGENTS} from '../../lib/office-core.mjs';
-import {runBlackholeQwen,stopBlackholeQwen} from '../../lib/blackhole-local-llm.mjs';
+import {runBlackholeQwen,stopBlackholeQwen,checkBlackholeQwenSupport} from '../../lib/blackhole-local-llm.mjs';
+import {offlineBlackholeReply} from '../../lib/blackhole-chat.mjs';
 import {requestedOfficialQuery} from '../../lib/superagent-official-query.mjs';
 const ACTIONS=[
  {label:'Consultar DJEN / DataJud',prompt:'Consulte DJEN e DataJud do processo CNJ ',icon:Search},
@@ -33,18 +34,32 @@ function Console({db,session}){
  useEffect(()=>{load()},[load]);
  function newChat(){setMessages([]);setPrompt('');setNotice('');setTab('nova')}
  function openHistory(row){setMessages([
-  {role:'user',content:row.task},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null}
+  {role:'user',content:row.task},{role:'assistant',content:String(row.result?.answer||'Resposta indisponível no histórico.'),review:row.result?.review||null,model:row.result?.engine}
  ]);setTab('nova');setNotice('Conversa recuperada do histórico do CRM.')}
  function chooseAction(q){setPrompt(q);setTab('nova')}
+ async function chooseEngine(next){
+  if(next!=='qwen'){setEngine(next);setNotice('');return}
+  setNotice('Verificando compatibilidade com WebGPU...');
+  const support=await checkBlackholeQwenSupport();
+  if(!support.ok){setEngine('evidencias');setNotice(support.reason+' Modo de respostas rápidas selecionado.');return}
+  setEngine('qwen');setNotice('WebGPU detectado. O Qwen só será baixado com sua autorização.');
+ }
  async function ask(e){e?.preventDefault();const q=prompt.trim();if(!q||busy)return;
   setBusy(true);setNotice('');setModelProgress('');
   try{
    let payload;
    if(engine==='qwen'&&!requestedOfficialQuery(q)){
-    const out=await runBlackholeQwen(q,messages.slice(-2).map(x=>({role:x.role,content:x.content})),progress=>{
-     setModelProgress(progress.status==='progress'?'Baixando Qwen: '+progress.progress+'%':String(progress.message||'Gerando resposta local...'));
-    },{consent:qwenConsent});
-    payload={ok:true,reply:out.reply,model:out.model,notice:'Resposta gerada no navegador com Qwen 0.5B (WebGPU). Não foi enviado conteúdo a APIs de IA.'};
+    try{
+     const out=await runBlackholeQwen(q,messages.slice(-2).map(x=>({role:x.role,content:x.content})),progress=>{
+      setModelProgress(progress.status==='progress'?'Baixando Qwen: '+progress.progress+'%':String(progress.message||'Gerando resposta local...'));
+     },{consent:qwenConsent});
+     payload={ok:true,reply:out.reply,model:out.model,notice:'Resposta gerada no navegador com Qwen 0.5B (WebGPU). Não foi enviado conteúdo a APIs de IA.'};
+    }catch(localError){
+     // Não envia a pergunta a outra IA sem autorização explícita.
+     setEngine('evidencias');
+     payload={ok:true,reply:offlineBlackholeReply(q),model:'regras-locais',
+      notice:'Qwen local indisponível: '+String(localError.message||'falha').slice(0,180)+'. Usado o modo de regras locais, sem consultar serviços de IA.'};
+    }
    }else{
     if(engine==='online'&&!externalAiConsent&&!requestedOfficialQuery(q))throw Error('Marque a autorização para enviar esta pergunta ao modelo online.');
     const {data:{session:s}}=await db.auth.getSession();if(!s?.access_token)throw Error('Sessão expirada.');
@@ -55,7 +70,7 @@ function Console({db,session}){
    }
    if(!payload?.ok||typeof payload.reply!=='string')throw Error(payload?.error||'Não foi possível responder');
    const answer=payload.reply.trim();if(!answer)throw Error('Nenhuma resposta foi produzida.');
-   setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null}]);
+   setMessages(old=>[...old,{role:'user',content:q},{role:'assistant',content:answer,review:payload.review||null,model:payload.model}]);
    setPrompt('');
    const saved=await db.from('office_agent_runs').insert({
     owner_id:session.user.id,agent:'superagente',task:q.length<3?'Pergunta: '+q:q.slice(0,300),mode:'manual',status:'review',
@@ -90,7 +105,7 @@ function Console({db,session}){
        <strong>{x.name}</strong><p>{x.role}</p><small>{x.mode}</small></button>)}</div></>}
     {tab==='modelos'&&<><h1>Motores de IA e LexisPredict</h1><p>Roteamento de motores somente com credenciais do servidor e autorização do operador. Colibri → MiniCPM → MiniMax → Claude → Groq → xAI → OpenRouter → Gemini. A análise jurídica determinística permanece local.</p><p>O mecanismo local rápido não baixa modelos. O Qwen exige WebGPU e autorização do download. A IA gratuita online só recebe mensagens após autorização explícita.</p>
       <div className="office-ai-model-choice"><button type="button" onClick={()=>{setEngine('evidencias');setTab('nova')}} aria-pressed={engine==='evidencias'}><ShieldCheck size={18}/> Motor de evidências · imediato</button>
-       <button type="button" onClick={()=>{setEngine('qwen');setTab('nova')}} aria-pressed={engine==='qwen'}><Bot size={18}/> Qwen 0.5B · no navegador (WebGPU)</button>
+       <button type="button" onClick={()=>{chooseEngine('qwen');setTab('nova')}} aria-pressed={engine==='qwen'}><Bot size={18}/> Qwen 0.5B · no navegador (WebGPU)</button>
        <button type="button" onClick={()=>{setEngine('online');setTab('nova')}} aria-pressed={engine==='online'}><Layers3 size={18}/> IA online gratuita · OpenRouter</button>
        <p>O modelo Qwen não será carregado automaticamente nem rodará na CPU se não existir GPU compatível. A primeira carga baixa centenas de megabytes de pesos.</p>
        <Link className="inf-btn" href="/pecas">Abrir elaboração de peças</Link></div></>}
@@ -104,7 +119,7 @@ function Console({db,session}){
       <div className="office-ai-action-cards">{ACTIONS.map(a=>{const Icon=a.icon;return <button key={a.label} type="button" onClick={()=>chooseAction(a.prompt)}><Icon size={19}/><span>{a.label}</span></button>})}</div>
      </div>:
      <div className="office-ai-messages" role="log" aria-live="polite">{messages.map((m,i)=><article key={i} className={'office-ai-message '+m.role}>
-      <div className="office-ai-author">{m.role==='user'?'Você':'Superagente · evidências'}</div><div className="office-ai-message-body">{m.content}</div>
+      <div className="office-ai-author">{m.role==='user'?'Você':m.model?.includes('Qwen')||m.model?.startsWith('onnx-community/')?'Superagente · Qwen local':m.model&&m.model!=='regras-locais'&&m.model!=='motor-de-evidencias'?'Superagente · IA online':'Superagente · evidências'}</div><div className="office-ai-message-body">{m.content}</div>
       {m.role==='assistant'&&<div className="office-ai-message-tools"><button type="button" onClick={()=>navigator.clipboard?.writeText(m.content)}><Copy size={13}/> Copiar</button><span>Revisão humana necessária · nenhuma ação executada</span></div>}
      </article>)}</div>}
    </div>}
@@ -117,9 +132,9 @@ function Console({db,session}){
       <div className="office-ai-composer-foot"><span><ShieldCheck size={13}/> {engine==='qwen'?'Qwen 0.5B · WebGPU':engine==='online'?'IA online · somente com autorização':'Motor de evidências gratuito'}</span><button type="submit" disabled={busy||!prompt.trim()||(engine==='online'&&!externalAiConsent&&!requestedOfficialQuery(prompt))||(engine==='qwen'&&!qwenConsent&&!requestedOfficialQuery(prompt))}><Send size={15}/>{busy?'Analisando...':'Analisar'}</button></div>
     </form>
     <div className="blackhole-chat-models" role="group" aria-label="Selecionar o motor da conversa">
-      <button type="button" aria-pressed={engine==='evidencias'} onClick={()=>setEngine('evidencias')}>Respostas rápidas</button>
-      <button type="button" aria-pressed={engine==='online'} onClick={()=>setEngine('online')}>IA gratuita online</button>
-      <button type="button" aria-pressed={engine==='qwen'} onClick={()=>setEngine('qwen')}>Qwen 0.5B local</button>
+      <button type="button" aria-pressed={engine==='evidencias'} onClick={()=>setEngine('evidencias')}>Respostas rápidas · sem IA generativa</button>
+      <button type="button" aria-pressed={engine==='online'} onClick={()=>setEngine('online')}>IA online · requer autorização</button>
+      <button type="button" aria-pressed={engine==='qwen'} onClick={()=>chooseEngine('qwen')}>Qwen 0.5B local</button>
     </div>
     {engine==='online'&&<label className="office-ai-consent"><input type="checkbox" checked={externalAiConsent} onChange={e=>setExternalAiConsent(e.target.checked)}/> Autorizo o envio desta conversa ao modelo online gratuito (pode haver limites e tratamento pelo provedor).</label>}
     {engine==='online'&&externalAiConsent&&<label className="office-ai-consent"><input type="checkbox" checked={allowEngineFallback} onChange={e=>setAllowEngineFallback(e.target.checked)}/> Autorizo cascata LexisPredict/PredictLM: esta conversa poderá ser enviada a provedores remotos configurados, em sequência, se houver falha.</label>}
