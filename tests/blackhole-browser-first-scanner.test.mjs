@@ -31,7 +31,8 @@ test('consulta manual de Processos integra DataJud browser-first e salva snapsho
 });
 test('consulta cache-only nunca aciona tribunal nem cria cooldown',()=>{
  const route=read('app/api/processos/consulta/route.js');
- assert.match(route,/cacheOnly/);
- assert.match(route,/cache_miss/);
- assert.ok(route.indexOf('cacheOnly')<route.indexOf('let result;'));
+ const consult=route.slice(route.indexOf('async function consultOne'));
+ assert.match(consult,/cacheOnly/);
+ assert.match(consult,/cache_miss/);
+ assert.ok(consult.indexOf('if(cacheOnly)')<consult.indexOf('let result;'));
 });
