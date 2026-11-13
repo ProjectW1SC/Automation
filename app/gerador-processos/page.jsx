@@ -3,6 +3,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {FileSearch,RefreshCw,Search,Plus,ExternalLink,ShieldCheck} from 'lucide-react';
 import {normalizeOfficeCNJ} from '../../lib/office-core.mjs';
 import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.mjs';
+import {splitDjenCalendarMonths} from '../../lib/judicial-history-client.mjs';
 import {PUBLIC_DATAJUD_COURTS} from '../../lib/blackhole-datajud-discovery.mjs';
 import {saveNamedCandidate} from '../../lib/office-candidate-save.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
@@ -20,49 +21,70 @@ function Generator({db,session}){
   else setRows(r.data||[]);
  },[db]);
  useEffect(()=>{load()},[load]);
+ async function runDjenMonths({browserOnly=false,bearer='' }={}){
+  const windows=splitDjenCalendarMonths({start:form.start,end:form.end});
+  const records=[],browserRows=[];let completed=0,failed='',saved=true,saveError='';
+  for(const [i,range] of windows.entries()){
+   setNotice('DJEN · consulta mensal '+(i+1)+'/'+windows.length+' ('+range.start+' a '+range.end+')');
+   const month={...form,start:range.start,end:range.end};
+   let data=null,viaBrowser=browserOnly;
+   if(!browserOnly){
+    try{
+     const response=await fetch('/api/gerador-processos',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+bearer},
+      body:JSON.stringify(month),cache:'no-store'});
+     data=await response.json();
+     if(!data?.ok){
+      if(response.status===429){failed='DJEN respondeu 429; consultas suspensas para respeitar a pausa.';break}
+      if(response.status===502||response.status===503)viaBrowser=true;
+      else{failed=String(data?.error||'Consulta mensal inválida.');break}
+     }
+    }catch{viaBrowser=true}
+   }
+   if(viaBrowser){
+    try{data=await browseOfficialDjenSearch(month);browserRows.push(...(data.items||[]))}
+    catch(err){failed='DJEN pelo navegador: '+String(err.message||err).slice(0,210);break}
+   }
+   if(!data?.ok){failed='O serviço DJEN não confirmou a consulta de '+range.start+' a '+range.end;break}
+   records.push(...(data.items||[]));completed++;
+   if(data.persisted===false){saved=false;saveError=String(data.saveError||'Resultado sem confirmação de salvamento.')}
+  }
+  if(browserRows.length){
+   const write=await db.from('crm_process_candidates').upsert(browserRows.map(row=>({...row,owner_id:session.user.id})),
+    {onConflict:'owner_id,process_number,query_term'});
+   if(write.error){saved=false;saveError='Registros do navegador não salvos: '+write.error.message}
+  }
+  if(completed===0)throw Error(failed||'Nenhuma consulta DJEN foi confirmada.');
+  const unique=[...new Map(records.map(row=>[row.process_number+'|'+(row.external_ref||row.official_date||row.headline),row])).values()];
+  await load();
+  if(!saved)setRows(old=>[...unique.map((x,i)=>({...x,id:'temp-'+i,created_at:new Date().toISOString()})),...old].slice(0,250));
+  setStatus(completed===windows.length?'ok':'error');
+  setNotice(completed+'/'+windows.length+' meses consultados. '+unique.length+' publicações verificáveis retornadas. '+
+   (failed?'Consulta parcial; restantes não confirmados: '+failed+'. ':'')+
+   (saveError?'Atenção ao salvamento: '+saveError+'. ':'')+
+   'Resultados não encontrados não significam ausência de processos.');
+ }
  async function consult(e){
   e.preventDefault();setBusy(true);setStatus('running');setNotice('Consultando '+(sourceMode==='datajud'?'DataJud':'DJEN')+' do CNJ...');
   try{
    const {data:{session:s}}=await db.auth.getSession();
    if(!s?.access_token)throw Error('Sessão expirada.');
-   if(sourceMode==='datajud'&&!form.court)throw Error('Selecione um tribunal para pesquisar classes/assuntos no DataJud.');
-   const endpoint=sourceMode==='datajud'?'/api/gerador-processos/datajud':'/api/gerador-processos';
-   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify(form)});
+   if(sourceMode==='djen'){await runDjenMonths({bearer:s.access_token});return}
+   if(!form.court)throw Error('Selecione um tribunal para pesquisar classes/assuntos no DataJud.');
+   const response=await fetch('/api/gerador-processos/datajud',{method:'POST',
+    headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+    body:JSON.stringify(form),cache:'no-store'});
    const data=await response.json();
-   if(!data.ok&&sourceMode==='djen'&&response.status===503){
-    setNotice('A API DJEN bloqueou a conexão do servidor. Tentando a rota pública pelo seu navegador...');
-    const browserResult=await browseOfficialDjenSearch(form);
-    let saved=true,saveError='';
-    if(browserResult.items.length){
-     const write=await db.from('crm_process_candidates').upsert(browserResult.items.map(row=>({...row,owner_id:session.user.id})),
-      {onConflict:'owner_id,process_number,query_term'});
-     if(write.error){saved=false;saveError=write.error.message}
-    }
-    if(saved)await load();else setRows(browserResult.items.map((x,i)=>({...x,id:'temp-'+i,created_at:browserResult.checkedAt})));
-    setStatus('ok');setNotice(browserResult.notice+(saveError?' · Resultados mantidos nesta tela, mas não salvos: '+saveError:'')+' · Consulta feita pelo navegador.');
-    return;
-   }
    if(!data.ok)throw Error(data.error||'Falha na consulta oficial.');
    setStatus('ok');setNotice(data.notice+(data.saveError?' '+data.saveError:'')+(data.limited?' · Resultados limitados pela consulta.':''));
    await load();
    if(!data.persisted)setRows(data.items.map((x,i)=>({...x,id:'temp-'+i,created_at:data.checkedAt})));
-  }catch(e){setStatus('error');setNotice(e.message)}finally{setBusy(false)}
+  }catch(err){setStatus('error');setNotice(String(err.message||err))}finally{setBusy(false)}
  }
  async function consultDjenBrowser(){
-  if(busy)return;setBusy(true);setStatus('running');setNotice('Consultando a API pública DJEN a partir do navegador...');
-  try{
-   const result=await browseOfficialDjenSearch(form);
-   let saved=true,saveError='';
-   if(result.items.length){
-    const r=await db.from('crm_process_candidates').upsert(result.items.map(row=>({...row,owner_id:session.user.id})),
-      {onConflict:'owner_id,process_number,query_term'});
-    if(r.error){saved=false;saveError=r.error.message}
-   }
-   if(saved)await load();
-   else setRows(result.items.map((x,i)=>({...x,id:'temp-'+i,created_at:result.checkedAt})));
-   setStatus('ok');
-   setNotice(result.notice+(saveError?' Resultados obtidos mas não persistidos: '+saveError:''));
-  }catch(e){setStatus('error');setNotice('DJEN via navegador não confirmado: '+e.message)}
+  if(busy)return;setBusy(true);setStatus('running');
+  try{await runDjenMonths({browserOnly:true})}
+  catch(err){setStatus('error');setNotice('DJEN via navegador não confirmado: '+String(err.message||err))}
   finally{setBusy(false)}
  }
  async function addManual(e){
@@ -120,7 +142,7 @@ function Generator({db,session}){
     </div><div className="inf-row-end"><button className="inf-btn primary" type="submit" disabled={busy}><Search size={15}/> {busy?'Consultando...':'Buscar candidatos oficiais'}</button>
     {sourceMode==='djen'&&<button className="inf-btn" type="button" disabled={busy} onClick={consultDjenBrowser}>Pesquisar DJEN pelo meu navegador</button>}</div>
    </form>
-   <div className="inf-note">DataJud: pesquisa por classe/assunto em um tribunal, até 20 candidatos por consulta; a data exibida é a de ajuizamento, não de publicação. DJEN: pesquisa de publicações em janela de até 31 dias. Erros 403/429 indicam bloqueio real, não ausência de processos.</div>
+   <div className="inf-note">DataJud: pesquisa por classe/assunto em um tribunal, até 20 candidatos por consulta; a data exibida é a de ajuizamento, não de publicação. DJEN: datas longas são divididas automaticamente em consultas mensais de até 31 dias. Erros 403/429 representam bloqueios reais; resultados anteriores permanecem preservados.</div>
   </section>
   <section className="inf-panel"><h2><ShieldCheck size={16}/> Cadastrar CNJ manualmente</h2>
    <p>Alternativa gratuita que funciona mesmo quando o DJEN bloqueia pesquisas por palavras. Cadastro não implica confirmação de tramitação.</p>
