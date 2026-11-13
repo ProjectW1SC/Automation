@@ -4,6 +4,8 @@ import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildSuperAgentReview,targetCNJ} from '../../../lib/superagent-core.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
 import {configuredLexisMotors,runLexisCascade} from '../../../lib/lexis-motor-cascade.mjs';
+import {predictLmConfig,runPredictLmChat} from '../../../lib/predictlm-gateway.mjs';
+import {qualityGate} from '../../../lib/lexis-predictlm-quality.mjs';
 import {validateBlackholePrompt,offlineBlackholeReply,configuredBlackholeProvider,generativeBlackholeReply,requiresPortfolio} from '../../../lib/blackhole-chat.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store,private'}});
@@ -20,18 +22,45 @@ export async function POST(request){
   let prompt;try{prompt=validateBlackholePrompt(body?.prompt)}catch(e){return json({ok:false,error:e.message},400)}
   const provider=configuredBlackholeProvider(process.env);
   const cascaded=body?.allowEngineFallback===true?configuredLexisMotors(process.env):[];
-  // A conversa generativa nunca recebe dados de processos sem consentimento expresso.
-  if((provider||cascaded.length)&&body?.externalAiConsent===true){
+  const predictlm=body?.allowEngineFallback===true?predictLmConfig(process.env):null;
+  const preferredMotor=['auto','colibri','minicpm','minimax','claude','groq','xai','openrouter','gemini','predictlm']
+   .includes(body?.preferredMotor)?body.preferredMotor:'auto';
+  // Provedores recebem somente a mensagem/histórico fornecidos explicitamente.
+  // Carteira, snapshots, números e nomes não são enviados por esta rota.
+  if((provider||cascaded.length||predictlm)&&body?.externalAiConsent===true){
    try{
     const history=Array.isArray(body?.messages)?body.messages.slice(-8):[];
-    const answer=cascaded.length?await runLexisCascade([...history,{role:'user',content:prompt}],{motors:cascaded,allowFallback:true}):
-     {reply:await generativeBlackholeReply(provider,[...history,{role:'user',content:prompt}]),model:provider.model,engine:'motor-online'};
-    return json({ok:true,reply:answer.reply,model:answer.model,engine:answer.engine,isGenerativeModel:true,notice:'Motor utilizado: '+answer.engine+'. Provedores adicionais '+(cascaded.length?'autorizados':'desativados')+'. Confira afirmações jurídicas.'});
+    const messages=[...history,{role:'user',content:prompt}];
+    let answer;
+    if(preferredMotor==='predictlm'){
+     if(!predictlm)throw Error('PredictLM não configurado com host e chave privada do servidor.');
+     answer=await runPredictLmChat(messages,{config:predictlm});
+    }else if(cascaded.length){
+     const ordered=preferredMotor==='auto'?cascaded:[
+      ...cascaded.filter(m=>m.id===preferredMotor),
+      ...cascaded.filter(m=>m.id!==preferredMotor)
+     ];
+     if(preferredMotor!=='auto'&&!cascaded.some(m=>m.id===preferredMotor))
+      throw Error('Motor '+preferredMotor+' não configurado no servidor.');
+     try{answer=await runLexisCascade(messages,{motors:ordered,allowFallback:true});}
+     catch(e){
+      if(!predictlm||preferredMotor!=='auto')throw e;
+      answer=await runPredictLmChat(messages,{config:predictlm});
+     }
+    }else if(predictlm){
+     answer=await runPredictLmChat(messages,{config:predictlm});
+    }else{
+     answer={reply:await generativeBlackholeReply(provider,messages),model:provider.model,engine:'motor-online'};
+    }
+    const gate=qualityGate(answer.reply);
+    if(!gate.ok)throw Error('Resposta do modelo bloqueada por inconsistência; revisão necessária.');
+    return json({ok:true,reply:gate.text,model:answer.model,engine:answer.engine,
+     isGenerativeModel:true,notice:'Motor utilizado: '+answer.engine+'. Confira fundamentos jurídicos e fontes antes de agir.'});
    }catch(e){
-    // Em falha de rede/limite, mantém a conversa utilizável com aviso explícito.
-    // Não envia a mensagem a outro provedor sem uma nova autorização.
     const fallback=offlineBlackholeReply(prompt);
-    return json({ok:true,reply:fallback,model:'regras-locais',isGenerativeModel:false,notice:'Modelo remoto não respondeu: '+e.message+' Foi usado o modo local, sem afirmar inferência generativa.'});
+    return json({ok:true,reply:fallback,model:'regras-locais',isGenerativeModel:false,
+     notice:'O motor remoto não concluiu: '+String(e.message||'indisponível').slice(0,160)+
+      '. Foi usado o modo local; nenhuma consulta judicial ou ação externa foi simulada.'});
    }
   }
   if(!requiresPortfolio(prompt))return json({ok:true,reply:offlineBlackholeReply(prompt),model:'regras-locais',isGenerativeModel:false,notice:'Resposta local. Nenhuma fonte judicial foi consultada.'});
