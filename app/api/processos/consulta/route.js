@@ -190,6 +190,9 @@ export async function GET(request){
     'Consulta à fonte oficial excedeu o tempo limite. Tente novamente.':
     error?.message||'Falha ao consultar a fonte oficial.';
   const badInput=/CNJ|Data inicial/.test(message);
-  return json({ok:false,error:message},badInput?400:502);
+  const upstreamStatus=Number(error?.status);
+  const timeout=error?.name==='TimeoutError'||error?.name==='AbortError';
+  const status=[403,429,502,503,504].includes(upstreamStatus)?upstreamStatus:timeout?504:badInput?400:502;
+  return json({ok:false,error:message,code:error?.code||null},status);
  }
 }

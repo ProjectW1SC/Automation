@@ -4,7 +4,7 @@ import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
 import {GET as consultOfficial} from '../processos/consulta/route.js';
 import {buildScannerReview,sourceSummary} from '../../../lib/blackhole-office-scanner.mjs';
-export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=35;
+export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 async function checkOne(number,source,token,force=false){
  const q=new URLSearchParams({numero:number,fonte:source});
