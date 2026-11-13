@@ -145,9 +145,9 @@ function OfficeUI({area,db,session}){
    if(!s?.access_token)throw Error('Sessão expirada. Entre novamente no CRM.');
    const result=await consultHistoricalCase({
     number:row.process_number,source:fonte,start:period?.inicio||undefined,end:period?.fim||undefined,page:period?.pagina||1,
-    fetchServer:async({number,source,start,end,page})=>{
+    fetchServer:async({number,source,start,end,page,cacheOnly})=>{
      const args=new URLSearchParams({numero:number,fonte:source,...(start?{inicio:start}:{}),...(end?{fim:end}:{}),pagina:String(page)});
-     if(arguments[0]?.cacheOnly)args.set('cache','only');
+     if(cacheOnly)args.set('cache','only');
      const response=await fetch('/api/processos/consulta?'+args,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
      try{return {...await response.json(),status:response.ok?undefined:response.status}}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
     },
