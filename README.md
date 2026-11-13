@@ -11,6 +11,8 @@ Organização de clientes, processos, atendimentos, captção de leads e rotinas
 
 [**Acessar a aplicação**](https://projectw1sc-crm.vercel.app)
 
+**Licença:** MIT License — Copyright (c) 2026 W1 Capital.
+
 [![Licença: MIT](https://img.shields.io/badge/licença-MIT-0a0a0a)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14+-black)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E)](https://supabase.com/)

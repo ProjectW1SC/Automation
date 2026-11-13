@@ -1,6 +1,6 @@
 /*
  * INFINITUM · login hero video — correção deploy-ready (13/11/2026)
- * - object-fit: cover → sem faixas / espaços sobrando
+ * - object-fit: contain → vídeo inteiro e sem recorte
  * - sem scale/zoom CSS nem animação de Ken Burns
  * - vídeo só no painel esquerdo (recorte da referência)
  * - loop estável; poster de fallback
@@ -30,6 +30,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
   overflow:hidden!important;
 }
 html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+  aspect-ratio:710 / 720!important;
   position:relative!important;
   min-height:100dvh!important;
   width:100%!important;
@@ -55,7 +56,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
   position:absolute!important;
   inset:0!important;
   z-index:0!important;
-  background:#84776c url('/branding/infinitum-login-poster.webp') center/cover no-repeat!important;
+  background:#84776c url('/branding/infinitum-login-poster.webp') center/contain no-repeat!important;
   transform:none!important;
   animation:none!important;
 }
@@ -70,13 +71,12 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
   min-height:100%!important;
   max-width:none!important;
   max-height:none!important;
-  object-fit:cover!important;
+  object-fit:contain!important;
   object-position:center center!important;
   border:0!important;
   border-radius:0!important;
   pointer-events:none!important;
   filter:none!important;
-  transform:none!important;
   animation:none!important;
   /* evita “pulo” visual no restart do loop em alguns browsers */
   backface-visibility:hidden!important;

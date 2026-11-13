@@ -100,15 +100,28 @@ export async function GET(request){
   const number=formatProcessNumber(params.get('numero'));
   const source=params.get('fonte');
   if(!['datajud','djen','auto'].includes(source))return json({ok:false,error:'Escolha DataJud, DJEN ou consulta automática.'},400);
-  // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
-  const [registry,activities,officeCase]=await Promise.all([
+  // No modo compartilhado, um processo da empresa Lexis já é um registro
+  // autorizado, mesmo sem cópia duplicada nas tabelas legadas do Infinitum.
+  // Nunca consultar a carteira de outra empresa, inclusive para superadmins.
+  const shared=process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1';
+  let empresaId=null;
+  if(shared){
+   const profile=await db.from('usuarios').select('empresa_id').eq('auth_user_id',user.id).limit(2);
+   if(profile.error||profile.data?.length!==1||!profile.data[0].empresa_id)
+    return json({ok:false,error:'Não foi possível validar a organização do login LexisPredict.'},403);
+   empresaId=profile.data[0].empresa_id;
+  }
+  const [registry,activities,officeCase,lexisCase]=await Promise.all([
    db.from('crm_processes').select('id').eq('process_number',number).limit(1),
    db.from('crm_completed_activities').select('id').eq('actor_id',user.id).eq('process_number',number).is('deleted_at',null).limit(1),
-   db.from('office_cases').select('id').eq('process_number',number).limit(1)
+   db.from('office_cases').select('id').eq('process_number',number).limit(1),
+   shared?db.from('processos').select('id').eq('empresa_id',empresaId).eq('protocolo_ref',number).limit(1):
+    Promise.resolve({data:[],error:null})
   ]);
-  if(registry.error||activities.error||officeCase.error)return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
-  if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length)
-   return json({ok:false,error:'Cadastre o CNJ no escritório antes de consultar a fonte oficial.'},403);
+  if(registry.error||activities.error||officeCase.error||lexisCase.error)
+   return json({ok:false,error:'Não foi possível verificar o cadastro privado do CNJ.'},503);
+  if(!registry.data?.length&&!activities.data?.length&&!officeCase.data?.length&&!lexisCase.data?.length)
+   return json({ok:false,error:'Este CNJ não consta da carteira autorizada da empresa.'},403);
   async function consultOne(kind){
    const queryKey=snapshotQueryKey(kind,params);
    const {data:rawCached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
