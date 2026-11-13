@@ -53,10 +53,11 @@ test('HTTP 429 suspende a mesma corte e não dispara nova chamada',async()=>{
 });
 
 test('limite 429 de uma corte não bloqueia outro tribunal',async()=>{
+ const blockedNumber='1001218-36.2026.5.02.0040';
  const other='0411964-57.2026.3.00.0000',otherDigits='04119645720263000000';
  let calls=0;
  const fetchImpl=async(url)=>{calls++;return calls===1?response({},429):response(official(otherDigits))};
- const blocked=await browseOfficialDataJudNumber({number:cnj,fetchImpl});
+ const blocked=await browseOfficialDataJudNumber({number:blockedNumber,fetchImpl});
  const allowed=await browseOfficialDataJudNumber({number:other,fetchImpl});
  assert.equal(blocked.reason,'rate_limited');assert.equal(allowed.ok,true,JSON.stringify(allowed));assert.equal(calls,2);
 });
