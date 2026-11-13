@@ -233,6 +233,35 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    setNotice(result.notice||'Consulta terminada; confira quais fontes responderam.');
   }catch(e){setNotice('Consulta judicial não confirmada: '+e.message)}finally{setBusy(false)}
  };
+ // Atalho vindo de Prazos, Agenda ou Audiências: abre a ação REAL do processo autorizado.
+ // Nunca resolve o vínculo por nome do cliente nem executa ações sem conferir empresa_id.
+ const detailsShortcut=useRef('');
+ useEffect(()=>{
+  if(typeof window==='undefined'||!profile?.empresa_id||!['cases','clients'].includes(area))return;
+  const params=new URLSearchParams(window.location.search);
+  const id=String(params.get('processo')||'').trim(),action=params.get('acao');
+  if(!/^[0-9a-z-]{1,64}$/i.test(id)||!['editar-cliente','editar-processo','atendimento','consulta'].includes(action))return;
+  const key=profile.empresa_id+':'+id+':'+action;
+  if(detailsShortcut.current===key)return;
+  detailsShortcut.current=key;
+  let alive=true;
+  (async()=>{
+   try{
+    const {data,error}=await db.from('processos').select(PROCESS_FIELDS)
+     .eq('empresa_id',profile.empresa_id).eq('id',id).maybeSingle();
+    if(error||!data?.id)throw Error(error?.message||'Processo não localizado nesta organização.');
+    if(!alive)return;
+    const mapped=mapLexisProcess(data);
+    setPage(0);setActiveFilter('todos');
+    if(mapped.process_number){setType('numero');setSearch(mapped.process_number);setDraft(mapped.process_number)}
+    if(action==='editar-cliente')startEdit(mapped,'cliente');
+    if(action==='editar-processo')startEdit(mapped,'processo');
+    if(action==='atendimento')await attend(mapped);
+    if(action==='consulta')await consult(mapped);
+   }catch(error){if(alive)setNotice('Não foi possível abrir os detalhes solicitados: '+String(error?.message||error))}
+  })();
+  return()=>{alive=false};
+ },[db,profile?.empresa_id,area]);
  const loadReport=useCallback(async()=>{
   if(!profile?.empresa_id||area!=='reports')return;
   setReportBusy(true);
