@@ -6,6 +6,7 @@ import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRoun
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
+import {DEMO_GUEST_EMAIL} from '../lib/demo-tenant.mjs';
 
 import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
@@ -141,7 +142,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     <small className="app-copyright" aria-label="Direitos autorais da W1 Capital">© 2026 BLACKHOLE · W1 Capital</small>
    </footer>
   </aside>
-  <div className="app-content" key={pathname} data-route={pathname}><div className="reference-top-tools">
+  <div className="app-content" key={pathname} data-route={pathname}>{String(email||'').toLowerCase()===DEMO_GUEST_EMAIL&&<div className="inf-demo-banner" role="note"><ShieldCheck size={17}/><strong>AMBIENTE DE DEMONSTRAÇÃO</strong><span>Empresa, clientes, processos, leads, mensagens e movimentações são 100% fictícios. Sem envios ou consultas externas.</span></div>}<div className="reference-top-tools">
    <div className="blackhole-shell-breadcrumb"><img src="/branding/blackhole-symbol.svg" alt="" width="31" height="20"/><Link href="/" prefetch={false}>PROJECTW1SC</Link><span className="blackhole-shell-crumb-sep">/</span><strong>{active}</strong></div>
    <div className="blackhole-shell-tools">
     <div className="blackhole-shell-search"><Search size={15}/><input ref={navSearchRef} type="search" value={navSearch} onChange={e=>setNavSearch(e.target.value)} aria-label="Pesquisar abas do escritório" placeholder="Buscar uma área..."/><kbd><Command size={12}/> K</kbd>

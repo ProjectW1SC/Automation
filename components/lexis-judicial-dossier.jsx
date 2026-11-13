@@ -7,7 +7,7 @@ import {normalizeCaseNumber,normalizeLexisJudicialTimeline} from '../lib/lexis-o
 import {consultHistoricalCase} from '../lib/judicial-history-client.mjs';
 import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs';
 const fmt=x=>x?String(x).slice(0,10).split('-').reverse().join('/'):'Sem data confirmada';
-const states={checking:'Consultando...',ok:'Confirmada nesta consulta',ok_browser:'Confirmada pelo navegador',cached_previous:'Histórico anterior',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite de consultas (429)',timeout:'Tempo esgotado',unavailable:'Indisponível',not_checked:'Não consultada'};
+const states={checking:'Consultando...',simulated:'Simulação · sem consulta ao tribunal',ok:'Confirmada nesta consulta',ok_browser:'Confirmada pelo navegador',cached_previous:'Histórico anterior',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite de consultas (429)',timeout:'Tempo esgotado',unavailable:'Indisponível',not_checked:'Não consultada'};
 const src=x=>x==='DataJud'?'DataJud':'DJEN';
 export default function LexisJudicialDossier({db,session}){
  const [number,setNumber]=useState(''),[draft,setDraft]=useState(''),[profile,setProfile]=useState(null),[record,setRecord]=useState(null);
@@ -104,6 +104,7 @@ export default function LexisJudicialDossier({db,session}){
    {consulting&&<button type="button" className="inf-btn" onClick={()=>controllerRef.current?.abort()}>Cancelar consulta</button>}
    {live?.nextWindow&&<p className="inf-note">Há períodos pendentes. Continue a partir de {fmt(live.nextWindow.start)} no filtro acima.</p>}
    {progress&&<p className="inf-note" role="status">{progress}</p>}
+   {live?.demo&&<p className="inf-note"><strong>SIMULAÇÃO: movimentações inventadas, nenhuma consulta ao tribunal.</strong></p>}
    {live&&<div className="lx-source-status"><strong>Resultado da consulta</strong><p>{live.notice||'Sem observações adicionais'}</p>
     <div className="reference-actions">{['djen','datajud'].map(s=><span className="lx-status lx-status--atencao" key={s}>{s.toUpperCase()}: {states[live.sourceStatus?.[s]]||live.sourceStatus?.[s]||'Não confirmado'}</span>)}</div>
     {(live.sourceErrors?.djen||live.sourceErrors?.datajud)&&<p className="inf-note">Limitações: {['djen','datajud'].map(x=>live.sourceErrors?.[x]?x.toUpperCase()+': '+live.sourceErrors[x]:'').filter(Boolean).join(' · ')}</p>}

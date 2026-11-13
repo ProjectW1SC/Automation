@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-const labels={checking:'Consultando...',ok:'Consultado agora',ok_browser:'Consultado no navegador',cached_previous:'Consulta anterior salva',not_checked:'Não consultado',unavailable:'Indisponível',timeout:'Tempo esgotado',blocked_403:'Acesso recusado pela fonte',rate_limited_429:'Limite de consultas atingido'};
+const labels={checking:'Consultando...',simulated:'Simulação · tribunal não consultado',ok:'Consultado agora',ok_browser:'Consultado no navegador',cached_previous:'Consulta anterior salva',not_checked:'Não consultado',unavailable:'Indisponível',timeout:'Tempo esgotado',blocked_403:'Acesso recusado pela fonte',rate_limited_429:'Limite de consultas atingido'};
 const date=value=>{const day=String(value||'').slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(day)?day.split('-').reverse().join('/'):'Data não informada'};
 function officialLink(value){try{const u=new URL(value);return u.protocol==='https:'&&/(^|\.)jus\.br$/.test(u.hostname)?u.href:null}catch{return null}}
 export function JudicialEvents({items=[],title='Movimentações e publicações'}){
@@ -19,6 +19,7 @@ export default function JudicialConsultationResult({result}){
  const items=result.items||[],incomplete=result.partial||!result.ok;
  const bySource={djen:items.filter(x=>x.source==='DJEN').length,datajud:items.filter(x=>x.source==='DataJud').length};
  return <section className="lx-judicial-result" aria-label="Resultado da consulta judicial">
+  {result.demo===true&&<p role="status" className="inf-note"><strong>AMBIENTE DE DEMONSTRAÇÃO · DADOS FICTÍCIOS.</strong> As atualizações abaixo são inventadas; não são resultados reais do DJEN ou DataJud.</p>}
   <h3>{items.length?items.length+' registro(s) retornado(s)':incomplete?'Histórico judicial não confirmado':'Nenhum registro retornado neste período'}</h3>
   {!items.length&&<p>{incomplete?'A consulta não retornou movimentações e há fontes sem atualização confirmada. Isso não confirma ausência de histórico no tribunal.':'As fontes consultadas não retornaram registros para os parâmetros informados. Você pode pesquisar outras datas no formulário acima.'}</p>}
   <div className="lx-source-results">{['djen','datajud'].map(source=><section key={source}>

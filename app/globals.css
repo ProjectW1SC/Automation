@@ -67,3 +67,9 @@
 .crm-reopen-modal textarea{min-width:100%;max-width:100%;resize:vertical}
 .crm-reopen-modal .actions{display:flex;justify-content:flex-end;flex-wrap:wrap}
 @media(max-width:700px){.crm-row-actions{flex-wrap:wrap}.crm-reopen-modal{padding:19px}}
+
+/* Identidade persistente para a carteira de demonstracao */
+.inf-demo-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 20px;background:#172b39;color:#f6f8fa;border-bottom:2px solid #e9af55;letter-spacing:.01em;font-size:13px}
+.inf-demo-banner strong{color:#ffcf8d;font-size:12px;letter-spacing:.09em}
+.inf-demo-banner span{opacity:.95}
+@media(max-width:640px){.inf-demo-banner{padding:10px 12px;gap:6px;font-size:12px}}
