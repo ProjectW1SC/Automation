@@ -70,7 +70,7 @@ html[data-crm-theme="infinitum"] .lx-status--em_dia{background:#ecf7ef;color:#24
 html[data-crm-theme="infinitum"] .lx-status--em_andamento{background:#eef4ff;color:#345a9f;border-color:#d8e4fa}
 html[data-crm-theme="infinitum"] .lx-status--encerrado{background:#eeece8;color:#605a53;border-color:#dcd7d0}
 html[data-crm-theme="infinitum"] .lx-status--sem_data{background:#f3f0eb;color:#6e6358;border-color:#e8e1d6}
-html[data-crm-theme="infinitum"] .lx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:19px}
+html[data-crm-theme="infinitum"] .lx-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:19px}
 html[data-crm-theme="infinitum"] .lx-kpi{background:#fff;text-align:left;position:relative;border:1px solid #e8e0d6;border-radius:12px;padding:16px 19px;min-height:108px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 4px 12px #23190b09;color:#7f756a}
 html[data-crm-theme="infinitum"] .lx-kpi strong{font:400 clamp(28px,3vw,37px)/1.2 Georgia,serif;color:#231b16}
 html[data-crm-theme="infinitum"] .lx-kpi span:first-child{font-size:11px;font-weight:700}
@@ -132,3 +132,9 @@ html[data-crm-theme="infinitum"] .lx-shared .lx-process-toolbar{margin-top:12px}
 }
 @media(prefers-reduced-motion:reduce){html[data-crm-theme="infinitum"] .lx-workspace *,
 html[data-crm-theme="infinitum"] .lx-shared *{transition:none!important;animation:none!important}}
+
+html[data-crm-theme="infinitum"] .lx-load-more{display:flex;align-items:center;justify-content:center;gap:18px;padding:20px;background:#faf8f5;color:#857a6e;font-size:11px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-meta{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-meta strong{font-weight:700;font-size:11px}
+html[data-crm-theme="infinitum"] .lx-shared .office-records{border:1px solid #eee7de;border-radius:11px;overflow:hidden}
+html[data-crm-theme="infinitum"] .lx-shared .office-record .lx-process-toolbar .inf-btn{min-height:34px}
