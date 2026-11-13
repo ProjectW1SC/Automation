@@ -4,27 +4,26 @@ import {readFileSync} from 'node:fs';
 
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('desktop login scales the form and controls to the reference viewport',()=>{
+test('login keeps readable controls and grows naturally on short screens',()=>{
  const css=read('app/infinitum-login-video.css');
- assert.match(css,/width:clamp\(260px,38dvh,420px\)!important/);
- assert.match(css,/height:100dvh!important/);
- assert.match(css,/overflow-y:auto!important/);
- assert.match(css,/height:clamp\(36px,4\.6dvh,49px\)!important/);
- assert.match(css,/min-height:clamp\(38px,4\.8dvh,50px\)!important/);
+ assert.match(css,/width:min\(420px,100%\)!important/);
+ assert.match(css,/height:auto!important/);
+ assert.match(css,/overflow:visible!important/);
+ assert.match(css,/min-height:48px!important/);
+ assert.match(css,/font-size:16px!important/);
+ const login=css.slice(0,css.indexOf('/* Telas pré-login'));
+ assert.doesNotMatch(login,/font-size:clamp\([^)]*dvh|height:100dvh!important/);
  assert.match(css,/justify-content:flex-start!important/);
  assert.match(css,/margin-top:auto!important/);
 });
 
-test('mobile keeps the full reference hero visible without cropping the video',()=>{
+test('mobile prioritizes the form and keeps branding outside the raster video',()=>{
  const css=read('app/infinitum-login-video.css');
- const polish=css.slice(css.indexOf('INFINITUM PRESTIGE'));
- const mobileStart=polish.indexOf('@media(max-width:920px)');
- const mobileEnd=polish.indexOf('@media(max-width:480px)',mobileStart);
- const mobile=polish.slice(mobileStart,mobileEnd);
- assert.match(mobile,/height:min\(101\.4vw,70svh,720px\)!important/);
- assert.match(mobile,/aspect-ratio:710 \/ 720!important/);
- assert.match(mobile,/object-fit:contain!important/);
- assert.doesNotMatch(mobile,/object-fit:cover!important/);
+ const mobile=css.slice(css.indexOf('@media(max-width:920px)'),css.indexOf('@media(max-width:480px)'));
+ assert.match(mobile,/grid-template-columns:minmax\(0,1fr\)!important/);
+ assert.match(mobile,/\.w1-auth-hero\{display:none!important\}/);
+ assert.match(mobile,/min-height:100svh!important/);
+ assert.match(read('components/professional-auth.jsx'),/<span>INFINITUM<\/span>/);
 });
 
 test('loading and access-error states use the neutral Infinitum Prestige surface',()=>{

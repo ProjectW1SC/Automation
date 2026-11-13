@@ -7,16 +7,18 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
  const videoRef=useRef(null);
  useEffect(()=>{
   const media=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const compact=window.matchMedia?.('(max-width: 920px)');
+  const el=videoRef.current;
   const sync=()=>{
-   const el=videoRef.current;
    if(!el)return;
-   if(media?.matches){el.pause();return}
+   if(media?.matches||compact?.matches){el.pause();return}
    const task=el.play();
    if(task?.catch)task.catch(()=>{});
   };
   sync();
   media?.addEventListener?.('change',sync);
-  return()=>{media?.removeEventListener?.('change',sync);videoRef.current?.pause()};
+  compact?.addEventListener?.('change',sync);
+  return()=>{media?.removeEventListener?.('change',sync);compact?.removeEventListener?.('change',sync);el?.pause()};
  },[]);
  return <main className="w1-auth-screen" data-office-login="infinitum-reference">
   <div className="w1-auth-frame">
@@ -35,10 +37,8 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
    </section>
    <section className="w1-auth-panel" aria-label="Entrar no ProjectW1SC">
     <div className="w1-auth-panel-top">
-     <a className="w1-auth-mark" href="/" title="BLACKHOLE — Gestão jurídica" aria-label="BLACKHOLE">
-      <img src="/branding/projectw1sc-symbol.svg" width="60" height="42" alt="BLACKHOLE"/> <svg viewBox="0 0 80 42" role="img" aria-label="Marca do BLACKHOLE" style={{display:"none"}}>
-       <path d="M40 21c-6.7-11.1-12.5-16.8-21-16.8C9.3 4.2 3 11.7 3 21s6.3 16.8 16 16.8c8.5 0 14.3-5.7 21-16.8 6.7-11.1 12.5-16.8 21-16.8 9.7 0 16 7.5 16 16.8s-6.3 16.8-16 16.8c-8.5 0-14.3-5.7-21-16.8Z" fill="none" stroke="currentColor" strokeWidth="3.7" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+     <a className="w1-auth-mark" href="/" title="INFINITUM — Gestão jurídica" aria-label="INFINITUM">
+      <img src="/branding/infinitum-symbol-preto.svg" width="32" height="24" alt=""/> <span>INFINITUM</span>
      </a>
      {onSignup&&<button type="button" className="w1-auth-create" onClick={onSignup}>{signupMode?'Fazer login':'Criar conta'} <ArrowRight size={14}/></button>}
     </div>

@@ -138,3 +138,43 @@ html[data-crm-theme="infinitum"] .lx-shared .lx-process-meta{display:inline-flex
 html[data-crm-theme="infinitum"] .lx-shared .lx-process-meta strong{font-weight:700;font-size:11px}
 html[data-crm-theme="infinitum"] .lx-shared .office-records{border:1px solid #eee7de;border-radius:11px;overflow:hidden}
 html[data-crm-theme="infinitum"] .lx-shared .office-record .lx-process-toolbar .inf-btn{min-height:34px}
+
+/* Carteira: hierarquia legível e controles que cabem em telas estreitas. */
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-record{padding:22px!important;gap:12px;overflow-wrap:anywhere}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-record>div>div>strong{font-size:16px;font-weight:650}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-record p{font-size:13px;line-height:1.6}
+html[data-crm-theme="infinitum"] .lx-shared .lx-process-toolbar{padding-top:12px;border-top:1px solid #eee8e0;gap:8px!important}
+html[data-crm-theme="infinitum"] .lx-shared .inf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px!important;padding:10px 14px;font-size:12px;line-height:1.4;cursor:pointer;white-space:normal;text-align:center}
+html[data-crm-theme="infinitum"] .lx-shared .inf-btn:disabled{opacity:.5;cursor:not-allowed}
+html[data-crm-theme="infinitum"] .lx-shared :is(button,input,textarea,select):focus-visible{outline:2px solid #8b6d48;outline-offset:3px}
+html[data-crm-theme="infinitum"] .lx-shared :is(input,textarea,select){max-width:100%;min-width:0;box-sizing:border-box;font-size:14px}
+html[data-crm-theme="infinitum"] .lx-shared .inf-panel>form.inf-row-end input{min-width:0!important}
+html[data-crm-theme="infinitum"] .lx-shared .inf-panel>label{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px;font-size:13px}
+
+html[data-crm-theme="infinitum"] .lx-shared dialog.lx-action-dialog{
+ width:min(680px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);
+ height:auto;min-height:0;position:fixed;inset:0;margin:auto!important;padding:28px!important;
+ overflow:auto;overscroll-behavior:contain;color:#29221c!important;box-shadow:0 24px 80px #21180e30!important;
+}
+html[data-crm-theme="infinitum"] .lx-shared dialog.lx-action-dialog::backdrop{background:#211b1780;backdrop-filter:blur(3px)}
+html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-header h2{margin:8px 0 0;line-height:1.2}
+html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-eyebrow{color:#75634e;font-size:10px;letter-spacing:.15em;font-weight:650}
+html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-close{flex:0 0 44px;min-height:44px!important;padding:10px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog fieldset{border:0;margin:0;padding:0;min-width:0}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog .inf-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:20px}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog label{display:flex;flex-direction:column;align-items:stretch;gap:8px;font-size:13px;font-weight:550;color:#51463b}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog :is(input,select,textarea){width:100%;min-height:44px;font-size:16px;background:#fff}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog textarea{min-height:120px;resize:vertical}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog .lx-field-wide{grid-column:1/-1}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog label.lx-check-field{flex-direction:row;align-items:center;font-weight:400;line-height:1.6}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog input[type="checkbox"]{width:18px;height:18px;min-height:18px;flex:0 0 18px;padding:0;accent-color:#29221c}
+html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog .lx-dialog-notice{padding:12px 14px;border:1px solid #e5d5c5;border-radius:8px;background:#faf5ef;color:#7c3a21;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid #eee8e0}
+@media(max-width:600px){
+ html[data-crm-theme="infinitum"] .lx-shared .lx-process-record{padding:16px!important}
+ html[data-crm-theme="infinitum"] .lx-shared .lx-process-toolbar .inf-btn{flex:1 1 150px}
+ html[data-crm-theme="infinitum"] .lx-shared dialog.lx-action-dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:20px!important}
+ html[data-crm-theme="infinitum"] .lx-shared .lx-action-dialog .inf-fields{grid-template-columns:minmax(0,1fr)}
+ html[data-crm-theme="infinitum"] .lx-shared .lx-dialog-actions .inf-btn{flex:1 1 140px}
+}
