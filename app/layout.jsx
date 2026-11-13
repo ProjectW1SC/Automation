@@ -29,6 +29,8 @@ import './legal-stationery.css';
 import './crm-mobile-all-areas.css';
 import './crm-generator-names.css';
 import './infinitum-video-motion.css';
+// Carregada por último para limitar o vídeo real ao login, sem alterar o CRM.
+import './infinitum-login-video.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
 export const metadata={title:'INFINITUM • CRM Jurídico W1',description:'Gestão operacional de processos, agenda, clientes e atendimentos',icons:{icon:'/branding/projectw1sc-symbol.svg'}};
 // Restaura o único tema principal antes da primeira pintura; migra a preferência legada.
