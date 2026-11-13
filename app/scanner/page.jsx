@@ -63,7 +63,8 @@ function Scanner({db,session}){
       const cached=await db.from('crm_judicial_snapshots').select('checked_at')
        .eq('actor_id',s.user.id).eq('process_number',row.process_number)
        .eq('source',source).eq('query_key',queryKey).maybeSingle();
-      if(!cached.error&&snapshotIsFresh(cached.data,source))return null;
+      if(cached.error)return null;
+      if(snapshotIsFresh(cached.data,source))return null;
       try{return await fetcher()}catch(e){return {ok:false,source:source==='datajud'?'DataJud':'DJEN',
        number:row.process_number,status:e?.status,reason:e?.code||'network_error',error:String(e?.message||'Falha no navegador').slice(0,240)}}
      };
