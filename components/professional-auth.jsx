@@ -1,22 +1,36 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useRef} from 'react';
 import {ArrowRight,ShieldCheck} from 'lucide-react';
 
-// Reconstrução independente da composição enviada: card preto marmorizado + formulário branco.
-// A identidade, marcas e permissões continuam próprias do ProjectW1SC.
+// O painel animado utiliza o vídeo fornecido pelo cliente; o formulário é HTML real, separado.
 export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem-vindo de volta',description='Entre na sua conta para continuar.',onSignup=null,signupMode=false,children}){
+ const videoRef=useRef(null);
+ useEffect(()=>{
+  const media=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const sync=()=>{
+   const el=videoRef.current;
+   if(!el)return;
+   if(media?.matches){el.pause();return}
+   const task=el.play();
+   if(task?.catch)task.catch(()=>{});
+  };
+  sync();
+  media?.addEventListener?.('change',sync);
+  return()=>{media?.removeEventListener?.('change',sync);videoRef.current?.pause()};
+ },[]);
  return <main className="w1-auth-screen" data-office-login="infinitum-reference">
   <div className="w1-auth-frame">
-   <section className="w1-auth-hero" aria-label="Inteligência jurídica ProjectW1SC">
-    <div className="w1-auth-hero-top">
-     <span className="w1-auth-hero-kicker">∞ INFINITUM | CRM JURÍDICO</span>
-     <h2>Gestão jurídica<br/>com método, inteligência e<br/><em>alta performance.</em></h2>
-    </div>
-    <div className="w1-auth-hero-footer">
+   <section className="w1-auth-hero" aria-label="Infinitum — gestão jurídica com método e alta performance">
+    <div className="w1-auth-video-poster" aria-hidden="true"/>
+    <video ref={videoRef} className="w1-auth-video" autoPlay muted loop playsInline preload="metadata"
+      poster="/branding/infinitum-login-poster.webp" aria-hidden="true"
+      onError={event=>{event.currentTarget.style.display='none'}}>
+     <source src="/branding/infinitum-login-hero.mp4" type="video/mp4"/>
+    </video>
+    <div className="w1-auth-hero-transcript">
+     <span>∞ INFINITUM | CRM JURÍDICO</span>
+     <h2>Gestão jurídica com método, inteligência e alta performance.</h2>
      <p>Organize processos, clientes, prazos, compromissos e sua operação jurídica em um só lugar.</p>
-     <div className="w1-auth-hero-tags" aria-label="Funcionalidades integradas">
-      {['Processos','Clientes','Agenda','Relatórios'].map(label=><span key={label}>{label}</span>)}
-     </div>
     </div>
    </section>
    <section className="w1-auth-panel" aria-label="Entrar no ProjectW1SC">
