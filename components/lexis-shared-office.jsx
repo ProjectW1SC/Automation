@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import {Activity,Archive,BarChart3,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,ClipboardList,Download,Edit3,FileText,Gavel,History,Plus,Printer,RefreshCw,Search,ShieldCheck,Users} from 'lucide-react';
 import {mapLexisProcess,resolveCompanyAccess,portfolioUpdate,PROCESS_FIELDS,processSearchField,likeTerm,normalizedCnj,validDay,dailyAttendanceSummary} from '../lib/lexis-shared-portfolio.mjs';
@@ -11,6 +11,7 @@ import {toCsvCell} from '../lib/minhas-atividades.mjs';
 import {TeamReport} from './lexis-team-report';
 import {adaptLexisTeamReport} from '../lib/lexis-team-report-adapter.mjs';
 import InfinitumLegacyClients from './infinitum-legacy-clients';
+import PortfolioDialog from './portfolio-dialog';
 import {responsibleDisplay,processStatus,statusForDate} from '../lib/lexis-operations.mjs';
 const PAGE=75;
 const DATE_LABEL=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—';
@@ -113,6 +114,10 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  },[area]);
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
+ const historyRequest=useRef(0);
+ const [historyLoading,setHistoryLoading]=useState(false);
+ useEffect(()=>()=>{historyRequest.current++},[]);
+ const closeAction=()=>{if(busy)return;historyRequest.current++;setSelected(null);setEditing(null);setConsulted(null);setHistory([]);setHistoryLoading(false)};
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[attendance,setAttendance]=useState([]),[reportTotal,setReportTotal]=useState(0);
  const [reportBusy,setReportBusy]=useState(false),[teamStats,setTeamStats]=useState([]),[selectedMode,setSelectedMode]=useState('atendimento');
  useEffect(()=>{
@@ -156,13 +161,16 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const lastTotalPages=Math.max(1,Math.ceil(total/PAGE));
  const attend=useCallback(async(row)=>{
   if(!profile?.empresa_id)return;
+  const request=++historyRequest.current;
+  setEditing(null);setNotice('');setHistory([]);setHistoryLoading(true);
   setSelected(row);setSelectedMode('atendimento');setAttendNote('');setNextDate(row.next_attendance||'');setConfirmed(false);setConsulted(null);
   try{
    const {data,error}=await db.from('tarefas_realizadas').select('id,descricao,categoria,data_realizacao,responsavel_auth_user_id,contato_cliente_confirmado,created_at')
     .eq('empresa_id',profile.empresa_id).eq('processo_id',row.id).order('created_at',{ascending:false}).limit(60);
    if(error)throw Error(error.message);
-   setHistory(data||[]);
-  }catch(e){setHistory([]);setNotice('Histórico não carregado: '+e.message)}
+   if(request===historyRequest.current)setHistory(data||[]);
+  }catch(e){if(request===historyRequest.current){setHistory([]);setNotice('Histórico não carregado: '+e.message)}}
+  finally{if(request===historyRequest.current)setHistoryLoading(false)}
  },[db,profile?.empresa_id]);
  const saveAttendance=async e=>{
   e.preventDefault();if(!selected||busy)return;
@@ -175,16 +183,17 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    });
    if(error||data?.ok!==true)throw Error(error?.message||'Atendimento não confirmado pelo banco.');
    setNotice('Atendimento registrado: '+data.responsavel+' · '+DATE_LABEL(data.ultimo_atendimento)+' · próximo retorno '+DATE_LABEL(data.proximo_atendimento)+'.');
+   historyRequest.current++;setHistoryLoading(false);setHistory([]);
    setAttendNote('');setSelected(null);await load();
   }catch(e){setNotice('Atendimento não registrado: '+e.message)}
   finally{setBusy(false)}
  };
- const startEdit=(p,what)=>{setSelected(null);setEditing(p);setMode(what);setForm(initialForm(p));setNotice('')};
+ const startEdit=(p,what)=>{historyRequest.current++;setSelected(null);setEditing(p);setMode(what);setForm(initialForm(p));setNotice('')};
  const saveEdit=async e=>{
   e.preventDefault();if(!editing||busy||!profile?.empresa_id)return;
   const fields=mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref' && !(f==='status_interno'&&form.status_interno==='preservar'));
   let patch;try{patch=portfolioUpdate(Object.fromEntries(fields.map(f=>[f,form[f]])))}catch(err){setNotice(err.message);return}
-  setBusy(true);
+  setBusy(true);setNotice('');
   try{
    const {data,error}=await db.from('processos').update({...patch,updated_at:new Date().toISOString()})
     .eq('id',editing.id).eq('empresa_id',profile.empresa_id).select('id').maybeSingle();
@@ -206,6 +215,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  };
  const consult=async p=>{
   if(!p.process_number||!normalizedCnj(p.process_number)){setNotice('Número CNJ incompleto. Consulta oficial não iniciada.');return}
+  historyRequest.current++;setEditing(null);setHistory([]);setHistoryLoading(false);
   setSelected(p);setSelectedMode('consulta');setConsulted(null);setBusy(true);setNotice('Consultando DJEN e DataJud somente por solicitação...');
   try{
    const {data:{session:s}}=await db.auth.getSession();
@@ -360,9 +370,9 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
      <small className="lx-process-meta"><span className={'lx-status lx-status--'+processStatus(p.status_detail).key}>{processStatus(p.status_detail).label}</span> <span className={'lx-status lx-status--'+statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).key}>{statusForDate(p.next_attendance,{today:todayBrazil(),finished:p.status==='encerrado'}).label}</span> · Último atendimento: {DATE_LABEL(p.last_attendance)} · Próximo retorno: {DATE_LABEL(p.next_attendance)} · Próximo prazo: {DATE_LABEL(p.next_deadline)} · Responsável: <strong>{responsibleDisplay(p.last_responsible,team)}</strong></small></div>
     </div>
     <div className="inf-row-end lx-process-toolbar" style={{justifyContent:'flex-start',gap:6,flexWrap:'wrap'}}>
-     <button className="inf-btn" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
-     <button className="inf-btn" onClick={()=>startEdit(p,'processo')}><FileText size={14}/> Editar processo</button>
-     <button className="inf-btn primary" onClick={()=>attend(p)}><ClipboardList size={14}/> Registrar atendimento</button>
+     <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
+     <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'processo')}><FileText size={14}/> Editar processo</button>
+     <button type="button" className="inf-btn primary" aria-haspopup="dialog" onClick={()=>attend(p)}><ClipboardList size={14}/> Registrar atendimento</button>
      <button className="inf-btn" onClick={()=>consult(p)} disabled={busy||!normalizedCnj(p.process_number)}><Gavel size={14}/> Consultar</button>
      {p.status!=='encerrado'&&<button className="inf-btn" onClick={()=>changeStatus(p,'encerrado')} disabled={busy}><CheckCircle2 size={14}/> Encerrar</button>}
      {p.status!=='em_andamento'&&<button className="inf-btn" onClick={()=>changeStatus(p,'em_andamento')} disabled={busy}><Activity size={14}/> Em andamento</button>}
@@ -375,26 +385,30 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <button type="button" className="inf-btn" disabled={page+1>=lastTotalPages||loading} onClick={()=>setPage(x=>x+1)}>Próxima <ChevronRight size={16}/></button></div>
   </section>
   {area==='clients'&&<InfinitumLegacyClients db={db} profile={profile} team={team}/>}
-  {editing&&<section className="inf-panel" aria-label="Edição de cadastro"><h2>Editar {mode==='cliente'?'cliente':'processo'} · #{editing.id}</h2>
-   <form onSubmit={saveEdit}><div className="inf-fields">
+  {editing&&<PortfolioDialog title={'Editar '+(mode==='cliente'?'cliente':'processo')} busy={busy} notice={notice} onClose={closeAction}>
+   <p>{editing.client_name||'Cliente não identificado'} · {editing.process_number||'Sem número CNJ'}</p>
+   <form onSubmit={saveEdit}><fieldset disabled={busy}><div className="inf-fields">
     {(mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref')).map(field=>(
      <label key={field}>{({cliente:'Cliente',telefone:'Telefone',email:'E-mail',cpf:'CPF',tribunal:'Tribunal',advogado:'Advogado',observacoes:'Observações',proximo_retorno:'Próximo atendimento',proximo_prazo:'Próximo prazo',status_interno:'Situação interna'})[field]||field}
       {field==='status_interno'?<select value={form[field]||'ativo'} onChange={e=>setForm({...form,[field]:e.target.value})}>{form.status_interno==='preservar'&&<option value="preservar">Manter situação atual ({editing.status_detail||'Especial'})</option>}<option value="ativo">Ativo</option><option value="em_andamento">Em andamento</option><option value="suspenso">Suspenso</option><option value="encerrado">Encerrado</option><option value="excluido">Excluído (arquivado)</option></select>:
        field==='observacoes'?<textarea value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>:
-       <input type={['proximo_retorno','proximo_prazo'].includes(field)?'date':'text'} value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>}</label>
+       <input type={['proximo_retorno','proximo_prazo'].includes(field)?'date':field==='email'?'email':field==='telefone'?'tel':'text'} required={field==='cliente'} value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})}/>}</label>
     ))}
-   </div><div className="inf-row-end"><button className="inf-btn primary" disabled={busy}>Salvar alterações</button><button type="button" className="inf-btn" onClick={()=>setEditing(null)}>Cancelar</button></div></form>
-  </section>}
-  {selected&&<section className="inf-panel" aria-label="Registrar atendimento"><h2><History size={18}/> Atendimento · {selected.client_name||selected.process_number}</h2>
+   </div></fieldset><div className="inf-row-end lx-dialog-actions"><button type="submit" className="inf-btn primary" disabled={busy}>{busy?'Salvando...':'Salvar alterações'}</button><button type="button" className="inf-btn" disabled={busy} onClick={closeAction}>Cancelar</button></div></form>
+  </PortfolioDialog>}
+  {selected&&<PortfolioDialog title={selectedMode==='atendimento'?'Registrar atendimento':'Consulta oficial'} busy={busy} notice={notice} onClose={closeAction}>
+   <p><strong>{selected.client_name||selected.process_number}</strong></p>
    <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: <strong>{responsibleDisplay(selected.last_responsible,team)}</strong></p>
-   {selectedMode==='atendimento'&&<form onSubmit={saveAttendance}><div className="inf-fields">
-    <label>Resumo do atendimento realizado<textarea value={attendNote} onChange={e=>setAttendNote(e.target.value)} minLength={3} maxLength={3000} required/></label>
+   {selectedMode==='atendimento'&&<form onSubmit={saveAttendance}><fieldset disabled={busy}><div className="inf-fields">
+    <label className="lx-field-wide">Resumo do atendimento realizado<textarea value={attendNote} onChange={e=>setAttendNote(e.target.value)} minLength={3} maxLength={3000} required/></label>
     <label>Próximo atendimento<input type="date" value={nextDate} onChange={e=>setNextDate(e.target.value)}/></label>
-    <label><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> Contato com o cliente confirmado</label>
-   </div><p className="inf-note">Responsável será registrado automaticamente com seu login Lexis: <b>{profile.nome}</b>. O histórico anterior não será sobrescrito.</p>
-   <div className="inf-row-end"><button type="submit" className="inf-btn primary" disabled={busy}>Confirmar atendimento</button><button className="inf-btn" type="button" onClick={()=>{setSelected(null);setConsulted(null)}}>Fechar</button></div></form>}
+    <label className="lx-check-field"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> Contato com o cliente confirmado</label>
+   </div></fieldset><p className="inf-note">Responsável será registrado automaticamente com seu login Lexis: <b>{profile.nome}</b>. O histórico anterior não será sobrescrito.</p>
+   <div className="inf-row-end lx-dialog-actions"><button type="submit" className="inf-btn primary" disabled={busy}>{busy?'Registrando...':'Confirmar atendimento'}</button><button className="inf-btn" type="button" disabled={busy} onClick={closeAction}>Fechar</button></div></form>}
+   {historyLoading&&<p role="status">Carregando histórico...</p>}
    {history.length>0&&<div className="office-records"><h3>Histórico de atendimentos e atividades</h3>{history.map(x=><div className="office-record" key={x.id}><strong>{DATE_LABEL(x.data_realizacao)}</strong> · {team.find(p=>p.auth_user_id===x.responsavel_auth_user_id)?.nome||'Responsável registrado'} · {x.categoria}<p>{x.descricao}</p></div>)}</div>}
    {consulted&&<div className="office-records"><h3>Consulta oficial</h3><p>{consulted.notice}</p><p>DJEN: {consulted.sourceStatus?.djen} · DataJud: {consulted.sourceStatus?.datajud}</p>{(consulted.items||[]).slice(0,50).map((x,i)=><div className="office-record" key={i}>{String(x.title||x.description||x.texto||'Movimentação sem descrição').slice(0,400)}</div>)}</div>}
-  </section>}
+   {selectedMode==='consulta'&&<div className="lx-dialog-actions"><button type="button" className="inf-btn" disabled={busy} onClick={closeAction}>Fechar</button></div>}
+  </PortfolioDialog>}
  </main>;
 }
