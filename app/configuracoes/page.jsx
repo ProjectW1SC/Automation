@@ -49,7 +49,7 @@ export default function SettingsPage(){
    if(active)setAvatarUrl(error?'':data?.signedUrl||'');
   });
   return()=>{active=false};
- },[db,user?.id,user?.user_metadata?.display_name,user?.user_metadata?.avatar_path]);
+ },[db,user?.id,user?.user_metadata?.display_name,user?.user_metadata?.avatar_path,user?.user_metadata?.crm_theme]);
  useEffect(()=>{
   if(!photo){setPhotoPreview('');return}
   const url=URL.createObjectURL(photo);setPhotoPreview(url);
