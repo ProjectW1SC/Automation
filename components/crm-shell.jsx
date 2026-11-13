@@ -2,14 +2,18 @@
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Palette,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck,Workflow,PlugZap,ScanSearch,Search,Command,Menu,X} from 'lucide-react';
+import {ClipboardList,LayoutDashboard,Users,CheckCircle2,Landmark,LogOut,KeyRound,NotebookPen,Bell,Mail,BarChart3,PanelLeftOpen,PanelLeftClose,Settings2,Gavel,CalendarDays,Scale,Target,Bot,Radar,FileText,MessageSquare,Clock3,BriefcaseBusiness,BookOpen,UserRoundCheck,Workflow,PlugZap,ScanSearch,Search,Command,Menu,X} from 'lucide-react';
 import {CRM_AREAS} from '../lib/crm-navigation.mjs';
 import {CRM_THEMES,resolveTheme} from '../lib/crm-themes.mjs';
 import {getClient} from '../lib/supabase-client';
 
 import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
-function preferredTheme(){try{return resolveTheme(localStorage.getItem('projectw1sc.crm-theme'));}catch{return 'infinitum';}}
+function preferredTheme(){try{
+ const stored=localStorage.getItem('projectw1sc.crm-theme'),selected=resolveTheme(stored);
+ if(stored!==selected)localStorage.setItem('projectw1sc.crm-theme',selected);
+ return selected;
+}catch{return 'infinitum';}}
 const displayLabels={ 'Painel jurídico':'Dashboard','WhatsApp':'Comunicação','Peças e petições':'Documentos','Fluxos (POP)':'Procedimentos','Mini Agentes':'Agentes','Scanner judicial':'Scanner judicial' };
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
@@ -26,7 +30,6 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  const [navSearch,setNavSearch]=useState('');
  const navSearchRef=useRef(null);
  const matches=navSearch.trim()?CRM_AREAS.filter(x=>x.label.toLocaleLowerCase('pt-BR').includes(navSearch.trim().toLocaleLowerCase('pt-BR'))).slice(0,6):[];
- const [theme,setTheme]=useState('infinitum');
  const [profile,setProfile]=useState({display_name:'',avatar_path:''});
  const [avatarUrl,setAvatarUrl]=useState('');
  const appearanceRef=useRef({colors:{},backgroundUrl:''});
@@ -55,7 +58,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    appearanceRef.current={colors:{},backgroundUrl:''};
    document.documentElement.dataset.crmTheme=savedTheme;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===savedTheme),{},'');
-   setTheme(savedTheme);
+
   }
   function scheduleRefresh(){if(refreshTimer)window.clearTimeout(refreshTimer);refreshTimer=window.setTimeout(refreshProfile,0)}
   const {data:{subscription}}=db.auth.onAuthStateChange(()=>{scheduleRefresh()});
@@ -71,7 +74,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    const selected=preferredTheme();
    document.documentElement.dataset.crmTheme=selected;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===selected),{},'');
-   setTheme(selected);
+
   }
   window.addEventListener('projectw1sc:theme-change',syncTheme);
   syncTheme();
@@ -99,14 +102,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    document.removeEventListener('keydown',onKeyDown);
   };
  },[]);
- function selectTheme(value){
-  const selected=resolveTheme(value);
-  try{localStorage.setItem('projectw1sc.crm-theme',selected)}catch{}
-  document.documentElement.dataset.crmTheme=selected;
-  applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===selected),{},'');
-  setTheme(selected);
-  window.dispatchEvent(new Event('projectw1sc:theme-change'));
- }
+
  return <div className={'app-shell blackhole-studio-shell '+(sidebarExpanded?'sidebar-expanded':'sidebar-collapsed')}>
   <aside ref={sidebarRef} className="app-sidebar"
     onPointerEnter={()=>setSidebarExpanded(true)}
@@ -151,9 +147,9 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     <div className="blackhole-shell-search"><Search size={15}/><input ref={navSearchRef} type="search" value={navSearch} onChange={e=>setNavSearch(e.target.value)} aria-label="Pesquisar abas do escritório" placeholder="Buscar uma área..."/><kbd><Command size={12}/> K</kbd>
      {!!navSearch.trim()&&<div className="blackhole-shell-search-results" role="listbox">{matches.length?matches.map(x=><Link key={x.key} href={x.path} prefetch={false} onClick={()=>setNavSearch('')}>{x.label}</Link>):<span>Nenhuma área encontrada.</span>}</div>}
     </div>
-   <label className="crm-theme-picker crm-theme-select"><Palette size={14} aria-hidden="true"/><span>Tema</span><select aria-label="Escolher tema visual" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
+
    <span className="bh-theme-identity" title="BLACKHOLE · horizonte de eventos"><img src="/branding/blackhole-symbol.svg" alt="" width="29" height="19"/> BLACKHOLE</span>
-   <button type="button" className="crm-visible-signout" onClick={onSignOut} title="Sair da conta" aria-label="Sair da conta"><LogOut size={18}/><span>Sair</span></button><Link href="/prazos?status=vencidos" prefetch={false} aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</Link><span className="reference-top-divider"/><Link className="reference-top-avatar" href="/configuracoes" prefetch={false} title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</Link></div></div>{children}{mobileMenuOpen&&<div className="crm-mobile-more" role="dialog" aria-label="Todas as áreas do CRM"><header><strong>Todas as áreas</strong><button type="button" onClick={()=>setMobileMenuOpen(false)} aria-label="Fechar menu"><X size={19}/></button></header><div className="crm-mobile-more-links">{CRM_AREAS.map(item=>{const Icon=icons[item.label];return <Link href={item.path} key={item.key} prefetch={false} onClick={()=>setMobileMenuOpen(false)}><Icon size={17}/>{displayLabels[item.label]||item.label}</Link>})}</div><label>Visual e temas<select aria-label="Selecionar tema no celular" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label><button type="button" className="crm-more-signout" onClick={onSignOut}><LogOut size={16}/> Sair da conta</button></div>}
+   <button type="button" className="crm-visible-signout" onClick={onSignOut} title="Sair da conta" aria-label="Sair da conta"><LogOut size={18}/><span>Sair</span></button><Link href="/prazos?status=vencidos" prefetch={false} aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</Link><span className="reference-top-divider"/><Link className="reference-top-avatar" href="/configuracoes" prefetch={false} title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</Link></div></div>{children}{mobileMenuOpen&&<div className="crm-mobile-more" role="dialog" aria-label="Todas as áreas do CRM"><header><strong>Todas as áreas</strong><button type="button" onClick={()=>setMobileMenuOpen(false)} aria-label="Fechar menu"><X size={19}/></button></header><div className="crm-mobile-more-links">{CRM_AREAS.map(item=>{const Icon=icons[item.label];return <Link href={item.path} key={item.key} prefetch={false} onClick={()=>setMobileMenuOpen(false)}><Icon size={17}/>{displayLabels[item.label]||item.label}</Link>})}</div><button type="button" className="crm-more-signout" onClick={onSignOut}><LogOut size={16}/> Sair da conta</button></div>}
    <nav className="crm-mobile-dock" aria-label="Navegação móvel">{[{href:'/',Icon:LayoutDashboard,name:'Início'},{href:'/clientes',Icon:Users,name:'Clientes'},{href:'/processos',Icon:Scale,name:'Processos'},{href:'/agenda',Icon:CalendarDays,name:'Agenda'},{href:'/whatsapp',Icon:MessageSquare,name:'Mensagens'}].map(({href,Icon,name})=><Link key={href} href={href} prefetch={false} title={name} aria-label={name}><Icon size={18}/><span>{name}</span></Link>)}<button type="button" aria-label="Todas as áreas" aria-expanded={mobileMenuOpen} onClick={()=>setMobileMenuOpen(x=>!x)}>{mobileMenuOpen?<X size={18}/>:<Menu size={18}/>}<span>Mais</span></button></nav></div>
  </div>;
 }

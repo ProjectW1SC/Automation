@@ -29,8 +29,8 @@ test('editar mantem os mesmos campos validos e nao altera autor, origem ou data 
  for(const forbidden of ['actor_id','origin','created_at','deleted_at','id'])assert.ok(!(forbidden in result));
 });
 
-test('todos os temas possuem contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
- assert.deepEqual(CRM_THEMES.map(x=>x.id),['infinitum','blackhole']);assert.equal(resolveTheme('blackhole'),'blackhole');assert.equal(resolveTheme('sasuke'),'infinitum');
+test('o tema principal possui contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
+ assert.deepEqual(CRM_THEMES.map(x=>x.id),['infinitum']);assert.equal(resolveTheme('blackhole'),'infinitum');assert.equal(resolveTheme('sasuke'),'infinitum');
  assert.ok(new Set(CRM_THEMES.map(x=>x.id)).size===CRM_THEMES.length);
  assert.equal(resolveTheme('tema-inexistente'),'infinitum');
  for(const theme of CRM_THEMES){
