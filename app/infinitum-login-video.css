@@ -1,0 +1,244 @@
+/*
+ * INFINITUM · acesso com o vídeo original fornecido em 13/11/2026.
+ * Só a autenticação é afetada. O vídeo mostra o painel esquerdo; os campos
+ * da direita são elementos reais do CRM com Supabase Auth.
+ */
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{
+ min-height:100dvh!important;
+ padding:0!important;
+ background:#f7f6f4!important;
+ color:#282421!important;
+ display:grid!important;
+ place-items:stretch!important;
+ overflow-x:hidden!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
+ width:100%!important;
+ max-width:none!important;
+ min-height:100dvh!important;
+ height:auto!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,54fr) minmax(420px,46fr)!important;
+ gap:0!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ background:#fff!important;
+ overflow:visible!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+ position:relative!important;
+ min-height:100dvh!important;
+ width:100%!important;
+ height:auto!important;
+ align-self:stretch!important;
+ padding:0!important;
+ margin:0!important;
+ display:block!important;
+ isolation:isolate!important;
+ background:#84776c!important;
+ overflow:hidden!important;
+ border:0!important;
+ border-radius:0!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero::before,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero::after{
+ content:none!important;
+ animation:none!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video-poster{
+ position:absolute!important;
+ inset:0!important;
+ z-index:0!important;
+ background:#84776c url('/branding/infinitum-login-poster.webp') center/cover no-repeat!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
+ display:block;
+ position:absolute!important;
+ inset:0!important;
+ z-index:1!important;
+ width:100%!important;
+ height:100%!important;
+ min-height:100%!important;
+ object-fit:cover!important;
+ object-position:center center!important;
+ border:0!important;
+ border-radius:0!important;
+ pointer-events:none!important;
+ filter:none!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero-transcript{
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ padding:0!important;
+ margin:-1px!important;
+ overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;
+ white-space:nowrap!important;
+ border:0!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+ min-width:0!important;
+ min-height:100dvh!important;
+ padding:clamp(25px,4.8vw,76px)!important;
+ display:flex!important;
+ flex-direction:column!important;
+ justify-content:space-between!important;
+ gap:20px!important;
+ align-self:stretch!important;
+ background:#fff!important;
+ color:#272421!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ overflow-x:hidden!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-top{
+ display:flex!important;
+ justify-content:flex-end!important;
+ min-height:22px!important;
+ gap:12px!important;
+ letter-spacing:0!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-top .w1-auth-mark{
+ display:none!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-create{
+ display:inline-flex!important;
+ align-items:center!important;
+ gap:5px!important;
+ padding:3px 0!important;
+ background:transparent!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ color:#756d67!important;
+ font-weight:500!important;
+ font-size:12px!important;
+ text-decoration:none!important;
+ cursor:pointer!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-create:hover{
+ color:#201d1b!important;
+ text-decoration:underline!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+ width:min(400px,100%)!important;
+ max-width:100%!important;
+ margin:32px auto!important;
+ align-self:center!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading{
+ margin-bottom:23px!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-eyebrow{
+ color:#8f8780!important;
+ letter-spacing:1.4px!important;
+ font-size:9px!important;
+ font-weight:650!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{
+ margin:8px 0!important;
+ font:500 clamp(31px,3vw,41px)/1.12 Georgia,'Times New Roman',serif!important;
+ letter-spacing:-1.2px!important;
+ color:#29231f!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{
+ color:#7c746f!important;
+ line-height:1.55!important;
+ font-size:12px!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form :is(input[type="email"],input[type="password"],input[type="text"]){
+ width:100%!important;
+ min-height:43px!important;
+ background:#fff!important;
+ border:1px solid #e0dbd6!important;
+ border-radius:6px!important;
+ box-shadow:none!important;
+ padding:10px 12px!important;
+ color:#292522!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form input:focus-visible,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] :is(button,a):focus-visible{
+ outline:2px solid #75634f!important;
+ outline-offset:3px!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary{
+ min-height:44px!important;
+ background:#171717!important;
+ border-color:#171717!important;
+ border-radius:6px!important;
+ font-weight:600!important;
+ color:#fff!important;
+ box-shadow:none!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary:hover:not(:disabled){
+ background:#393431!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-google-btn{
+ border-radius:6px!important;
+ background:#fff!important;
+ border-color:#ded8d3!important;
+ color:#403a35!important;
+ box-shadow:none!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-footer{
+ justify-content:center!important;
+ text-align:center!important;
+ color:#9d9690!important;
+ border-top:1px solid #eeeae6!important;
+ padding-top:16px!important;
+}
+@media(max-width:920px){
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
+  display:block!important;
+  width:100%!important;
+  min-height:100dvh!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+  width:100%!important;
+  height:clamp(245px,35svh,330px)!important;
+  min-height:245px!important;
+  max-height:330px!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
+  object-position:center 19%!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+  min-height:calc(100dvh - 245px)!important;
+  padding:30px clamp(20px,5vw,56px)!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+  margin:32px auto!important;
+ }
+}
+@media(max-width:480px){
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+  height:260px!important;
+  min-height:260px!important;
+  max-height:260px!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+  padding:21px 22px 28px!important;
+  min-height:calc(100dvh - 260px)!important;
+  gap:12px!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+  margin:17px auto!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{
+  font-size:32px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
+  display:none!important;
+ }
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] *{
+  animation:none!important;transition:none!important;
+ }
+}
+@media print{
+ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{display:none!important}
+}
