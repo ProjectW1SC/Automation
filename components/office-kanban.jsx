@@ -9,6 +9,7 @@ function Board({db,session}){
  const [notice,setNotice]=useState(''),[dragged,setDragged]=useState(''),[filter,setFilter]=useState('');
  const [priorityFilter,setPriorityFilter]=useState(''),[typeFilter,setTypeFilter]=useState(''),[stageFilter,setStageFilter]=useState(''),[dueFilter,setDueFilter]=useState(''),[responsibleFilter,setResponsibleFilter]=useState('');
  const [adding,setAdding]=useState(false),[form,setForm]=useState({title:'',description:'',stage:'entrada',priority:'normal',card_type:'tarefa',due_on:'',assigned_to:''});
+ const [mobileStage,setMobileStage]=useState('entrada');
  const load=useCallback(async()=>{setLoading(true);
   try{
    const {data,error}=await withAuthDeadline(db.from('office_workflow_cards').select('*').order('updated_at',{ascending:false}).limit(500),12000);
@@ -36,6 +37,7 @@ function Board({db,session}){
   return [x.title,x.description,x.assigned_to].some(z=>String(z||'').toLowerCase().includes(filter.toLowerCase()));
  }),[cards,filter,priorityFilter,typeFilter,responsibleFilter,stageFilter,dueFilter,today]);
  const columns=useMemo(()=>STAGES.filter(stage=>!stageFilter||stage.key===stageFilter).map(stage=>({...stage,items:visible.filter(x=>x.stage===stage.key)})),[visible,stageFilter]);
+ const mobileStageSelected=columns.some(x=>x.key===mobileStage)?mobileStage:columns[0]?.key;
  async function add(e){e.preventDefault();setBusy(true);setNotice('');
   const row={title:form.title.trim(),description:form.description.trim(),stage:form.stage,priority:form.priority,card_type:form.card_type,
    due_on:form.due_on||null,assigned_to:form.assigned_to.trim()||null,owner_id:session.user.id};
@@ -83,8 +85,9 @@ function Board({db,session}){
     <label style={{gridColumn:'1/-1'}}>Detalhes<textarea maxLength={2000} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></label></div>
     <button type="submit" className="inf-btn primary" disabled={busy}>Salvar no fluxo</button>
    </form></section>}
+  <nav className="office-mobile-stage-tabs" role="tablist" aria-label="Etapas do Kanban no celular">{STAGES.map(stage=><button key={stage.key} type="button" role="tab" aria-controls={'office-stage-'+stage.key} aria-selected={mobileStageSelected===stage.key} onClick={()=>{setStageFilter('');setMobileStage(stage.key)}}>{stage.name}<span>{visible.filter(x=>x.stage===stage.key).length}</span></button>)}</nav>
   <div className="office-kanban-columns" role="list" aria-label="Kanban jurídico">
-   {columns.map((stage,idx)=><section key={stage.key} data-stage={stage.key} className="office-kanban-column" aria-label={stage.name} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||dragged;move(id,stage.key)}}>
+   {columns.map((stage,idx)=><section key={stage.key} id={'office-stage-'+stage.key} data-stage={stage.key} data-mobile-current={stage.key===mobileStageSelected} className="office-kanban-column" aria-label={stage.name} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||dragged;move(id,stage.key)}}>
     <header className="office-kanban-head"><span className={'office-phase-dot office-phase-'+stage.key}/><div><strong>{stage.name}</strong><small>{stage.hint}</small></div><b>{stage.items.length}</b><button type="button" className="office-kanban-stage-filter" aria-label={'Filtrar etapa '+stage.name} aria-pressed={stageFilter===stage.key} title={stageFilter===stage.key?'Mostrar todas as etapas':'Mostrar apenas '+stage.name} onClick={()=>setStageFilter(old=>old===stage.key?'':stage.key)}><Settings2 size={14}/></button></header>
     <div className="office-kanban-stack"><button type="button" className="office-kanban-quickadd" onClick={()=>{setForm(previous=>({...previous,stage:stage.key}));setAdding(true);requestAnimationFrame(()=>document.getElementById('office-new-card')?.scrollIntoView({behavior:'smooth',block:'start'}))}}><Plus size={15}/> Novo card</button>{stage.items.map(x=><article className="office-kanban-card" data-priority={x.priority} key={x.id} draggable={!busy} onDragStart={e=>{setDragged(x.id);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',x.id)}}>
      <div className="office-kanban-line"><GripVertical size={13} aria-hidden="true"/><span>{x.card_type}</span><span className={'office-kanban-priority pr-'+x.priority}>{x.priority}</span></div>
@@ -96,7 +99,8 @@ function Board({db,session}){
       {x.description&&<div><small>DESCRIÇÃO</small><span>{x.description.slice(0,150)}</span></div>}
      </div>
      <div className="office-kanban-actions">{STAGES.findIndex(s=>s.key===stage.key)<STAGES.length-1&&<button className="inf-btn" type="button" disabled={busy} onClick={()=>move(x.id,STAGES[STAGES.findIndex(s=>s.key===stage.key)+1].key)}><ArrowRight size={13}/> Avançar</button>}
-      {STAGES.findIndex(s=>s.key===stage.key)===STAGES.length-1&&<span className="office-hint"><CheckCircle2 size={13}/> Concluído</span>}</div>
+      {STAGES.findIndex(s=>s.key===stage.key)===STAGES.length-1&&<span className="office-hint"><CheckCircle2 size={13}/> Concluído</span>}
+      <label className="office-mobile-move"><span>Mover etapa</span><select aria-label={'Mover cartão '+x.title+' para outra etapa'} value={x.stage} disabled={busy} onChange={e=>move(x.id,e.target.value)}>{STAGES.map(next=><option key={next.key} value={next.key}>{next.name}</option>)}</select></label></div>
     </article>)}{!stage.items.length&&<div className="office-kanban-empty">Solte um card aqui</div>}</div>
    </section>)}
   </div><div className="inf-note"><Scale size={14}/> Os procedimentos são próprios do escritório. A integração pública do Infinitum é de leitura e não replica dados automaticamente.</div>
