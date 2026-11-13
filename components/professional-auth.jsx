@@ -25,7 +25,7 @@ export default function ProfessionalAuth({eyebrow='GESTÃO JURÍDICA',title='Bem
     <video ref={videoRef} className="w1-auth-video" autoPlay muted loop playsInline preload="metadata"
       poster="/branding/infinitum-login-poster.webp" aria-hidden="true"
       onError={event=>{event.currentTarget.style.display='none'}}>
-     <source src="/branding/infinitum-login-hero.mp4" type="video/mp4"/>
+     <source src="/branding/infinitum-login-hero.mp4?v=20261113-hq" type="video/mp4"/>
     </video>
     <div className="w1-auth-hero-transcript">
      <span>∞ INFINITUM | CRM JURÍDICO</span>
