@@ -4,7 +4,7 @@
  * sombra, foco, microinteração e movimento; não altera grids desktop.
  * Sem overlays, reconstrução fake, novas rotas ou containers duplicados.
  */
-html[data-crm-theme="infinitum"]{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]){
  --ui-nav:#171615;
  --ui-nav-ink:#faf8f4;
  --ui-warning-bg:#fff7ed;--ui-warning-ink:#7c2d12;
@@ -12,29 +12,29 @@ html[data-crm-theme="infinitum"]{
  --ui-danger-bg:#fef2f2;--ui-danger-ink:#991b1b;
  --ui-neutral-bg:#f5f5f4;--ui-neutral-ink:#44403c;
 }
-html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell{
  --inf-motion-duration:260ms;
  --inf-motion-ease:cubic-bezier(.22,.82,.24,1);
 }
 
 /* A sidebar expande SOBRE a página, mantendo conteúdo e cards nas mesmas coordenadas. */
 @media(min-width:841px){
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-sidebar {
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-sidebar {
   transition:width 320ms var(--inf-motion-ease),box-shadow 260ms ease!important;
  }
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-content{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell.sidebar-expanded .app-content{
   margin-left:70px!important;width:calc(100% - 70px)!important;
   transition:none!important;
  }
  /* Texto permanece no DOM, animando sem esconder ou trocar a navegação. */
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link span{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-nav-link span{
   display:block!important;visibility:hidden!important;opacity:0!important;
   max-width:0!important;white-space:nowrap!important;overflow:hidden!important;
   transform:translate3d(-5px,0,0)!important;
   transition:max-width 270ms var(--inf-motion-ease),opacity 180ms ease,
    transform 270ms var(--inf-motion-ease),visibility 0s linear 210ms!important;
  }
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link span{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell.sidebar-expanded .app-nav-link span{
   display:block!important;visibility:visible!important;opacity:1!important;
   max-width:178px!important;transform:translate3d(0,0,0)!important;
   transition:max-width 270ms var(--inf-motion-ease),opacity 200ms ease 65ms,
@@ -43,82 +43,82 @@ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell{
 }
 
 /* A gravação inspira a barra fina de fases, sem forçar colunas ou reorganizar o Kanban. */
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column{--phase:#889099}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-stage="entrada"]{--phase:#e94a58}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-stage="triagem"]{--phase:#08a6be}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-stage="producao"]{--phase:#3b78e7}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-stage="revisao"]{--phase:#67727f}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-stage="concluido"]{--phase:#79b81b}
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column{--phase:#889099}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-stage="entrada"]{--phase:#e94a58}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-stage="triagem"]{--phase:#08a6be}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-stage="producao"]{--phase:#3b78e7}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-stage="revisao"]{--phase:#67727f}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-stage="concluido"]{--phase:#79b81b}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column{
  border-top:3px solid var(--phase)!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-phase-dot{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-phase-dot{
  background-color:var(--phase)!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-head strong{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-head strong{
  color:var(--ui-ink)!important;font-weight:700;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-head :is(small,b){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-head :is(small,b){
  color:var(--ui-muted)!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-card{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-card{
  border-color:var(--ui-border)!important;
  background:var(--ui-surface)!important;
  color:var(--ui-ink)!important;
  box-shadow:0 1px 4px rgba(28,25,23,.055)!important;
  transition:box-shadow 180ms ease,border-color 180ms ease!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-card:hover{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-card:hover{
  box-shadow:0 5px 16px rgba(28,25,23,.10)!important;
  border-color:#aca7a2!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-card :is(p,small,.office-kanban-line){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-card :is(p,small,.office-kanban-line){
  color:var(--ui-muted)!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-quickadd{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-quickadd{
  border:1px dashed var(--ui-border)!important;
  background:var(--ui-surface)!important;
  color:var(--ui-muted)!important;
 }
-html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-quickadd:hover{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-quickadd:hover{
  border-color:var(--phase)!important;background:var(--ui-tint)!important;
  color:var(--ui-ink)!important;
 }
 
 /* Acabamento sobre elementos existentes; nenhum tamanho/posição forçado. */
-html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .reference-top-tools{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .reference-top-tools{
  border-bottom-color:var(--ui-border)!important;
 }
-html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell :is(.app-nav-link,.app-sidebar-toggle,.reference-primary,.reference-outline,.inf-btn,.crm-visible-signout){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell :is(.app-nav-link,.app-sidebar-toggle,.reference-primary,.reference-outline,.inf-btn,.crm-visible-signout){
  transition:background-color 170ms ease,color 170ms ease,
   border-color 170ms ease,box-shadow 210ms ease!important;
 }
-html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link:hover svg{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-nav-link:hover svg{
  transform:scale(1.06);transition:transform 170ms ease;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.reference-panel,.inf-panel,.pr-metric,.efferd-kpi,.office-record):hover{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.reference-panel,.inf-panel,.pr-metric,.efferd-kpi,.office-record):hover{
  box-shadow:0 5px 15px rgba(28,25,23,.06);
 }
-html[data-crm-theme="infinitum"] .app-content :is(input,select,textarea):focus-visible,
-html[data-crm-theme="infinitum"] .app-content :is(.reference-outline,.reference-primary,.inf-btn,.office-kanban-card):focus-visible{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(input,select,textarea):focus-visible,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.reference-outline,.reference-primary,.inf-btn,.office-kanban-card):focus-visible{
  outline:2px solid var(--ui-accent)!important;outline-offset:2px!important;
 }
 
 /* Fade exclusivamente na troca de rota: opacity não altera fluxo nem posição. */
-html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content[data-route]{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-content[data-route]{
  animation:video-route-enter 220ms ease-out;
 }
 @keyframes video-route-enter{from{opacity:.82}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-sidebar,
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link span,
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content[data-route]{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-sidebar,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-nav-link span,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-content[data-route]{
   animation:none!important;transition:none!important;
  }
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-nav-link:hover svg{transform:none!important}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-nav-link:hover svg{transform:none!important}
 }
 @media print{
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content[data-route]{animation:none!important}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-content[data-route]{animation:none!important}
 }
 
 /* Ajustes operacionais já existentes, inclusive navegação por fases no celular. */
@@ -128,140 +128,140 @@ html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content[
  * nas áreas jurídicas. Esta camada integra o arquivo de movimento já ativo
  * em ambos os temas, sem criar um novo CSS com regras concorrentes.
  */
-html[data-crm-theme="infinitum"] .app-content :is(.inf-btn,.reference-outline,.reference-primary,.crm-magic-link-btn){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-btn,.reference-outline,.reference-primary,.crm-magic-link-btn){
   min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.inf-table-wrap,.reference-table-wrap,.table-wrap,.processes-history,.pr-table-wrap){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table-wrap,.reference-table-wrap,.table-wrap,.processes-history,.pr-table-wrap){
  max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.inf-table,.reference-table) th,
-html[data-crm-theme="infinitum"] .app-content :is(.inf-table,.reference-table) td{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table,.reference-table) th,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table,.reference-table) td{
  vertical-align:middle;line-height:1.45;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.inf-table,.reference-table) th{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table,.reference-table) th{
  position:relative;font-size:11px;letter-spacing:.03em;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.inf-panel,.reference-panel,.task-card,.office-kanban-card){
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-panel,.reference-panel,.task-card,.office-kanban-card){
  overflow-wrap:anywhere;
 }
-html[data-crm-theme="infinitum"] .app-content :is(.inf-btn,.reference-outline,.reference-primary,.office-kanban-stage-filter):focus-visible{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-btn,.reference-outline,.reference-primary,.office-kanban-stage-filter):focus-visible{
  outline:2px solid var(--w1-accent,var(--ui-accent,#222))!important;outline-offset:3px;
 }
-html[data-crm-theme="infinitum"] .auth-google-help{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .auth-google-help{
  font-size:12px;line-height:1.55;color:#525a66;margin:10px 0;padding:10px 12px;
  border:1px solid #e3e5e9;background:#f8f9fa;border-radius:9px;
 }
-html[data-crm-theme="infinitum"] .auth-google-help a{color:#174ea6;text-decoration:underline;font-weight:700}
-html[data-crm-theme="infinitum"] .office-official-access{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .auth-google-help a{color:#174ea6;text-decoration:underline;font-weight:700}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access{
  padding:16px 18px;margin:16px 0;background:var(--w1-card,#fff);
  border:1px solid var(--w1-border,#ddd);border-left:4px solid #b9792d;
  border-radius:10px;color:var(--w1-ink,#222);box-shadow:0 3px 12px #00000009;
 }
-html[data-crm-theme="infinitum"] .office-official-access-heading{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access-heading{
  display:flex;align-items:center;gap:9px;color:var(--w1-ink,#222);font-size:15px;
 }
-html[data-crm-theme="infinitum"] .office-official-access p{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access p{
  font-size:12px;line-height:1.65;margin:10px 0;color:var(--w1-ink,#222);
 }
-html[data-crm-theme="infinitum"] .office-official-access small{
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access small{
  display:block;margin-top:10px;font-size:11px;line-height:1.5;color:var(--w1-muted,#555);
 }
-html[data-crm-theme="infinitum"] .office-official-access-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
-html[data-crm-theme="infinitum"] .office-mobile-stage-tabs,
-html[data-crm-theme="infinitum"] .office-mobile-move{display:none!important}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-mobile-stage-tabs,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-mobile-move{display:none!important}
 
 @media(max-width:840px){
- html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-content{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-shell.blackhole-studio-shell .app-content{
   min-width:0!important;overflow-x:clip!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.inf-studio,.reference-dashboard,.task-main,.report-dashboard,.settings-dashboard){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-studio,.reference-dashboard,.task-main,.report-dashboard,.settings-dashboard){
   width:100%!important;max-width:100%!important;min-width:0!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.reference-header,.inf-heading){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.reference-header,.inf-heading){
   align-items:flex-start!important;gap:12px!important;flex-wrap:wrap!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.reference-actions,.inf-actions,.inf-row-end,.office-action-row){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.reference-actions,.inf-actions,.inf-row-end,.office-action-row){
   flex-wrap:wrap!important;max-width:100%!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.inf-btn,.reference-outline,.reference-primary,.crm-magic-link-btn),
- html[data-crm-theme="infinitum"] .office-mobile-stage-tabs button,
- html[data-crm-theme="infinitum"] .office-mobile-move select,
- html[data-crm-theme="infinitum"] .crm-mobile-dock a,
- html[data-crm-theme="infinitum"] .crm-mobile-dock button{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-btn,.reference-outline,.reference-primary,.crm-magic-link-btn),
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-mobile-stage-tabs button,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-mobile-move select,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .crm-mobile-dock a,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .crm-mobile-dock button{
   min-height:44px!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.inf-table-wrap,.reference-table-wrap,.table-wrap,.processes-history,.pr-table-wrap){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table-wrap,.reference-table-wrap,.table-wrap,.processes-history,.pr-table-wrap){
   width:100%!important;max-width:100%!important;overflow-x:auto!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.inf-table,.reference-table){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.inf-table,.reference-table){
   width:max-content!important;min-width:100%!important;max-width:none!important;
  }
- html[data-crm-theme="infinitum"] .app-content :is(.dialog-inner,.task-modal,.reference-modal,.crm-reopen-modal){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.dialog-inner,.task-modal,.reference-modal,.crm-reopen-modal){
   max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 28px)!important;
   overflow-y:auto!important;overscroll-behavior:contain;
  }
- html[data-crm-theme="infinitum"] .app-content :is(input,select,textarea){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(input,select,textarea){
   max-width:100%!important;min-width:0;accent-color:var(--w1-accent,var(--ui-accent,#333));
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-stage-tabs{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-stage-tabs{
   display:flex!important;gap:6px;align-items:stretch;
   width:100%;max-width:100%;overflow-x:auto;scrollbar-width:thin;
   padding:8px 1px 12px;margin:8px 0 2px;scroll-snap-type:x proximity;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-stage-tabs button{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-stage-tabs button{
   scroll-snap-align:start;flex:0 0 auto;white-space:nowrap;
   display:flex;align-items:center;gap:8px;
   padding:9px 12px;background:var(--w1-card,#fff);color:var(--w1-ink,#222);
   border:1px solid var(--w1-border,#ddd);border-radius:9px;
   font-size:12px;font-weight:650;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-stage-tabs button span{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-stage-tabs button span{
   display:grid;place-items:center;min-width:20px;height:20px;border-radius:999px;
   background:var(--w1-tint,#f0f0f0);color:var(--w1-muted,#555);font-size:10px;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-stage-tabs button[aria-selected="true"]{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-stage-tabs button[aria-selected="true"]{
   background:var(--w1-accent,#222)!important;color:var(--w1-accent-ink,#fff)!important;
   border-color:var(--w1-accent,#222)!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-columns{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-columns{
   display:block!important;width:100%!important;max-width:100%!important;
   min-width:0!important;overflow:visible!important;padding:0!important;
   grid-template-columns:1fr!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column{
   display:none!important;min-width:0!important;max-width:100%!important;
   width:100%!important;min-height:240px!important;overflow:visible!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-column[data-mobile-current="true"]{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-column[data-mobile-current="true"]{
   display:block!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-stack{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-stack{
   max-height:none!important;overflow:visible!important;padding:5px 0 12px!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-kanban-card{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-kanban-card{
   min-width:0!important;max-width:100%!important;
   padding:14px!important;border-radius:10px!important;
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-move{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-move{
   display:grid!important;gap:5px;min-width:100%;margin-top:10px;
   font-size:11px;font-weight:650;color:var(--w1-muted,#555);
  }
- html[data-crm-theme="infinitum"] .office-workflow-screen .office-mobile-move select{
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-workflow-screen .office-mobile-move select{
   display:block!important;width:100%;padding:8px 10px;
   color:var(--w1-ink,#222);background:var(--w1-card,#fff);
   border:1px solid var(--w1-border,#ddd);border-radius:8px;
  }
- html[data-crm-theme="infinitum"] .office-official-access{padding:14px}
- html[data-crm-theme="infinitum"] .office-official-access-actions{align-items:stretch;flex-direction:column}
- html[data-crm-theme="infinitum"] .office-official-access-actions>*{width:100%;text-align:center}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access{padding:14px}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access-actions{align-items:stretch;flex-direction:column}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-official-access-actions>*{width:100%;text-align:center}
 }
 @media(max-width:360px){
- html[data-crm-theme="infinitum"] .app-content :is(.reference-metrics,.pr-metrics,.inf-grid){
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content :is(.reference-metrics,.pr-metrics,.inf-grid){
   grid-template-columns:1fr!important;
  }
- html[data-crm-theme="infinitum"] .crm-mobile-dock a,
- html[data-crm-theme="infinitum"] .crm-mobile-dock button{font-size:10px!important}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .crm-mobile-dock a,
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .crm-mobile-dock button{font-size:10px!important}
 }
 @media(prefers-reduced-motion:reduce){
- html[data-crm-theme="infinitum"] .office-mobile-stage-tabs *{transition:none!important;animation:none!important}
+ html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-mobile-stage-tabs *{transition:none!important;animation:none!important}
 }

@@ -5,7 +5,7 @@
  * Load after prestige-final-polish.css and before infinitum-login-video.css.
  */
 
-html[data-crm-theme="infinitum"] {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) {
   --inf-paper: #ffffff;
   --inf-canvas: #f7f4f1;
   --inf-ink: #1d1814;
@@ -22,9 +22,9 @@ html[data-crm-theme="infinitum"] {
 }
 
 /* ---------- Page shell ---------- */
-html[data-crm-theme="infinitum"] .reference-dashboard,
-html[data-crm-theme="infinitum"] .inf-studio,
-html[data-crm-theme="infinitum"] main.reference-dashboard {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-studio,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) main.reference-dashboard {
   background: var(--inf-canvas) !important;
   color: var(--inf-ink) !important;
   padding: 22px clamp(16px, 2.2vw, 32px) 48px !important;
@@ -34,7 +34,7 @@ html[data-crm-theme="infinitum"] main.reference-dashboard {
 }
 
 /* ---------- Headers (all tabs) ---------- */
-html[data-crm-theme="infinitum"] .reference-header {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -48,7 +48,7 @@ html[data-crm-theme="infinitum"] .reference-header {
   position: relative;
   overflow: hidden;
 }
-html[data-crm-theme="infinitum"] .reference-header::after {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-header::after {
   content: "";
   position: absolute;
   right: -20px;
@@ -60,7 +60,7 @@ html[data-crm-theme="infinitum"] .reference-header::after {
   transform: rotate(24deg);
   pointer-events: none;
 }
-html[data-crm-theme="infinitum"] .reference-overline {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-overline {
   color: var(--inf-gold) !important;
   font-size: 10px !important;
   letter-spacing: 0.14em !important;
@@ -68,7 +68,7 @@ html[data-crm-theme="infinitum"] .reference-overline {
   text-transform: uppercase;
   margin-bottom: 6px;
 }
-html[data-crm-theme="infinitum"] .reference-header h1 {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-header h1 {
   font-family: Georgia, "Times New Roman", serif !important;
   font-weight: 400 !important;
   font-size: clamp(28px, 2.8vw, 40px) !important;
@@ -79,7 +79,7 @@ html[data-crm-theme="infinitum"] .reference-header h1 {
   position: relative;
   z-index: 1;
 }
-html[data-crm-theme="infinitum"] .reference-header p {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-header p {
   color: var(--inf-muted) !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
@@ -88,7 +88,7 @@ html[data-crm-theme="infinitum"] .reference-header p {
   position: relative;
   z-index: 1;
 }
-html[data-crm-theme="infinitum"] .reference-actions {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -97,8 +97,8 @@ html[data-crm-theme="infinitum"] .reference-actions {
 }
 
 /* ---------- Buttons ---------- */
-html[data-crm-theme="infinitum"] .reference-primary,
-html[data-crm-theme="infinitum"] .inf-btn.primary {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-primary,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-btn.primary {
   background: #151413 !important;
   border: 1px solid #151413 !important;
   color: #fff !important;
@@ -109,13 +109,13 @@ html[data-crm-theme="infinitum"] .inf-btn.primary {
   padding: 9px 14px !important;
   box-shadow: none !important;
 }
-html[data-crm-theme="infinitum"] .reference-primary:hover,
-html[data-crm-theme="infinitum"] .inf-btn.primary:hover {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-primary:hover,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-btn.primary:hover {
   background: #2a2420 !important;
   border-color: #2a2420 !important;
 }
-html[data-crm-theme="infinitum"] .reference-outline,
-html[data-crm-theme="infinitum"] .inf-btn:not(.primary) {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-outline,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-btn:not(.primary) {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   color: var(--inf-ink) !important;
@@ -125,20 +125,20 @@ html[data-crm-theme="infinitum"] .inf-btn:not(.primary) {
   min-height: 38px;
   padding: 9px 14px !important;
 }
-html[data-crm-theme="infinitum"] .reference-outline:hover,
-html[data-crm-theme="infinitum"] .inf-btn:not(.primary):hover {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-outline:hover,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-btn:not(.primary):hover {
   background: var(--inf-soft) !important;
 }
 
 /* ---------- KPI / stats grid ---------- */
-html[data-crm-theme="infinitum"] .inf-grid {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-grid {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 12px !important;
   margin: 0 0 18px !important;
 }
-html[data-crm-theme="infinitum"] .inf-stat,
-html[data-crm-theme="infinitum"] a.inf-stat {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) a.inf-stat {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: 12px !important;
@@ -149,18 +149,18 @@ html[data-crm-theme="infinitum"] a.inf-stat {
   color: inherit !important;
   transition: transform 0.13s ease, box-shadow 0.13s ease;
 }
-html[data-crm-theme="infinitum"] .inf-stat:hover {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat:hover {
   transform: translateY(-2px);
   box-shadow: var(--inf-shadow-hover);
 }
-html[data-crm-theme="infinitum"] .inf-stat label {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat label {
   display: block;
   font-size: 11px !important;
   font-weight: 700 !important;
   color: var(--inf-muted) !important;
   letter-spacing: 0.01em;
 }
-html[data-crm-theme="infinitum"] .inf-stat strong {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat strong {
   display: block;
   margin-top: 8px;
   font-size: clamp(24px, 2vw, 30px) !important;
@@ -171,8 +171,8 @@ html[data-crm-theme="infinitum"] .inf-stat strong {
 }
 
 /* ---------- Panels ---------- */
-html[data-crm-theme="infinitum"] .inf-panel,
-html[data-crm-theme="infinitum"] .reference-panel {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-panel,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-panel {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: var(--inf-radius) !important;
@@ -181,29 +181,29 @@ html[data-crm-theme="infinitum"] .reference-panel {
   box-shadow: var(--inf-shadow);
   color: var(--inf-ink) !important;
 }
-html[data-crm-theme="infinitum"] .inf-panel h2,
-html[data-crm-theme="infinitum"] .reference-panel h2 {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-panel h2,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-panel h2 {
   font-size: 15px !important;
   font-weight: 750 !important;
   color: var(--inf-ink) !important;
   margin: 0 0 10px !important;
   letter-spacing: -0.01em;
 }
-html[data-crm-theme="infinitum"] .inf-note,
-html[data-crm-theme="infinitum"] .inf-panel p,
-html[data-crm-theme="infinitum"] .office-list-empty {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-note,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-panel p,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-list-empty {
   color: var(--inf-muted) !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
 }
 
 /* ---------- Records / list rows ---------- */
-html[data-crm-theme="infinitum"] .office-records {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-records {
   display: grid;
   gap: 10px;
   max-height: none;
 }
-html[data-crm-theme="infinitum"] .office-record {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: var(--inf-radius-sm) !important;
@@ -211,31 +211,31 @@ html[data-crm-theme="infinitum"] .office-record {
   box-shadow: 0 1px 3px rgba(34, 24, 14, 0.03);
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
-html[data-crm-theme="infinitum"] .office-record:hover {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record:hover {
   border-color: #d4c8bb !important;
   box-shadow: var(--inf-shadow);
 }
-html[data-crm-theme="infinitum"] .office-record strong {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record strong {
   color: var(--inf-ink) !important;
   font-size: 13.5px !important;
   font-weight: 700 !important;
 }
-html[data-crm-theme="infinitum"] .office-record small {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record small {
   color: var(--inf-muted) !important;
   font-size: 11.5px !important;
 }
-html[data-crm-theme="infinitum"] .office-record p {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record p {
   color: var(--inf-muted) !important;
   font-size: 12.5px !important;
   margin: 6px 0 0 !important;
 }
-html[data-crm-theme="infinitum"] .office-action-row {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-action-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
-html[data-crm-theme="infinitum"] .office-list-empty {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-list-empty {
   padding: 28px 18px;
   text-align: center;
   background: var(--inf-soft);
@@ -244,12 +244,12 @@ html[data-crm-theme="infinitum"] .office-list-empty {
 }
 
 /* ---------- Search / filters ---------- */
-html[data-crm-theme="infinitum"] .reference-dashboard input,
-html[data-crm-theme="infinitum"] .reference-dashboard select,
-html[data-crm-theme="infinitum"] .reference-dashboard textarea,
-html[data-crm-theme="infinitum"] .inf-studio input,
-html[data-crm-theme="infinitum"] .inf-studio select,
-html[data-crm-theme="infinitum"] .inf-studio textarea {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard input,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard select,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard textarea,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-studio input,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-studio select,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-studio textarea {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: 9px !important;
@@ -257,32 +257,32 @@ html[data-crm-theme="infinitum"] .inf-studio textarea {
   min-height: 40px;
   font-size: 13px !important;
 }
-html[data-crm-theme="infinitum"] .reference-dashboard input:focus,
-html[data-crm-theme="infinitum"] .reference-dashboard select:focus,
-html[data-crm-theme="infinitum"] .reference-dashboard textarea:focus {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard input:focus,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard select:focus,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-dashboard textarea:focus {
   outline: 2px solid color-mix(in srgb, var(--inf-gold) 55%, transparent);
   outline-offset: 1px;
   border-color: #c5b399 !important;
 }
 
 /* ---------- Lexis shared portfolio cards ---------- */
-html[data-crm-theme="infinitum"] [data-lexis-shared] .office-record {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) [data-lexis-shared] .office-record {
   display: grid;
   gap: 4px;
 }
-html[data-crm-theme="infinitum"] [data-lexis-shared] .reference-header h1 {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) [data-lexis-shared] .reference-header h1 {
   font-family: Georgia, "Times New Roman", serif !important;
 }
 
 /* ---------- Agenda calendar ---------- */
-html[data-crm-theme="infinitum"] .w1-calendar-grid,
-html[data-crm-theme="infinitum"] .w1-calendar-toolbar {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .w1-calendar-grid,
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .w1-calendar-toolbar {
   background: var(--inf-paper);
   border: 1px solid var(--inf-line);
   border-radius: var(--inf-radius);
   box-shadow: var(--inf-shadow);
 }
-html[data-crm-theme="infinitum"] .w1-calendar-editor {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .w1-calendar-editor {
   background: var(--inf-paper) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: var(--inf-radius) !important;
@@ -291,59 +291,59 @@ html[data-crm-theme="infinitum"] .w1-calendar-editor {
 }
 
 /* ---------- Report (keep prestige, soft hero) ---------- */
-html[data-crm-theme="infinitum"] .report-dashboard {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .report-dashboard {
   background: var(--inf-canvas) !important;
 }
-html[data-crm-theme="infinitum"] .report-executive-hero {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .report-executive-hero {
   background: linear-gradient(125deg, #2a221c 0%, #4a3b32 60%, #5c4a3e 100%) !important;
   border-radius: 16px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: var(--inf-shadow) !important;
 }
-html[data-crm-theme="infinitum"] .report-filters {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .report-filters {
   background: var(--inf-soft) !important;
   border: 1px solid var(--inf-line) !important;
   border-radius: 12px !important;
 }
-html[data-crm-theme="infinitum"] .report-segments button.active {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .report-segments button.active {
   background: #151413 !important;
   color: #fff !important;
   border-color: #151413 !important;
 }
 
 /* ---------- Sidebar polish consistency ---------- */
-html[data-crm-theme="infinitum"] .app-content {
+html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .app-content {
   background: var(--inf-canvas) !important;
 }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-  html[data-crm-theme="infinitum"] .inf-grid {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 @media (max-width: 760px) {
-  html[data-crm-theme="infinitum"] .reference-header {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .reference-header {
     flex-direction: column;
     align-items: flex-start;
     padding: 16px;
   }
-  html[data-crm-theme="infinitum"] .inf-grid {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
   }
-  html[data-crm-theme="infinitum"] .inf-stat {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat {
     min-height: 90px;
     padding: 12px !important;
   }
-  html[data-crm-theme="infinitum"] .inf-stat strong {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat strong {
     font-size: 22px !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-crm-theme="infinitum"] .inf-stat,
-  html[data-crm-theme="infinitum"] .office-record {
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .inf-stat,
+  html:is([data-crm-theme="infinitum"],[data-crm-theme="infinitum-dark"]) .office-record {
     transition: none !important;
   }
 }
