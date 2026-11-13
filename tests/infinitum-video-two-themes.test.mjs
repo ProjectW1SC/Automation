@@ -33,8 +33,8 @@ test('paletas seguem as referencias Light perolado/rose e Dark plum/rose-gold',(
  assert.equal(dark.accent,'#d5a48e');
  assert.equal(dark.nav,'#140f17');
  const css=read('app/infinitum-dual-themes.css');
- assert.match(css,/rgba\\(190,150,184/);
- assert.match(css,/rgba\\(194,132,155/);
+ assert.match(css,/rgba\(190,150,184/);
+ assert.match(css,/rgba\(194,132,155/);
  assert.doesNotMatch(css,/#89684f|#d7aa80|#100e0e/);
 });
 
