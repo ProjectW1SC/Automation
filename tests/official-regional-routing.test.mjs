@@ -3,7 +3,7 @@ const s=readFileSync(new URL('../app/api/processos/consulta/route.js',import.met
 test('Infinitum prioritizes verified regional DJEN exit instead of 403 Vercel egress',()=>{
  assert.match(s,/regionalOfficial\('djen',number,params,token\)/);
  assert.match(s,/forceFunctionRegion=sa-east-1/);
- assert.match(s,/result\.region!=='sa-east-1'/);
+ assert.match(s,/result\?\.region!=='sa-east-1'/);
  assert.match(s,/result\?\.authenticated!==true/);
 });
 test('DataJud never repeats rate-limited 429 and always validates timed_out/shards',()=>{

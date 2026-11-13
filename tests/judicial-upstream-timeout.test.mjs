@@ -7,7 +7,7 @@ test('DataJud CNJ exact-number query follows official match API example',()=>{
 });
 test('runtime no longer aborts DataJud at 13-14 seconds',()=>{
  const s=read('app/api/processos/consulta/route.js');
- assert.match(s,/maxDuration=60/);assert.match(s,/AbortSignal\.timeout\(32000\)/);
+ assert.match(s,/maxDuration=60/);assert.match(s,/AbortSignal\.timeout\(timeoutMs\)/);assert.match(s,/23000/);
  assert.doesNotMatch(s,/AbortSignal\.timeout\(14000\)/);
  const gen=read('app/api/gerador-processos/datajud/route.js');
  assert.match(gen,/AbortSignal\.timeout\(30000\)/);
