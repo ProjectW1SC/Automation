@@ -37,7 +37,7 @@ Deno.serve(async request=>{
   if(authError||!user)return respond({ok:false,error:"Sessão inválida."},403);
   const {data:actor,error:actorError}=await admin.from("usuarios")
    .select("cargo,role,empresa_id").eq("auth_user_id",user.id).maybeSingle();
-  if(actorError||!actor||!/superadmin/i.test(String(actor.cargo)+" "+String(actor.role))||actor.empresa_id===ORG)
+  if(actorError||!actor||![actor.cargo,actor.role].some(x=>String(x||"").trim().toLowerCase()==="superadmin")||actor.empresa_id===ORG)
    return respond({ok:false,error:"Somente o Superadmin do ambiente real pode criar contas de demonstração."},403);
   const {data:company,error:companyError}=await admin.from("empresas").select("branding").eq("id",ORG).maybeSingle();
   if(companyError||company?.branding?.infinitum_demo!==true)
@@ -46,9 +46,16 @@ Deno.serve(async request=>{
    .select("id,auth_user_id,email,empresa_id").eq("empresa_id",ORG).eq("email",EMAIL).limit(2);
   if(profileError||profiles?.length!==1)
    return respond({ok:false,error:"Perfil de demonstração ausente ou ambíguo."},409);
-  const {data:listed,error:listError}=await admin.auth.admin.listUsers({page:1,perPage:200});
-  if(listError)return respond({ok:false,error:"Não foi possível verificar usuários existentes."},503);
-  const matches=(listed.users||[]).filter(x=>x.email?.toLowerCase()===EMAIL);
+  // Não confiar na primeira página de usuários: duplicatas não podem passar despercebidas.
+  const matches=[];
+  for(let page=1;page<=50;page++){
+   const {data:listed,error:listError}=await admin.auth.admin.listUsers({page,perPage:200});
+   if(listError)return respond({ok:false,error:"Não foi possível verificar usuários existentes."},503);
+   const chunk=listed?.users||[];
+   matches.push(...chunk.filter(x=>x.email?.toLowerCase()===EMAIL));
+   if(chunk.length<200)break;
+   if(page===50)return respond({ok:false,error:"Lista de identidades excede o limite de auditoria. Use a administração do Supabase."},503);
+  }
   if(matches.length>1)return respond({ok:false,error:"Cadastro duplicado no Supabase Auth."},409);
   const current=matches[0];
   if(current&&current.app_metadata?.demo_account!==true)
