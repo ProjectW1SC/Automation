@@ -30,6 +30,7 @@ import './crm-mobile-all-areas.css';
 import './crm-generator-names.css';
 import './infinitum-video-motion.css';
 import './infinitum-prestige-all-tabs.css';
+import './lexis-infinitum-theme.css';
 // Carregada por último para limitar o vídeo real ao login, sem alterar o CRM.
 import './infinitum-login-video.css';
 import {WorkspaceSessionProvider} from '../components/workspace-session-provider';
