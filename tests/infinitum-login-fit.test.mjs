@@ -11,11 +11,16 @@ test('desktop login scales the form and controls to the reference viewport',()=>
  assert.match(css,/overflow-y:auto!important/);
  assert.match(css,/height:clamp\(36px,4\.6dvh,49px\)!important/);
  assert.match(css,/min-height:clamp\(38px,4\.8dvh,50px\)!important/);
+ assert.match(css,/justify-content:flex-start!important/);
+ assert.match(css,/margin-top:auto!important/);
 });
 
 test('mobile keeps the full reference hero visible without cropping the video',()=>{
  const css=read('app/infinitum-login-video.css');
- const mobile=css.slice(css.lastIndexOf('@media(max-width:920px)'));
+ const polish=css.slice(css.indexOf('/* INFINITUM PRESTIGE'));
+ const mobileStart=polish.indexOf('@media(max-width:920px)');
+ const mobileEnd=polish.indexOf('@media(max-width:480px)',mobileStart);
+ const mobile=polish.slice(mobileStart,mobileEnd);
  assert.match(mobile,/height:min\(101\.4vw,70svh,720px\)!important/);
  assert.match(mobile,/aspect-ratio:710 \/ 720!important/);
  assert.match(mobile,/object-fit:contain!important/);
