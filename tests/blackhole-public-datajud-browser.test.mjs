@@ -58,7 +58,7 @@ test('limite 429 de uma corte não bloqueia outro tribunal',async()=>{
  const fetchImpl=async(url)=>{calls++;return calls===1?response({},429):response(official(otherDigits))};
  const blocked=await browseOfficialDataJudNumber({number:cnj,fetchImpl});
  const allowed=await browseOfficialDataJudNumber({number:other,fetchImpl});
- assert.equal(blocked.reason,'rate_limited');assert.equal(allowed.ok,true);assert.equal(calls,2);
+ assert.equal(blocked.reason,'rate_limited');assert.equal(allowed.ok,true,JSON.stringify(allowed));assert.equal(calls,2);
 });
 
 test('falha de CORS/rede ativa pausa do navegador e permite fallback identificado',async()=>{
