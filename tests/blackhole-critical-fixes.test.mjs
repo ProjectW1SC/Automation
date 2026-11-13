@@ -16,5 +16,5 @@ test('o modo IA indisponível não descarta minuta baseada no processo',()=>{
 });
 test('a página aplica Infinitum antes da hidratação e respeita a seleção persistente de tema',()=>{
  const a=read('app/layout.jsx'),b=read('components/crm-shell.jsx');
- assert.match(a,/data-crm-theme="infinitum"/);assert.match(b,/preferredTheme/);assert.match(b,/removeItem\('projectw1sc.crm-theme'\)/);
+ assert.match(a,/data-crm-theme="infinitum"/);assert.match(b,/preferredTheme/);assert.match(b,/localStorage.getItem\('projectw1sc.crm-theme'\)/);assert.doesNotMatch(b,/removeItem\('projectw1sc.crm-theme'\)/);
 });
