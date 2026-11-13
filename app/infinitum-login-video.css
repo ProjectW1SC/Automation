@@ -40,7 +40,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
   margin:0!important;
   display:block!important;
   isolation:isolate!important;
-  background:#84776c!important;
+  background:#353737!important;
   overflow:hidden!important;
   border:0!important;
   border-radius:0!important;
@@ -56,7 +56,7 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
   position:absolute!important;
   inset:0!important;
   z-index:0!important;
-  background:#84776c url('/branding/infinitum-login-poster.webp') center/contain no-repeat!important;
+  background:#353737 url('/branding/infinitum-login-poster.webp') center/contain no-repeat!important;
   transform:none!important;
   animation:none!important;
 }
@@ -261,4 +261,318 @@ html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-re
 }
 @media print{
   html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{display:none!important}
+}
+
+
+/*
+ * INFINITUM PRESTIGE · ajuste final da referência 1280×720.
+ * O painel usa escala proporcional à altura da tela; em telas menores,
+ * apenas o painel rola. O vídeo e o formulário real permanecem separados.
+ */
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{
+  overflow:hidden!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
+  height:100dvh!important;
+  min-height:100dvh!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  background:#353737!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video-poster{
+  background-color:#353737!important;
+  background-size:contain!important;
+  background-position:center center!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  padding:clamp(32px,6.7dvh,76px) clamp(24px,4.8vw,76px) clamp(48px,12.2dvh,88px)!important;
+  gap:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-top,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-footer{
+  flex:0 0 auto!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+  width:clamp(260px,38dvh,420px)!important;
+  max-width:100%!important;
+  margin:clamp(10px,2.2dvh,24px) auto!important;
+  flex:0 0 auto!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-create{
+  font-size:clamp(11px,1.2dvh,13px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading{
+  margin:0 0 clamp(12px,1.7dvh,18px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-eyebrow{
+  font-size:clamp(8px,1.1dvh,11px)!important;
+  line-height:1.2!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading h1{
+  margin:5px 0 4px!important;
+  font-size:clamp(34px,4.8dvh,41px)!important;
+  line-height:1.08!important;
+  letter-spacing:-1.1px!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-heading p{
+  margin:0!important;
+  font-size:clamp(10px,1.5dvh,13px)!important;
+  line-height:1.4!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form>label:not(.office-remember),
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-label-row label{
+  margin:0 0 clamp(5px,.9dvh,10px)!important;
+  font-size:clamp(10px,1.15dvh,12px)!important;
+  line-height:1.2!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-label-row{
+  margin:0 0 clamp(5px,.9dvh,10px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form>input,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form .office-password-field input,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-email-code input{
+  width:100%!important;
+  height:clamp(36px,4.6dvh,49px)!important;
+  min-height:clamp(36px,4.6dvh,49px)!important;
+  max-height:clamp(36px,4.6dvh,49px)!important;
+  margin:0 0 clamp(8px,1.1dvh,12px)!important;
+  padding:0 12px!important;
+  font-size:clamp(12px,1.5dvh,16px)!important;
+  line-height:1.2!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-form .office-password-field input{
+  padding-right:45px!important;
+  margin-bottom:0!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-password-field button{
+  top:50%!important;
+  transform:translateY(-50%)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-remember{
+  margin:clamp(14px,2.5dvh,26px) 0 clamp(18px,3dvh,32px)!important;
+  gap:8px!important;
+  font-size:clamp(10px,1.2dvh,12px)!important;
+  line-height:1.3!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-remember input{
+  width:15px!important;
+  height:15px!important;
+  flex:0 0 15px!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-primary{
+  width:100%!important;
+  min-height:clamp(38px,4.8dvh,50px)!important;
+  padding:8px 12px!important;
+  font-size:clamp(12px,1.4dvh,14px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-auth-switch{
+  margin:clamp(10px,1.6dvh,17px) 0 0!important;
+  font-size:clamp(10px,1.2dvh,12px)!important;
+  line-height:1.5!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-auth-switch button,
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-forgot{
+  font-size:inherit!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-social-divider{
+  margin:clamp(10px,1.7dvh,18px) 0!important;
+  font-size:clamp(9px,1.1dvh,11px)!important;
+  line-height:1!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-google-btn{
+  width:100%!important;
+  height:clamp(38px,4.8dvh,50px)!important;
+  min-height:clamp(38px,4.8dvh,50px)!important;
+  padding:8px 12px!important;
+  font-size:clamp(11px,1.2dvh,13px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .auth-google-help{
+  margin:clamp(6px,1dvh,10px) 0 0!important;
+  padding:clamp(7px,1dvh,10px) clamp(9px,1.3dvh,12px)!important;
+  border-color:#e7e5e4!important;
+  border-radius:7px!important;
+  background:#fafaf9!important;
+  color:#57534e!important;
+  font-size:clamp(9px,1.05dvh,11px)!important;
+  line-height:1.35!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .crm-magic-link-btn{
+  display:flex!important;
+  width:100%!important;
+  min-height:clamp(36px,4.6dvh,48px)!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin-top:clamp(6px,1dvh,10px)!important;
+  padding:8px 12px!important;
+  border:1px solid #ded8d3!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#403a35!important;
+  font-size:clamp(10px,1.2dvh,12px)!important;
+  line-height:1.35!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-email-code{
+  display:grid!important;
+  gap:clamp(6px,.9dvh,9px)!important;
+  margin-top:clamp(8px,1.1dvh,12px)!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .office-login-feedback{
+  margin:0 0 10px!important;
+  font-size:clamp(10px,1.2dvh,12px)!important;
+  line-height:1.45!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-footer{
+  padding-top:clamp(10px,1.5dvh,16px)!important;
+  font-size:clamp(9px,1dvh,11px)!important;
+  line-height:1.4!important;
+}
+
+/* Telas pré-login: carregamento, falha de conexão e acesso negado no mesmo Prestige. */
+html[data-crm-theme="infinitum"] .reference-auth{
+  min-height:100dvh!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:12px!important;
+  padding:clamp(24px,5vw,56px)!important;
+  background:#fafaf9!important;
+  color:#57534e!important;
+  font:400 14px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  text-align:center!important;
+}
+html[data-crm-theme="infinitum"] .reference-auth::before{
+  content:"∞";
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  margin-bottom:5px;
+  border:1px solid #e7e5e4;
+  border-radius:50%;
+  background:#fff;
+  color:#292524;
+  box-shadow:0 6px 18px rgba(28,25,23,.06);
+  font:500 29px/1 Georgia,"Times New Roman",serif;
+}
+html[data-crm-theme="infinitum"] .reference-auth :is(strong,b){
+  color:#292524!important;
+}
+html[data-crm-theme="infinitum"] .reference-auth p{
+  max-width:620px;
+  margin:0;
+  color:#78716c!important;
+  font-size:13px;
+  line-height:1.6;
+}
+html[data-crm-theme="infinitum"] .reference-auth .office-action-row{
+  justify-content:center!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin-top:8px;
+}
+html[data-crm-theme="infinitum"] .reference-auth :is(button,a){
+  min-height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:9px 14px;
+  border:1px solid #d6d3d1;
+  border-radius:8px;
+  background:#fff;
+  color:#292524;
+  font-size:12px;
+  font-weight:650;
+  text-decoration:none;
+}
+html[data-crm-theme="infinitum"] .reference-auth :is(button,a):hover{
+  background:#f5f5f4;
+  border-color:#a8a29e;
+}
+html[data-crm-theme="infinitum"] .reference-auth :is(button,a):focus-visible{
+  outline:2px solid #57534e;
+  outline-offset:3px;
+}
+html[data-crm-theme="infinitum"] .reference-auth input{
+  border:1px solid #d6d3d1!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#1c1917!important;
+}
+html[data-crm-theme="infinitum"] .reference-auth-card{
+  border:1px solid #e7e5e4!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  color:#1c1917!important;
+  box-shadow:0 8px 28px rgba(28,25,23,.06)!important;
+}
+html[data-crm-theme="infinitum"] .reference-auth-card h1{
+  color:#1c1917!important;
+}
+@media(max-width:920px){
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"]{
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-frame{
+    height:auto!important;
+    min-height:100dvh!important;
+    overflow:visible!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+    width:100%!important;
+    height:min(101.4vw,720px)!important;
+    height:min(101.4vw,70svh,720px)!important;
+    min-height:0!important;
+    max-height:720px!important;
+    aspect-ratio:710 / 720!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video{
+    object-fit:contain!important;
+    object-position:center center!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-video-poster{
+    background-size:contain!important;
+    background-position:center center!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+    height:auto!important;
+    min-height:0!important;
+    padding:30px clamp(20px,5vw,56px) 34px!important;
+    overflow:visible!important;
+    gap:12px!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+    width:min(420px,100%)!important;
+    margin:24px auto!important;
+  }
+}
+@media(max-width:480px){
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-hero{
+    height:min(101.4vw,70svh,480px)!important;
+    min-height:0!important;
+    max-height:480px!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+    padding:24px 22px 30px!important;
+    gap:12px!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+    margin:16px auto!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crm-theme="infinitum"] .reference-auth::before{
+    box-shadow:none!important;
+  }
 }
