@@ -6,6 +6,7 @@ import {browseOfficialDjenSearch} from '../../lib/blackhole-public-djen-browser.
 import {splitDjenCalendarMonths} from '../../lib/judicial-history-client.mjs';
 import {PUBLIC_DATAJUD_COURTS} from '../../lib/blackhole-datajud-discovery.mjs';
 import {saveNamedCandidate} from '../../lib/office-candidate-save.mjs';
+import {officialAccessHelp} from '../../lib/official-access-guidance.mjs';
 import SecuredWorkspace from '../../components/secured-workspace';
 const now=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const initialStart=()=>{const d=new Date();d.setDate(d.getDate()-14);return d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})};
@@ -13,6 +14,7 @@ function Generator({db,session}){
  const [form,setForm]=useState({term:'busca e apreensão',court:'',start:initialStart(),end:now(),page:1});
  const [sourceMode,setSourceMode]=useState('datajud');
  const [rows,setRows]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[status,setStatus]=useState('idle');
+ const [accessHelp,setAccessHelp]=useState(null);
  const [manual,setManual]=useState({cnj:'',title:'',tribunal:''});
  const [personNames,setPersonNames]=useState({});
  const load=useCallback(async()=>{
@@ -35,7 +37,9 @@ function Generator({db,session}){
       body:JSON.stringify(month),cache:'no-store'});
      data=await response.json();
      if(!data?.ok){
-      if(response.status===429){failed='DJEN respondeu 429; consultas suspensas para respeitar a pausa.';break}
+      if(response.status===403||response.status===429){
+       setAccessHelp(officialAccessHelp({status:response.status},'djen'));
+       failed='DJEN respondeu '+response.status+'; consulta bloqueada ou limitada na origem.';break}
       if(response.status===502||response.status===503)viaBrowser=true;
       else{failed=String(data?.error||'Consulta mensal inválida.');break}
      }
@@ -43,7 +47,7 @@ function Generator({db,session}){
    }
    if(viaBrowser){
     try{data=await browseOfficialDjenSearch(month);browserRows.push(...(data.items||[]))}
-    catch(err){failed='DJEN pelo navegador: '+String(err.message||err).slice(0,210);break}
+    catch(err){failed='DJEN pelo navegador: '+String(err.message||err).slice(0,210);setAccessHelp(officialAccessHelp(err,'djen'));break}
    }
    if(!data?.ok){failed='O serviço DJEN não confirmou a consulta de '+range.start+' a '+range.end;break}
    records.push(...(data.items||[]));completed++;
@@ -65,7 +69,7 @@ function Generator({db,session}){
    'Resultados não encontrados não significam ausência de processos.');
  }
  async function consult(e){
-  e.preventDefault();setBusy(true);setStatus('running');setNotice('Consultando '+(sourceMode==='datajud'?'DataJud':'DJEN')+' do CNJ...');
+  e.preventDefault();setAccessHelp(null);setBusy(true);setStatus('running');setNotice('Consultando '+(sourceMode==='datajud'?'DataJud':'DJEN')+' do CNJ...');
   try{
    const {data:{session:s}}=await db.auth.getSession();
    if(!s?.access_token)throw Error('Sessão expirada.');
@@ -79,12 +83,12 @@ function Generator({db,session}){
    setStatus('ok');setNotice(data.notice+(data.saveError?' '+data.saveError:'')+(data.limited?' · Resultados limitados pela consulta.':''));
    await load();
    if(!data.persisted)setRows(data.items.map((x,i)=>({...x,id:'temp-'+i,created_at:data.checkedAt})));
-  }catch(err){setStatus('error');setNotice(String(err.message||err))}finally{setBusy(false)}
+  }catch(err){setStatus('error');setNotice(String(err.message||err));setAccessHelp(officialAccessHelp(err,sourceMode))}finally{setBusy(false)}
  }
  async function consultDjenBrowser(){
-  if(busy)return;setBusy(true);setStatus('running');
+  if(busy)return;setAccessHelp(null);setBusy(true);setStatus('running');
   try{await runDjenMonths({browserOnly:true})}
-  catch(err){setStatus('error');setNotice('DJEN via navegador não confirmado: '+String(err.message||err))}
+  catch(err){setStatus('error');setNotice('DJEN via navegador não confirmado: '+String(err.message||err));setAccessHelp(officialAccessHelp(err,'djen'))}
   finally{setBusy(false)}
  }
  async function addManual(e){
@@ -154,6 +158,13 @@ function Generator({db,session}){
    <div className="inf-row-end"><button className="inf-btn primary" disabled={busy} type="submit"><Plus size={14}/> Cadastrar CNJ manualmente</button></div></form>
   </section>
   {notice&&<p className={'inf-note '+(status==='error'?'error':'')} role="status">{notice}</p>}
+  {accessHelp&&<section className="office-official-access" role="status" aria-label="Orientações para validação judicial">
+   <div className="office-official-access-heading"><ShieldCheck size={20}/><strong>{accessHelp.action==='manual_check'?'Validação humana no portal oficial':'Consulta oficial temporariamente indisponível'}</strong></div>
+   <p>{accessHelp.message}</p>
+   <div className="office-official-access-actions"><a className="inf-btn primary" href={accessHelp.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/> Abrir portal oficial e conferir CAPTCHA, se solicitado</a>
+    <button className="inf-btn" type="button" disabled={busy} onClick={()=>{setAccessHelp(null);if(sourceMode==='djen')consultDjenBrowser();else setNotice('Use o botão Buscar candidatos oficiais após conferir o portal.')}}>Voltar à consulta</button></div>
+   <small>Esta assistência não contorna CAPTCHA e não registra movimentação sem evidência oficial.</small>
+  </section>}
   <section className="inf-panel"><div className="inf-toolbar"><h2>Processos encontrados e registrados</h2><div className="office-action-row"><button className="inf-btn" disabled={busy||!rows.some(r=>r.person_name_source==='DJEN_parte')} onClick={addVerifiedBatch}>Cadastrar em lote partes identificadas (até 30)</button><button className="inf-btn" onClick={load}><RefreshCw size={14}/> Atualizar</button></div></div><p className="inf-note">O nome deve vir de campo oficial do DJEN ou ser preenchido e confirmado pelo operador. O DataJud público não traz nomes de partes. Salvar um contato não autoriza enviar mensagem.</p>
    {!rows.length?<div className="inf-empty">Ainda não existem candidatos registrados. Execute uma consulta oficial acima.</div>:
    <div className="inf-table-wrap"><table className="inf-table"><thead><tr><th>CNJ</th><th>Tribunal</th><th>Data oficial (ajuizamento ou publicação)</th><th>Natureza</th><th>Nome da pessoa / contato</th><th>Evidência</th><th>Ação</th></tr></thead><tbody>{rows.map(row=>
