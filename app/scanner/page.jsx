@@ -4,9 +4,10 @@ import Link from 'next/link';
 import {Radar,RefreshCw,ScanSearch,ShieldCheck,PauseCircle,CalendarDays,Scale,AlertTriangle,CheckCircle2,BookOpen} from 'lucide-react';
 import SecuredWorkspace from '../../components/secured-workspace';
 import {formatProcessNumber} from '../../lib/processos-oficiais.mjs';
-import {shrinkOfficialResult} from '../../lib/judicial-triage.mjs';
+import {shrinkOfficialResult,snapshotIsFresh} from '../../lib/judicial-triage.mjs';
 import {buildScannerReview,sourceSummary} from '../../lib/blackhole-office-scanner.mjs';
 import {browseOfficialDjenNumber} from '../../lib/blackhole-public-djen-browser.mjs';
+import {browseOfficialDataJudNumber} from '../../lib/blackhole-public-datajud-browser.mjs';
 import {withAuthDeadline} from '../../lib/auth-deadline.mjs';
 const label={confirmed:'Consulta confirmada',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite atingido (429)',
  cooldown:'Em pausa',timeout:'Tempo esgotado',unavailable:'Indisponível',cached_previous:'Histórico confirmado (não atualizado)'};
@@ -57,8 +58,24 @@ function Scanner({db,session}){
    for(const row of list){
     if(controller.signal.aborted)break;
     try{
+     const browserResults={};
+     const browserSource=async(source,queryKey,fetcher)=>{
+      const cached=await db.from('crm_judicial_snapshots').select('checked_at')
+       .eq('actor_id',s.user.id).eq('process_number',row.process_number)
+       .eq('source',source).eq('query_key',queryKey).maybeSingle();
+      if(!cached.error&&snapshotIsFresh(cached.data,source))return null;
+      try{return await fetcher()}catch(e){return {ok:false,source:source==='datajud'?'DataJud':'DJEN',
+       number:row.process_number,status:e?.status,reason:e?.code||'network_error',error:String(e?.message||'Falha no navegador').slice(0,240)}}
+     };
+     const [datajudBrowser,djenBrowser]=await Promise.all([
+      browserSource('datajud','latest',()=>browseOfficialDataJudNumber({number:row.process_number,signal:controller.signal})),
+      browserSource('djen','default:default',()=>browseOfficialDjenNumber({number:row.process_number}))
+     ]);
+     if(datajudBrowser)browserResults.datajud=datajudBrowser;
+     if(djenBrowser)browserResults.djen=djenBrowser;
+     if(controller.signal.aborted)break;
      const response=await fetch('/api/scanner',{method:'POST',headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},
-      body:JSON.stringify({process_number:row.process_number,mode}),signal:controller.signal});
+      body:JSON.stringify({process_number:row.process_number,mode,browserResults}),signal:controller.signal});
      const answer=await response.json();
      if(!response.ok||!answer.ok)throw Error(answer.error||'Consulta não concluída.');
      const outcome={number:row.process_number,title:row.title||'Processo',...answer};
@@ -102,6 +119,32 @@ function Scanner({db,session}){
   }catch(e){setError('Consulta DJEN pelo navegador não confirmada: '+e.message)}
   finally{active.current=false;setBusy(false)}
  }
+ async function directDataJud(){
+  if(active.current)return;
+  let number;try{number=formatProcessNumber(directCNJ||filtered[0]?.process_number)}catch{setError('Escolha um CNJ cadastrado.');return}
+  if(!cases.some(x=>x.process_number===number)){setError('CNJ não consta na carteira autorizada.');return}
+  active.current=true;setBusy(true);setError('');setNotice('');
+  try{
+   const result=await browseOfficialDataJudNumber({number});
+   if(!result.ok)throw Error(result.error||'DataJud não confirmou a consulta.');
+   const review=buildScannerReview([{process_number:number,source:'datajud',checked_at:result.checkedAt,payload:{items:result.items}}],{
+    today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
+   const sources={...sourceSummary({datajud:result,djen:{ok:false,error:'Não consultado nesta operação.'}}),via:'navegador'};
+   const saved=await db.from('crm_judicial_snapshots').upsert({
+    actor_id:session.user.id,process_number:number,source:'datajud',query_key:'latest',
+    checked_at:result.checkedAt,found:result.found,payload:shrinkOfficialResult(result)
+   },{onConflict:'actor_id,process_number,source,query_key'});
+   if(saved.error)throw Error('Consulta recebida mas não registrada como snapshot: '+saved.error.message);
+   const audit=await db.from('office_scan_runs').insert({actor_id:session.user.id,process_number:number,
+    trigger_mode:'manual',source_status:sources,review});
+   setLive(old=>[{number,title:cases.find(x=>x.process_number===number)?.title||'Processo',
+    ok:true,sourceStatus:sources,review,persisted:!audit.error,saveError:audit.error?.message||null},...old].slice(0,35));
+   setNotice('DataJud consultado diretamente pela API pública no navegador, com '+result.items.length+' movimento(s). DJEN NÃO foi consultado nesta operação.'+
+    (audit.error?' A trilha não foi gravada: '+audit.error.message:''));
+   await read();
+  }catch(e){setError('Consulta DataJud pelo navegador não confirmada: '+e.message)}
+  finally{active.current=false;setBusy(false)}
+ }
  const runNext=()=>run(filtered.slice(0,Number(scanBatch)),'manual');
  const runAll=()=>run(filtered,'manual');
  useEffect(()=>{
@@ -138,7 +181,7 @@ function Scanner({db,session}){
    <div className="inf-stat"><label>Restantes nesta execução</label><strong>{Math.max(0,progress.total-progress.done)}</strong></div>
   </div>
   <section className="inf-panel"><h2><ScanSearch size={17}/> Varredura de carteira</h2>
-   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa global. O Hermes agendado no Supabase trabalha em segundo plano em micro-lotes, mesmo com esta tela fechada. Uma fonte nunca substitui a confirmação da outra.</p>
+   <p>Os resultados oficiais ficam no Supabase com RLS. Consultas recentes são reutilizadas, e respostas 403/429 entram em pausa global. A varredura automática desta tela usa o navegador enquanto ela está aberta; o Hermes agendado no Supabase continua em segundo plano pelo servidor quando a tela está fechada. Uma fonte nunca substitui a confirmação da outra.</p>
    <div className="office-action-row blackhole-scanner-controls">
     <input className="inf-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Filtrar CNJ, tribunal ou caso" aria-label="Filtrar processos"/>
     <select aria-label="Tamanho do lote" value={scanBatch} onChange={e=>setScanBatch(e.target.value)}>
@@ -155,12 +198,15 @@ function Scanner({db,session}){
       {filtered.slice(0,100).map(c=><option key={c.process_number} value={c.process_number}>{c.process_number} · {String(c.title||'').slice(0,45)}</option>)}
      </select>
     </label>
+    <button type="button" className="inf-btn" onClick={directDataJud} disabled={busy||!filtered.length}>
+     Consultar DataJud pelo meu navegador
+    </button>
     <button type="button" className="inf-btn" onClick={directDjen} disabled={busy||!filtered.length}>
      Consultar DJEN pelo meu navegador
     </button>
     <a className="inf-btn" href="https://comunica.pje.jus.br/" target="_blank" rel="noopener noreferrer">Portal oficial Comunica PJe</a>
    </div>
-   <p className="office-hint">Consulta pública direta inspirada no LexisPredict. O navegador pode ter acesso quando a infraestrutura de nuvem recebe 403; depende do CORS e das permissões oficiais. Não contorna CAPTCHA ou bloqueios.</p>
+   <p className="office-hint">DataJud e DJEN tentam primeiro a conexão pública do seu navegador. Em falhas de rede/CORS, o servidor é usado como alternativa. Respostas 403/429 respeitam o bloqueio e não são repetidas por outra rede. Não contorna CAPTCHA ou autenticação.</p>
    <label className="blackhole-scanner-opt"><input type="checkbox" checked={auto} onChange={e=>updateAuto(e.target.checked)}/>
     <span>Verificar automaticamente até 2 processos pendentes a cada 15 minutos <strong>enquanto esta aba estiver aberta</strong></span>
    </label>
