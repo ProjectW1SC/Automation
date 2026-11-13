@@ -23,6 +23,8 @@ function Summary({title,count,href}){return <Link href={href} className="inf-sta
 export default function LexisSharedOffice({area='dashboard',db,session}){
  const [profile,setProfile]=useState(null),[company,setCompany]=useState(''),[team,setTeam]=useState([]);
  const [authChecking,setAuthChecking]=useState(true),[rows,setRows]=useState([]),[total,setTotal]=useState(0);
+ const [activeFilter,setActiveFilter]=useState('em_andamento'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
+ const [notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[mode,setMode]=useState('processo'),[form,setForm]=useState({});
 
  const [deadlineRows,setDeadlineRows]=useState([]);
  const [hearingRows,setHearingRows]=useState([]);
@@ -109,8 +111,6 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   const cnj=new URLSearchParams(window.location.search).get('buscar');
   if(cnj){setType('numero');setSearch(cnj);setDraft(cnj);setPage(0)}
  },[area]);
- const [activeFilter,setActiveFilter]=useState('em_andamento'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
- const [notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[mode,setMode]=useState('processo'),[form,setForm]=useState({});
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[attendance,setAttendance]=useState([]),[reportTotal,setReportTotal]=useState(0);
