@@ -226,7 +226,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   if(!p.process_number||!normalizedCnj(p.process_number)){setNotice('Número CNJ incompleto. Consulta oficial não iniciada.');return}
   consultController.current?.abort();const controller=new AbortController();consultController.current=controller;
   const request=++historyRequest.current;
-  setEditing(null);setConsultRange(options.start||options.end?options:recentPeriod());
+  setEditing(null);setConsultRange({...recentPeriod(),...options});
   setSelected(p);setSelectedMode('consulta');setConsulted(null);setConsultBusy(true);setNotice('Consultando as fontes oficiais...');
   void loadHistory(p,request);
   try{

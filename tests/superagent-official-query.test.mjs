@@ -23,3 +23,8 @@ test('consulta bloqueada ou parcial nao e apresentada como atualizada',()=>{
  items:[{id:'1',source:'DataJud',date:'2026-06-09',title:'Publicacao'}]}});
  assert.match(r.reply,/HTTP 403/);assert.match(r.reply,/parcial/);
 });
+
+test('erro oficial de consulta e informado sem criar publicacoes',()=>{
+ const r=reportOfficialQuery({number:'0001234-56.2024.8.26.0100',source:'djen',result:{ok:false,error:'HTTP 429',items:[]}});
+ assert.match(r.reply,/HTTP 429/);assert.equal(r.review.counts.djen,0);
+});
