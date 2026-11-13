@@ -14,10 +14,10 @@ test('o painel mostra só o vídeo da galáxia em largura e altura completas, se
  const css=read('app/infinitum-login-video.css');
  const final=css.split('/* GALAXY LOGIN FINAL */')[1];
  assert.ok(final,'the final galaxy override must exist');
- assert.match(final,/grid-template-columns:min\\(55\\.3125vw,98\\.3333dvh\\) minmax\\(0,1fr\\)!important/);
+ assert.match(final,/grid-template-columns:min\(55\.3125vw,98\.3333dvh\) minmax\(0,1fr\)!important/);
  assert.match(final,/object-fit:cover!important/);
  assert.match(final,/background-size:cover!important/);
- assert.doesNotMatch(final,/transform:scale\\(|animation:[^;]*zoom/);
+ assert.doesNotMatch(final,/transform:scale\(|animation:[^;]*zoom/);
  assert.match(final,/height:100dvh!important/);
 });
 
