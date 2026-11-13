@@ -98,7 +98,7 @@ export async function GET(request){
    return json({ok:false,error:'Conta sem permissão para consultar processos neste CRM.'},403);
   const params=new URL(request.url).searchParams;
   const number=formatProcessNumber(params.get('numero'));
-  const source=params.get('fonte');
+  const source=params.get('fonte'),cacheOnly=params.get('cache')==='only';
   if(!['datajud','djen','auto'].includes(source))return json({ok:false,error:'Escolha DataJud, DJEN ou consulta automática.'},400);
   // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
   const [registry,activities,officeCase]=await Promise.all([
@@ -121,7 +121,7 @@ export async function GET(request){
    }
    // O navegador consulta primeiro quando não há snapshot recente. Esta opção
    // apenas verifica cache/RLS e nunca faz chamada externa nem cria cooldown.
-   if(params.get('cache')==='only'){
+   if(cacheOnly){
     return {ok:false,cacheMiss:true,code:'cache_miss',source:kind,
      error:'Não há consulta recente para esta janela; navegador pode consultar a fonte pública.'};
    }
