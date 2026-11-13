@@ -6,12 +6,12 @@ import {makePetitionSkeleton} from '../lib/office-core.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const sample='Poder Judiciário do Estado do Rio de Janeiro\nComarca de Vassouras\n1ª Vara da Comarca de Vassouras\nSENTENÇA\nProcesso: 0801760-42.2023.8.19.0065\nAUTOR: Maria Modelo\nRÉU: Banco Exemplo\nTrata-se de AÇÃO REVISIONAL. É o relatório. Decido.';
 test('fluxo da UI mantem fonte separada de orientacoes e sem corte de 1500 caracteres',()=>{
- const s=read('components/office-console.jsx');
- assert.match(s,/maxLength=\{40000\}/);
- assert.match(s,/maxLength=\{6000\}/);
+ const s=read('components/office-console.jsx'),panel=read('components/office-document-workspace.jsx');
+ assert.match(panel,/maxLength=\{40000\}/);
+ assert.match(panel,/maxLength=\{6000\}/);
  assert.match(s,/sourceDocument:docSourceDocument/);
  assert.match(s,/appealType:docAppealType/);
- assert.match(s,/docResult.evidence.sourceDocument/);
+ assert.match(panel,/docResult.evidence.sourceDocument/);
  assert.doesNotMatch(s,/maxLength=\{1500\}/);
  assert.doesNotMatch(s,/A IA externa exige processo cadastrado/);
 });
@@ -38,5 +38,7 @@ test('minuta vinculada bloqueia uso de CNJ diferente do documento',()=>{
 });
 test('exportadores Word e PDF permanecem conectados ao editor',()=>{
  const s=read('components/office-console.jsx');
- for(const term of ['downloadLegalDocx','printLegalPdf','<LegalStationery','Salvar revisão'])assert.match(s,new RegExp(term));
+ for(const term of ['downloadLegalDocx','printLegalPdf'])assert.match(s,new RegExp(term));
+ const panel=read('components/office-document-workspace.jsx');
+ for(const term of ['<LegalStationery','Salvar revisão'])assert.match(panel,new RegExp(term));
 });
