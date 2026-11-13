@@ -22,7 +22,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  const [profile,setProfile]=useState(null),[company,setCompany]=useState(''),[team,setTeam]=useState([]);
  const [authChecking,setAuthChecking]=useState(true),[rows,setRows]=useState([]),[total,setTotal]=useState(0);
  const [page,setPage]=useState(0),[type,setType]=useState('cliente'),[draft,setDraft]=useState(''),[search,setSearch]=useState('');
- const [activeFilter,setActiveFilter]=useState('todos'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
+ const [activeFilter,setActiveFilter]=useState('em_andamento'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false);
  const [notice,setNotice]=useState(''),[editing,setEditing]=useState(null),[mode,setMode]=useState('processo'),[form,setForm]=useState({});
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
@@ -57,8 +57,8 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   try{
    let q=db.from('processos').select(PROCESS_FIELDS,{count:'exact'}).eq('empresa_id',profile.empresa_id);
    if(search){const f=qFilter(search,type);q=q.ilike(f.field,f.text)}
-   if(activeFilter==='em_andamento')q=q.or('status_interno.is.null,status_interno.not.in.(encerrado,excluido)');
-   if(activeFilter==='encerrado'||activeFilter==='excluido')q=q.eq('status_interno',activeFilter);
+   if(activeFilter==='em_andamento')q=q.or('status_interno.is.null,and(status_interno.not.ilike.ENCERRADO,status_interno.not.ilike.EXCLUIDO)');
+   if(activeFilter==='encerrado'||activeFilter==='excluido')q=q.ilike('status_interno',activeFilter);
    const {data,error,count}=await q.order('updated_at',{ascending:false,nullsFirst:false}).range(page*PAGE,(page+1)*PAGE-1);
    if(error)throw Error(error.message);
    setRows((data||[]).map(mapLexisProcess));setTotal(count??(data||[]).length);
