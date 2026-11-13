@@ -29,8 +29,8 @@ test('editar mantem os mesmos campos validos e nao altera autor, origem ou data 
  for(const forbidden of ['actor_id','origin','created_at','deleted_at','id'])assert.ok(!(forbidden in result));
 });
 
-test('o tema principal possui contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
- assert.deepEqual(CRM_THEMES.map(x=>x.id),['infinitum']);assert.equal(resolveTheme('blackhole'),'infinitum');assert.equal(resolveTheme('sasuke'),'infinitum');
+test('Infinitum Light e Dark possuem contraste WCAG AA para texto, botoes, menus e etiquetas',()=>{
+ assert.deepEqual(CRM_THEMES.map(x=>x.id),['infinitum','infinitum-dark']);assert.equal(resolveTheme('blackhole'),'infinitum-dark');assert.equal(resolveTheme('sasuke'),'infinitum');
  assert.ok(new Set(CRM_THEMES.map(x=>x.id)).size===CRM_THEMES.length);
  assert.equal(resolveTheme('tema-inexistente'),'infinitum');
  for(const theme of CRM_THEMES){
@@ -45,8 +45,9 @@ test('tema aparece no shell e nos estilos globais com opcao de movimento reduzid
  const css=file('app/crm-themes.css');
  const layout=file('app/layout.jsx');
  assert.match(shell,/preferredTheme/);
+ assert.match(shell,/resolveTheme/);
+ assert.match(shell,/projectw1sc:theme-change/);
  assert.doesNotMatch(shell,/w1-theme-picker/);
- assert.match(shell,/crmTheme/);
  assert.match(layout,/crm-themes\.css/);assert.doesNotMatch(layout,/anime-themes\.css/);
  assert.match(css,/\.task-board/);
  assert.match(css,/\.reference-activity-form/);
