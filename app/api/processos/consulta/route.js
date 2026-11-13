@@ -65,7 +65,7 @@ async function djen(number,query){
  const url=buildDjenUrl(number,{start,end,page});
  const response=await requestOfficialJson(url,{method:'GET',headers:{Accept:'application/json'}},{source:'djen',page:Number(page)});
  const items=normalizeDjen(response,number),info=djenPageInfo(response,Number(page));
- return {ok:true,parserVersion:2,source:'DJEN',found:items.length>0,items,
+ return {ok:true,parserVersion:3,source:'DJEN',found:items.length>0,items,
   checkedAt:new Date().toISOString(),notice:items.length?
   'Publicações localizadas no Diário de Justiça Eletrônico Nacional.':'Nenhuma publicação encontrada para as datas consultadas no DJEN.',
   limited:info.hasMore,hasMore:info.hasMore,total:info.total,page:Number(page)};
@@ -114,7 +114,8 @@ export async function GET(request){
    const {data:rawCached,error:cacheError}=await db.from('crm_judicial_snapshots').select('payload,checked_at')
     .eq('actor_id',user.id).eq('process_number',number).eq('source',kind).eq('query_key',queryKey).maybeSingle();
    if(cacheError)throw Object.assign(new Error('Não foi possível ler histórico oficial autorizado.'),{status:503});
-   const cached=rawCached?.payload&&((kind==='datajud'&&!dataJudSnapshotIsFromCourt(rawCached.payload,number))||(!rawCached.payload.items?.length&&rawCached.payload.parserVersion!==2))?null:rawCached;
+   const legacyDefaultDjen=kind==='djen'&&queryKey==='default:default'&&rawCached?.payload?.parserVersion!==3;
+   const cached=rawCached?.payload&&(legacyDefaultDjen||(kind==='datajud'&&!dataJudSnapshotIsFromCourt(rawCached.payload,number))||(!rawCached.payload.items?.length&&rawCached.payload.parserVersion!==2&&rawCached.payload.parserVersion!==3))?null:rawCached;
    if(params.get('forcar')!=='1'&&snapshotIsFresh(cached,kind)){
     return {...cached.payload,fromCache:true,notice:(cached.payload.notice||'')+
      ' · Consulta oficial anterior reutilizada para evitar requisições repetidas.'};

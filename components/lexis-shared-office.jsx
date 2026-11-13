@@ -24,7 +24,7 @@ const FIELDS_CLIENT=['cliente','telefone','email','cpf'];
 const FIELDS_PROCESS=['cliente','protocolo_ref','tribunal','advogado','observacoes','proximo_retorno','proximo_prazo','status_interno'];
 const initialForm=p=>({cliente:p.client_name||'',telefone:p.phone||'',email:p.email||'',cpf:p.cpf||'',tribunal:p.tribunal||'',advogado:p.advogado||'',observacoes:p.observacoes||'',proximo_retorno:p.next_attendance||'',proximo_prazo:p.next_deadline||'',status_interno:p.status==='outro'?'preservar':p.status||'ativo'});
 const qFilter=(query,type)=>({field:processSearchField(type),text:likeTerm(query)});
-const recentPeriod=()=>{const end=todayBrazil(),start=new Date(end+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-30);return {start:start.toISOString().slice(0,10),end,source:'auto',page:1}};
+const recentPeriod=()=>({start:'',end:'',source:'auto',page:1});
 function Summary({title,count,href}){return <Link href={href} className="inf-stat" style={{textDecoration:'none'}}><label>{title}</label><strong>{Number(count||0).toLocaleString('pt-BR')}</strong></Link>;}
 export default function LexisSharedOffice({area='dashboard',db,session}){
  const [profile,setProfile]=useState(null),[company,setCompany]=useState(''),[team,setTeam]=useState([]);
@@ -445,15 +445,16 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
    <p>Último: {DATE_LABEL(selected.last_attendance)} · Próximo: {DATE_LABEL(selected.next_attendance)} · Responsável: <strong>{responsibleDisplay(selected.last_responsible,team)}</strong></p>
    {selectedMode==='consulta'&&<>
     <p><strong>CNJ: {selected.process_number}</strong></p>
-    <p>DJEN: publicações de {DATE_LABEL(consultRange.start)} a {DATE_LABEL(consultRange.end)}. DataJud: movimentações disponíveis no índice público, inclusive anteriores a esse período.</p>
-    <form className="lx-consult-range" onSubmit={e=>{e.preventDefault();consult(selected,consultRange)}}>
+    <p>DJEN: {consultRange.start&&consultRange.end?'publicações de '+DATE_LABEL(consultRange.start)+' a '+DATE_LABEL(consultRange.end):'pesquisa por CNJ em todo o histórico disponível na API oficial'}. DataJud: movimentações do índice público, independentemente da data escolhida para o DJEN.</p>
+    <form className="lx-consult-range" onSubmit={e=>{e.preventDefault();if(Boolean(consultRange.start)!==Boolean(consultRange.end)){setNotice('Informe as duas datas ou deixe ambas vazias para buscar todo o histórico.');return}consult(selected,consultRange)}}>
      <fieldset disabled={consultBusy}><div className="inf-fields">
-      <label>DJEN desde<input type="date" required value={consultRange.start} max={consultRange.end} onChange={e=>setConsultRange({...consultRange,start:e.target.value})}/></label>
-      <label>DJEN até<input type="date" required value={consultRange.end} min={consultRange.start} onChange={e=>setConsultRange({...consultRange,end:e.target.value})}/></label>
+      <label>DJEN desde (opcional)<input type="date" value={consultRange.start} max={consultRange.end||undefined} onChange={e=>setConsultRange({...consultRange,start:e.target.value})}/></label>
+      <label>DJEN até (opcional)<input type="date" value={consultRange.end} min={consultRange.start||undefined} onChange={e=>setConsultRange({...consultRange,end:e.target.value})}/></label>
       <label>Fonte<select value={consultRange.source} onChange={e=>setConsultRange({...consultRange,source:e.target.value})}><option value="auto">DJEN + DataJud</option><option value="djen">DJEN</option><option value="datajud">DataJud</option></select></label>
       <label>Página DJEN<input type="number" min="1" max="100" required value={consultRange.page} onChange={e=>setConsultRange({...consultRange,page:Number(e.target.value)})}/></label>
-     </div></fieldset><button type="submit" className="inf-btn primary" disabled={consultBusy}>{consultBusy?'Consultando...':'Consultar período'}</button><button type="button" className="inf-btn" disabled={consultBusy} onClick={()=>{const end=todayBrazil(),d=new Date(end+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-90);consult(selected,{start:d.toISOString().slice(0,10),end,source:'djen',page:1})}}>Buscar DJEN nos últimos 90 dias</button>
+     </div></fieldset><button type="submit" className="inf-btn primary" disabled={consultBusy}>{consultBusy?'Consultando...':'Consultar período'}</button><button type="button" className="inf-btn" disabled={consultBusy} onClick={()=>consult(selected,{start:'',end:'',source:'djen',page:1})}>Buscar histórico completo do DJEN</button>
      {consultBusy&&<button type="button" className="inf-btn" onClick={()=>consultController.current?.abort()}>Cancelar consulta</button>}
+     {consulted?.limited&&!consulted?.nextWindow&&<button type="button" className="inf-btn" disabled={consultBusy||consultRange.page>=100} onClick={()=>consult(selected,{...consultRange,page:Math.min(100,(Number(consultRange.page)||1)+1)})}>Próxima página DJEN</button>}
      {consulted?.nextWindow&&<button type="button" className="inf-btn" disabled={consultBusy} onClick={()=>consult(selected,{...consultRange,start:consulted.nextWindow.start,source:'djen'})}>Continuar períodos pendentes</button>}
     </form>
     {consulted&&<JudicialConsultationResult result={consulted}/>}

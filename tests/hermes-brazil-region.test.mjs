@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-test('Hermes automated edge scan has short DJEN window, page 50 and longer upstream timeouts',()=>{
+test('Hermes automated edge scan checks DJEN whole history, page 50 and longer upstream timeouts',()=>{
  const s=read('supabase/functions/blackhole-hermes-scan/index.ts');
  assert.match(s,/-29\*86400000/);
  assert.match(s,/itensPorPagina:"50"/);

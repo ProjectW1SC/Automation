@@ -63,7 +63,7 @@ Deno.serve(async(req:Request)=>{
     body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})},{source:"datajud"}));
    result={...normalizeDataJudSnapshot(data,number,checkedAt),court:alias.toUpperCase()};
   }
-  return json({...result,parserVersion:2,via:"supabase-edge-sa-east-1",region,latencyMs:Date.now()-started,authenticated:true});
+  return json({...result,parserVersion:kind==='djen'?3:2,via:"supabase-edge-sa-east-1",region,latencyMs:Date.now()-started,authenticated:true});
  }catch(e){
   const status=Number((e as any)?.status)||503;
   return json({ok:false,source:"CNJ",status,retryAfterMs:(e as any)?.retryAfterMs||null,code:String((e as any)?.code||"source_error"),

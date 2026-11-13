@@ -17,14 +17,16 @@ export function JudicialEvents({items=[],title='Movimentações e publicações'
 }
 export default function JudicialConsultationResult({result}){
  const items=result.items||[],incomplete=result.partial||!result.ok;
+ const bySource={djen:items.filter(x=>x.source==='DJEN').length,datajud:items.filter(x=>x.source==='DataJud').length};
  return <section className="lx-judicial-result" aria-label="Resultado da consulta judicial">
   <h3>{items.length?items.length+' registro(s) retornado(s)':incomplete?'Histórico judicial não confirmado':'Nenhum registro retornado neste período'}</h3>
   {!items.length&&<p>{incomplete?'A consulta não retornou movimentações e há fontes sem atualização confirmada. Isso não confirma ausência de histórico no tribunal.':'As fontes consultadas não retornaram registros para os parâmetros informados. Você pode pesquisar outras datas no formulário acima.'}</p>}
   <div className="lx-source-results">{['djen','datajud'].map(source=><section key={source}>
-   <strong>{source==='djen'?'DJEN · publicações':'DataJud · movimentações'}</strong>
+   <strong>{source==='djen'?'DJEN · publicações':'DataJud · movimentações'}</strong><p>{bySource[source]} {source==='djen'?'publicação(ões) DJEN':'movimentação(ões) DataJud'} neste resultado</p>
    <p>{labels[result.sourceStatus?.[source]]||'Situação não confirmada'}</p>
    {result.sourceErrors?.[source]&&<p role="status" className="lx-source-error">{result.sourceErrors[source]}</p>}
   </section>)}</div>
+  {!bySource.djen&&result.sourceStatus?.djen==='ok'&&<p className="inf-note">O DJEN respondeu sem publicações para o CNJ e a pesquisa realizada. As movimentações do DataJud rotuladas como publicação não substituem o teor do diário.</p>}
   {result.persistenceErrors?.length>0&&<p role="status">{result.persistenceErrors.join(' ')}</p>}
   {result.windowsPending>0&&<p role="status">{result.windowsChecked} de {result.windowsTotal} períodos consultados; {result.windowsPending} pendente(s). Continue pelo formulário acima.</p>}
   {result.limited&&<p>Há mais resultados na fonte. Consulte a próxima página para continuar.</p>}

@@ -44,7 +44,7 @@ async function fetchDataJud(number:string,checkedAt:string){
 async function fetchDjen(number:string,today:string,checkedAt:string){
  const payload=await fetchJson(djenUrl(number,today),{method:"GET",headers:{Accept:"application/json"}});
  const info=djenPageInfo(payload);
- return {...normalizeDjenSnapshot(payload,number,checkedAt),parserVersion:2,hasMore:info.hasMore,limited:info.hasMore,total:info.total};
+ return {...normalizeDjenSnapshot(payload,number,checkedAt),parserVersion:3,hasMore:info.hasMore,limited:info.hasMore,total:info.total};
 }
 function sourceStatus(result:any,source:string){
  if(result?.ok===true)return {source,status:"confirmed",found:!!result.found,checked_at:result.checkedAt||null,
