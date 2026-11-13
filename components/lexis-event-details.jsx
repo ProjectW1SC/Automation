@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {ClipboardList,Edit3,ExternalLink,FileText,Gavel} from 'lucide-react';
+import {CheckCircle2,ClipboardList,Edit3,ExternalLink,FileText,Gavel} from 'lucide-react';
 import PortfolioDialog from './portfolio-dialog';
 import {PROCESS_FIELDS,mapLexisProcess,normalizedCnj,validDay} from '../lib/lexis-shared-portfolio.mjs';
 
@@ -11,7 +11,7 @@ const safeSource=value=>{try{const url=new URL(value);return ['https:','http:'].
 const kinds={retorno:'Retorno',prazo:'Prazo',audiencia:'Audiência',tarefa:'Tarefa'};
 const recordLink=(id,action)=>'/processos?processo='+encodeURIComponent(String(id))+'&acao='+encodeURIComponent(action);
 
-export default function LexisEventDetails({event,db,profile,onClose,onSaved}){
+export default function LexisEventDetails({event,db,profile,onClose,onSaved,onFinish,busy=false}){
  const empresaId=profile?.empresa_id;
  const [process,setProcess]=useState(null),[loading,setLoading]=useState(Boolean(event.process_id||event.process_number));
  const [notice,setNotice]=useState(''),[saving,setSaving]=useState(false),[manualEdit,setManualEdit]=useState(false);
@@ -104,6 +104,7 @@ export default function LexisEventDetails({event,db,profile,onClose,onSaved}){
   </section>}
   {!loading&&!process&&<p className="inf-note">Registro sem vínculo processual confirmado. Edição de cliente, atendimento e consulta precisam de um processo localizado na carteira autorizada.</p>}
   {event.manual_id&&<section aria-label="Edição de compromisso manual">
+   {event.status!=='encerrado'&&<button type="button" className="inf-btn" disabled={busy||saving} onClick={()=>onFinish?.(event)}><CheckCircle2 size={14}/> Concluir compromisso</button>}
    {!manualEdit?<button type="button" className="inf-btn" onClick={()=>setManualEdit(true)}><Edit3 size={14}/> Editar compromisso manual</button>:
     <form className="lx-form" onSubmit={saveManual}>
      <label>Título<input required minLength={3} maxLength={250} value={manual.title} onChange={e=>setManual({...manual,title:e.target.value})}/></label>
