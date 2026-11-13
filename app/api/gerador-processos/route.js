@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {buildDjenSearchURL,parseDjenCandidates} from '../../../lib/djen-generator.mjs';
-export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=35;
+export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=45;
 const result=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 export async function POST(request){
  try{
@@ -15,7 +15,7 @@ export async function POST(request){
   if(error||!user||!await checkCrmAccess(db,user))return result({ok:false,error:'Acesso não autorizado.'},403);
   const input=await request.json();
   const upstream=buildDjenSearchURL(input);
-  const response=await fetch(upstream,{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});
+  const response=await fetch(upstream,{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(24000)});
   if(response.status===429)return result({ok:false,error:'DJEN limitou consultas (429); respeite a pausa.'},429);
   if(response.status===403)return result({ok:false,error:'DJEN bloqueou esta rede (403). Não foram gerados resultados.'},503);
   if(!response.ok)return result({ok:false,error:'DJEN indisponível: HTTP '+response.status},502);
@@ -33,7 +33,7 @@ export async function POST(request){
    notice:items.length?'Resultados públicos identificados pelo campo oficial numeroProcesso.':'A consulta retornou zero candidatos nesta janela; isso não comprova ausência de processos.'});
  }catch(e){let msg=e?.message||'Erro de consulta';
   const status=/Termo|intervalo|Tribunal|31 dias/i.test(msg)?400:502;
-  if(e?.name==='TimeoutError'||e?.name==='AbortError')msg='DJEN excedeu 15 segundos; nenhum resultado foi presumido.';
+  if(e?.name==='TimeoutError'||e?.name==='AbortError')msg='DJEN excedeu 24 segundos; nenhum resultado foi presumido.';
   return result({ok:false,error:msg},status);
  }
 }

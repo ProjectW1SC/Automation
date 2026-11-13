@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server';
 import {createClient} from '@supabase/supabase-js';
 import {checkCrmAccess} from '../../../../lib/crm-access.mjs';
 import {buildDataJudDiscoveryQuery,normalizeDataJudCandidates} from '../../../../lib/blackhole-datajud-discovery.mjs';
-export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=25;
+export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=45;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 // A chave pública é publicada pelo CNJ e pode ser substituída via variável de ambiente.
 const PUBLIC_KEY='cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==';
@@ -18,7 +18,7 @@ export async function POST(request){
   const input=await request.json(),{url:apiUrl,payload}=buildDataJudDiscoveryQuery(input);
   const result=await fetch(apiUrl,{method:'POST',headers:{Authorization:'APIKey '+(process.env.DATAJUD_API_KEY||PUBLIC_KEY),
    'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload),
-   cache:'no-store',redirect:'error',signal:AbortSignal.timeout(13500)});
+   cache:'no-store',redirect:'error',signal:AbortSignal.timeout(30000)});
   if(result.status===403)return json({ok:false,error:'DataJud bloqueou esta rede (403). A consulta não foi confirmada.'},503);
   if(result.status===429)return json({ok:false,error:'DataJud limitou consultas (429). Tente em outro momento sem repetir em massa.'},429);
   if(!result.ok)return json({ok:false,error:'DataJud indisponível (HTTP '+result.status+').'},502);
@@ -36,7 +36,7 @@ export async function POST(request){
    notice:rows.length?'Metadados processuais retornados pelo DataJud (CNJ). Não equivalem a publicação DJEN nem confirmam status ativo.':
    'Não foram localizados metadados para a expressão nesse tribunal. Isso não prova inexistência de processos.'});
  }catch(e){
-  const msg=e?.name==='TimeoutError'||e?.name==='AbortError'?'DataJud excedeu 13,5 segundos; não foram gerados resultados.':e?.message||'Consulta não concluída.';
+  const msg=e?.name==='TimeoutError'||e?.name==='AbortError'?'DataJud excedeu 30 segundos; nenhum resultado foi presumido.':e?.message||'Consulta não concluída.';
   const status=/Tribunal|expressão|4 a 110/.test(msg)?400:502;
   return json({ok:false,error:msg},status);
  }

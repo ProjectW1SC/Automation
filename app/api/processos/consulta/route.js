@@ -7,11 +7,11 @@ import {createClient} from '@supabase/supabase-js';
 import {formatProcessNumber,resolveCourtAlias,normalizeDataJud,normalizeDjen,buildDjenUrl} from '../../../../lib/processos-oficiais.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
-export const maxDuration=35;
+export const maxDuration=60;
 const PUBLIC_DATAJUD_KEY='cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=='; // Public key documented by CNJ
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store, private'}});
 async function fetchJson(url,opts={}){
- const response=await fetch(url,{...opts,cache:'no-store',signal:AbortSignal.timeout(14000)});
+ const response=await fetch(url,{...opts,cache:'no-store',signal:AbortSignal.timeout(32000)});
  const raw=await response.text();
  if(!response.ok){
   if(response.status===429)throw Object.assign(new Error('Fonte oficial limitou as consultas (HTTP 429). Tente novamente mais tarde.'),{status:429});
@@ -28,7 +28,7 @@ async function datajud(number){
  const digits=number.replace(/\D/g,'');
  const key=process.env.DATAJUD_API_KEY||PUBLIC_DATAJUD_KEY;
  const payload=await fetchJson(url,{method:'POST',headers:{Authorization:'APIKey '+key,'Content-Type':'application/json',Accept:'application/json'},
-  body:JSON.stringify({size:2,query:{bool:{should:[{term:{numeroProcesso:digits}},{match:{numeroProcesso:digits}}],minimum_should_match:1}}})});
+  body:JSON.stringify({size:2,query:{match:{numeroProcesso:digits}}})});
  if(!Array.isArray(payload?.hits?.hits))throw new Error('O DataJud não retornou um resultado processual reconhecível.');
  const match=payload.hits.hits.find(h=>h?._source&&String(h._source.numeroProcesso||'').replace(/\D/g,'')===digits)?._source;
  const parsed=normalizeDataJud(match,number);
@@ -50,7 +50,7 @@ async function djen(number,query){
  return {ok:true,source:'DJEN',found:items.length>0,items,
   checkedAt:new Date().toISOString(),notice:items.length?
   'Publicações localizadas no Diário de Justiça Eletrônico Nacional.':'Nenhuma publicação encontrada para as datas consultadas no DJEN.',
-  limited:items.length>=100,hasMore:items.length>=100,page:Number(page)};
+  limited:items.length>=50,hasMore:items.length>=50,page:Number(page)};
 }
 export async function GET(request){
  try{
