@@ -62,6 +62,8 @@ function Scanner({db,session}){
      const browserResults={};
      const browserSource=async(source,queryKey,fetcher)=>{
       if(browserPaused[source])return null;
+      const pause=await db.from('office_source_cooldowns').select('status,retry_after').eq('source',source).maybeSingle();
+      if(pause.error||pause.data&&Date.parse(pause.data.retry_after)>Date.now())return null;
       const cached=await db.from('crm_judicial_snapshots').select('checked_at')
        .eq('actor_id',s.user.id).eq('process_number',row.process_number)
        .eq('source',source).eq('query_key',queryKey).maybeSingle();
