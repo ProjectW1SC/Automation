@@ -23,16 +23,16 @@ function brazilToday(){
  return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 }
 async function fetchJson(url:string,init:RequestInit={}){
- const response=await fetch(url,{...init,cache:"no-store",redirect:"error",signal:AbortSignal.timeout(14000)});
+ const response=await fetch(url,{...init,cache:"no-store",redirect:"error",signal:AbortSignal.timeout(url.includes('datajud.cnj.jus.br')?29000:21000)});
  const raw=await response.text();
  if(!response.ok)throw Object.assign(new Error("Fonte oficial respondeu HTTP "+response.status),{status:response.status});
  if(raw.length>2_400_000||raw.trimStart().startsWith("<"))throw new Error("Fonte oficial retornou conteúdo não verificável.");
  try{return JSON.parse(raw)}catch{throw new Error("Fonte oficial não retornou JSON válido.")}
 }
 function djenUrl(number:string,today:string){
- const start=new Date(Date.parse(today+"T12:00:00Z")-180*86400000).toISOString().slice(0,10);
+ const start=new Date(Date.parse(today+"T12:00:00Z")-29*86400000).toISOString().slice(0,10);
  const q=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),dataDisponibilizacaoInicio:start,
-  dataDisponibilizacaoFim:today,pagina:"1",itensPorPagina:"100"});
+  dataDisponibilizacaoFim:today,pagina:"1",itensPorPagina:"50"});
  return "https://comunicaapi.pje.jus.br/api/v1/comunicacao?"+q.toString();
 }
 async function fetchDataJud(number:string,checkedAt:string){
@@ -40,7 +40,7 @@ async function fetchDataJud(number:string,checkedAt:string){
  const url="https://api-publica.datajud.cnj.jus.br/api_publica_"+alias+"/_search";
  const payload=await fetchJson(url,{method:"POST",headers:{Authorization:"APIKey "+(Deno.env.get("DATAJUD_API_KEY")||PUBLIC_DATAJUD_KEY),
   "Content-Type":"application/json",Accept:"application/json"},
-  body:JSON.stringify({size:100,query:{bool:{should:[{match:{numeroProcesso:digits}},{match:{numeroProcesso:number}}],minimum_should_match:1}}})});
+  body:JSON.stringify({size:5,query:{match:{numeroProcesso:digits}}})});
  return normalizeDataJudSnapshot(payload,number,checkedAt);
 }
 async function fetchDjen(number:string,today:string,checkedAt:string){
