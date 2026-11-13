@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {validatePublicDataJudResponse,currentPublicKey} from "./official-datajud-response.mjs";
 import { buildScheduledReview, formatCnj, normalizeDataJudSnapshot, normalizeDjenSnapshot, resolveCourtAlias, selectScheduledCases } from "./core.mjs";
 
 const PUBLIC_DATAJUD_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
@@ -38,9 +39,10 @@ function djenUrl(number:string,today:string){
 async function fetchDataJud(number:string,checkedAt:string){
  const alias=resolveCourtAlias(number),digits=number.replace(/\D/g,"");
  const url="https://api-publica.datajud.cnj.jus.br/api_publica_"+alias+"/_search";
- const payload=await fetchJson(url,{method:"POST",headers:{Authorization:"APIKey "+(Deno.env.get("DATAJUD_API_KEY")||PUBLIC_DATAJUD_KEY),
+ const payload=await fetchJson(url,{method:"POST",headers:{Authorization:"APIKey "+currentPublicKey(Deno.env.get("DATAJUD_API_KEY"),PUBLIC_DATAJUD_KEY),
   "Content-Type":"application/json",Accept:"application/json"},
   body:JSON.stringify({size:5,query:{match:{numeroProcesso:digits}}})});
+ validatePublicDataJudResponse(payload);
  return normalizeDataJudSnapshot(payload,number,checkedAt);
 }
 async function fetchDjen(number:string,today:string,checkedAt:string){
@@ -92,7 +94,7 @@ async function runOne(db:any,row:any,today:string){
  ]);
  const djStatus=sourceStatus(datajud,"DataJud"),dnStatus=sourceStatus(djen,"DJEN");
  const sourceStatusRecord={datajud:djStatus,djen:dnStatus,complete:djStatus.status==="confirmed"&&dnStatus.status==="confirmed",
-  partial:(djStatus.status==="confirmed")!==(dnStatus.status==="confirmed"),
+  partial:!(djStatus.status==="confirmed"&&dnStatus.status==="confirmed"),
   confirmedSources:Number(djStatus.status==="confirmed")+Number(dnStatus.status==="confirmed")};
  const snapshots:any[]=[];
  if(datajud?.ok===true)snapshots.push({actor_id:actorId,process_number:number,source:"datajud",query_key:"latest",
@@ -106,6 +108,11 @@ async function runOne(db:any,row:any,today:string){
  }
  const review=buildScheduledReview(snapshots.map(s=>({process_number:number,source:s.source==="datajud"?"DataJud":"DJEN",
   checked_at:s.checked_at,payload:s.payload})),today);
+ if(sourceStatusRecord.confirmedSources===0){
+  review.returnReason="As duas fontes não foram confirmadas nesta varredura. Não há como afirmar ausência de movimentações. As consultas anteriores permanecem em histórico.";
+ }else if(sourceStatusRecord.confirmedSources===1){
+  review.returnReason="Uma fonte oficial confirmou a consulta; a outra permanece indisponível. "+review.returnReason;
+ }
  const scan=await db.from("office_scan_runs").insert({actor_id:actorId,process_number:number,trigger_mode:"scheduled",
   source_status:sourceStatusRecord,review:{...review,persisted,saveError}});
  if(scan.error)throw new Error("Falha ao registrar histórico do scanner: "+scan.error.message);
@@ -175,8 +182,19 @@ Deno.serve(async(req:Request)=>{
   ]);
   const errors=[office.error,crm.error,recent.error].filter(Boolean);
   if(errors.length)return json({ok:false,error:"Não foi possível montar a fila privada de processos.",details:errors.map(x=>x.message).slice(0,3)},503);
-  const candidates=selectScheduledCases({officeCases:office.data||[],crmProcesses:crm.data||[],
-   recentRuns:recent.data||[],today,limit,now:new Date().toISOString()});
+  // Targeted one-time rescan is authorized only by the existing verified cron token.
+  // Normal scheduling retains its anti-flood interval; no user-provided identity is trusted.
+  let forcedCnj:string|null=null;
+  if(body?.targetCnj!==undefined){
+   if(typeof body.targetCnj!=="string")return json({ok:false,error:"CNJ alvo inválido."},400);
+   try{forcedCnj=formatCnj(body.targetCnj)}catch{return json({ok:false,error:"CNJ alvo inválido."},400)}
+  }
+  const officeRows=forcedCnj?(office.data||[]).filter(x=>{try{return formatCnj(x.process_number)===forcedCnj}catch{return false}}):office.data||[];
+  const crmRows=forcedCnj?(crm.data||[]).filter(x=>{try{return formatCnj(x.process_number)===forcedCnj}catch{return false}}):crm.data||[];
+  if(forcedCnj&&!officeRows.length&&!crmRows.length)
+   return json({ok:false,error:"CNJ não pertence à carteira autorizada."},404);
+  const candidates=selectScheduledCases({officeCases:officeRows,crmProcesses:crmRows,
+   recentRuns:forcedCnj?[]:recent.data||[],today,limit:forcedCnj?1:limit,now:new Date().toISOString()});
   if(!candidates.length)return json({ok:true,state:"idle",processed:0,eligible:0,checkedAt:new Date().toISOString(),
    notice:"Nenhum CNJ elegível nesta rodada. Nenhum dado de processo foi alterado."});
   const results=[];
