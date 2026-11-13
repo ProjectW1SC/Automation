@@ -6,6 +6,7 @@ import {GET as consultOfficial} from '../processos/consulta/route.js';
 import {buildScannerReview,sourceSummary} from '../../../lib/blackhole-office-scanner.mjs';
 import {validateBrowserOfficialResult,browserResultNeedsServerFallback} from '../../../lib/blackhole-browser-official-result.mjs';
 import {shrinkOfficialResult} from '../../../lib/judicial-triage.mjs';
+import {officialBackoffDuration} from '../../../lib/judicial-source-recovery.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 async function checkOne(number,source,token,force=false){
@@ -50,8 +51,18 @@ export async function POST(request){
    // Invalid claimed-success payloads fall back to the authenticated server path.
    // Explicit 403/429 are not retried from another network.
    if(candidate?.ok!==true&&candidate&&!browserResultNeedsServerFallback(candidate)){
-    return {ok:false,source:source==='datajud'?'DataJud':'DJEN',
-     status:Number(candidate.status)||(/blocked_403/.test(candidate.reason||'')?403:429),
+    const status=Number(candidate.status)||(/blocked_403/.test(candidate.reason||'')?403:429);
+    const duration=officialBackoffDuration(status);
+    if(duration){
+     const failedAt=new Date(),retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+     await Promise.all([
+      db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+       actor_id:user.id,process_number,source,status,failed_at:failedAt.toISOString(),retry_after:retryAfter
+      })),{onConflict:'actor_id,process_number,source'}),
+      db.rpc('record_office_source_cooldown',{p_source:source,p_status:status})
+     ]);
+    }
+    return {ok:false,source:source==='datajud'?'DataJud':'DJEN',status,
      error:String(candidate.error||'A fonte oficial bloqueou esta consulta pelo navegador.').slice(0,450)};
    }
    return checkOne(number,source,token,body?.force===true);
