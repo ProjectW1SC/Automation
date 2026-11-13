@@ -584,3 +584,25 @@ html[data-crm-theme="infinitum"] .reference-auth.blackhole-auth-fault{
 html[data-crm-theme="infinitum"] .reference-auth.blackhole-auth-fault .office-action-row{
   width:min(100%,680px)!important;
 }
+
+/* Âncoras verticais da referência: link no topo, formulário no início do eixo e segurança no rodapé. */
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+  justify-content:flex-start!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+  margin:clamp(16px,2.8dvh,30px) auto 0!important;
+}
+html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-footer{
+  margin-top:auto!important;
+}
+@media(max-width:920px){
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{
+    justify-content:flex-start!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-center{
+    margin:24px auto!important;
+  }
+  html[data-crm-theme="infinitum"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel-footer{
+    margin-top:12px!important;
+  }
+}
