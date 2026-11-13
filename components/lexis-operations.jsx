@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {Archive,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,Clock3,ExternalLink,FileText,Gavel,Plus,RefreshCw,Search,Users,X} from 'lucide-react';
 import {buildLexisEvents} from '../lib/lexis-operations.mjs';
+import {loadLexisCompanySources} from '../lib/lexis-company-data.mjs';
 import LexisEventDetails from './lexis-event-details';
 const brazilToday=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const iso=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
@@ -50,37 +51,13 @@ export default function LexisOperations({db,session,area='deadlines'}){
  const load=useCallback(async()=>{
   if(!profile?.empresa_id)return;
   setLoading(true);setErrors([]);
-  const eid=profile.empresa_id;
-  // Para a agenda, consulta somente o mês e semanas vizinhas; demais visões usam páginas limitadas.
-  const monthRange=area==='agenda';
-  const cols='id,cliente,protocolo_ref,proximo_retorno,proximo_prazo,status_interno,atendido_por,observacoes';
-  const q=(col)=>{let x=db.from('processos').select(cols).eq('empresa_id',eid).not(col,'is',null);
-   if(monthRange)x=x.gte(col,rangeStart).lte(col,rangeEnd);
-   return x.order(col,{ascending:!monthRange}).limit(monthRange?500:700)};
-  const sources=[
-    ['returns',q('proximo_retorno')],
-    ['deadlines',q('proximo_prazo')],
-    ['hearings',db.from('audiencias_monitoradas')
-      .select('id,empresa_id,processo_id,cliente,protocolo_ref,advogado,tribunal,tipo,data_evento,data_fim,hora_local,hora_fim,fuso,modalidade,situacao,fonte_url,portal_url')
-      .eq('empresa_id',eid).order('data_evento',{ascending:false,nullsFirst:false}).limit(250)],
-    ['tasks',db.from('crm_tarefas').select('id,empresa_id,titulo,feito,due_at,assignee_id').eq('empresa_id',eid).order('due_at',{ascending:false}).limit(300)],
-    ['manual',db.from('office_deadlines').select('id,empresa_id,title,due_on,kind,status,priority,notes,responsible').eq('empresa_id',eid).order('due_on',{ascending:false}).limit(400)]
-  ];
-  const results=await Promise.all(sources.map(async ([name,query])=>{try{
-   const {data,error}=await query;return {name,data:error?[]:(data||[]),error:error?.message||null};
-  }catch(e){return {name,data:[],error:String(e)}}}));
-  const missing=results.filter(r=>r.error).map(r=>r.name+': '+r.error);
-  if(results.every(r=>r.error)){setErrors(['Nenhuma fonte pôde ser consultada: '+missing.join(' · ')]);setLoading(false);return}
-  const get=name=>results.find(r=>r.name===name)?.data||[];
-  const grouped=new Map();
-  for(const p of [...get('returns'),...get('deadlines')]){
-   grouped.set(p.id,{...grouped.get(p.id),...p,
-    proximo_retorno:p.proximo_retorno||grouped.get(p.id)?.proximo_retorno,
-    proximo_prazo:p.proximo_prazo||grouped.get(p.id)?.proximo_prazo});
-  }
-  setSourceRows({processes:[...grouped.values()],hearings:get('hearings'),tasks:get('tasks'),manual:get('manual')});
-  setErrors(missing);setLoading(false);
- },[db,profile?.empresa_id,area,rangeStart,rangeEnd]);
+  try{
+   const loaded=await loadLexisCompanySources(db,profile.empresa_id);
+   if(loaded.errors.length===4)throw new Error('Todas as fontes falharam: '+loaded.errors.join(' · '));
+   setSourceRows(loaded.sources);setErrors(loaded.errors);
+  }catch(err){setErrors(['A consulta não foi concluída: '+(err.message||String(err))]);}
+  finally{setLoading(false);}
+ },[db,profile?.empresa_id]);
  useEffect(()=>{load()},[load]);
  const items=useMemo(()=>buildLexisEvents({...sourceRows,members:team,today:brazilToday()}),[sourceRows,team]);
  const areaRows=useMemo(()=>{
@@ -93,11 +70,22 @@ export default function LexisOperations({db,session,area='deadlines'}){
     filtered=filtered.filter(x=>[x.title,x.client_name,x.process_number,x.responsible,x.notes].some(z=>String(z||'').toLocaleLowerCase('pt-BR').includes(term)))}
   return filtered;
  },[items,area,search,showPast,rangeStart,rangeEnd]);
- const listing=useMemo(()=>filter==='todos'?areaRows:areaRows.filter(x=>x.status===filter),[areaRows,filter]);
+ const listing=useMemo(()=>filter==='todos'?areaRows:areaRows.filter(x=>area==='audiencias'&&filter==='futuras'?!!x.due_on&&x.due_on>=brazilToday()&&x.status!=='encerrado':x.status===filter),[areaRows,filter,area]);
  const counts=useMemo(()=>({total:areaRows.length,overdue:areaRows.filter(x=>x.status==='vencido').length,
   attention:areaRows.filter(x=>x.status==='atencao').length,
   ok:areaRows.filter(x=>x.status==='em_dia').length,
   closed:areaRows.filter(x=>x.status==='encerrado').length}),[areaRows]);
+ const allHearings=useMemo(()=>items.filter(x=>x.kind==='audiencia'),[items]);
+ const hearingMetrics=[
+  ['Registradas',allHearings.length,'todos'],
+  ['Futuras',allHearings.filter(x=>x.due_on&&x.due_on>=brazilToday()&&x.status!=='encerrado').length,'futuras'],
+  ['Sem data',allHearings.filter(x=>!x.due_on&&x.status!=='encerrado').length,'sem_data'],
+  ['Passadas',allHearings.filter(x=>x.due_on&&x.due_on<brazilToday()&&x.status!=='encerrado').length,'vencido'],
+  ['Canceladas',allHearings.filter(x=>x.status==='encerrado').length,'encerrado']
+ ];
+ const displayedMetrics=area==='audiencias'?hearingMetrics:
+  [['Registros no período',counts.total,'todos'],['Vencidos',counts.overdue,'vencido'],['Atenção',counts.attention,'atencao'],['Em dia',counts.ok,'em_dia'],['Encerrados',counts.closed,'encerrado']];
+ function chooseFilter(value){if(area==='audiencias'&&value==='vencido')setShowPast(true);setFilter(value)}
  const save=async e=>{
   e.preventDefault();if(busy||!profile?.empresa_id)return;
   if(form.title.trim().length<3||form.title.length>250){setErrors(['O compromisso precisa ter título de 3 a 250 caracteres.']);return}
@@ -137,16 +125,16 @@ export default function LexisOperations({db,session,area='deadlines'}){
   {errors.map((e,i)=><p key={i} className="inf-note error" role="status">{e}</p>)}
   {loading&&<p className="inf-note">Consultando registros da organização no Supabase do LexisPredict...</p>}
   <div className="lx-kpis">
-   {[['Registros',counts.total,'todos'],['Vencidos',counts.overdue,'vencido'],['Atenção',counts.attention,'atencao'],['Em dia',counts.ok,'em_dia'],['Encerrados',counts.closed,'encerrado']].map(([label,value,status])=>
-    <button key={status} type="button" className={'lx-kpi '+(filter===status?'is-active':'')} onClick={()=>setFilter(status)} aria-pressed={filter===status}>
+   {displayedMetrics.map(([label,value,status])=>
+    <button key={status} type="button" className={'lx-kpi '+(filter===status?'is-active':'')} onClick={()=>chooseFilter(status)} aria-pressed={filter===status}>
      <span>{label}</span><strong>{Number(value).toLocaleString('pt-BR')}</strong><span className={'lx-kpi-mark lx-kpi-mark--'+status}/></button>)}
   </div>
   <section className="pr-module lx-panel">
    <div className="pr-module-intro"><span>CARTEIRA DA ORGANIZAÇÃO</span><h2>{area==='audiencias'?'Compromissos judiciais.':area==='agenda'?'Calendário compartilhado.':'Controle de vencimentos.'}</h2>
     <p>Os indicadores distinguem vencido, atenção, em dia e encerrado. Datas não confirmadas não são inventadas.</p></div>
    <div className="lx-toolbar"><label className="lx-search"><Search size={16}/><input aria-label="Buscar nos compromissos" placeholder="Buscar cliente, processo ou responsável" value={search} onChange={e=>setSearch(e.target.value)}/></label>
-    <select aria-label="Situação" value={filter} onChange={e=>setFilter(e.target.value)}>
-     <option value="todos">Todas as situações</option>{Object.entries(statuses).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select>
+    <select aria-label="Situação" value={filter} onChange={e=>chooseFilter(e.target.value)}>
+     <option value="todos">Todas as situações</option>{area==='audiencias'&&<option value="futuras">Futuras</option>}{Object.entries(statuses).map(([k,v])=><option key={k} value={k}>{area==='audiencias'&&k==='vencido'?'Passadas':v}</option>)}</select>
     {area==='audiencias'&&<label className="lx-check"><input type="checkbox" checked={showPast} onChange={e=>setShowPast(e.target.checked)}/> Incluir audiências anteriores</label>}
     {area==='agenda'&&<div className="lx-view-toggle"><button className="inf-btn" onClick={()=>setView('month')} aria-pressed={view==='month'}>Mês</button><button className="inf-btn" onClick={()=>setView('list')} aria-pressed={view==='list'}>Lista</button></div>}
    </div>
@@ -165,7 +153,7 @@ export default function LexisOperations({db,session,area='deadlines'}){
     {listing.length>visibleLimit&&<div className="lx-load-more"><span>Mostrando {visibleLimit} de {listing.length} registros</span><button type="button" className="inf-btn" onClick={()=>setVisibleLimit(v=>v+60)}>Carregar mais</button></div>}
     {!loading&&!listing.length&&<p className="pr-list-empty">Nenhum registro corresponde aos filtros. Confira as fontes e altere o período quando necessário.</p>}
    </div>}
-   {area==='audiencias'&&<p className="inf-note">Audiências sem data são apresentadas como pendentes de confirmação, nunca como audiência futura. Confira sempre a fonte oficial.</p>}
+   {area==='audiencias'&&<p className="inf-note">Audiências passadas não são prazos vencidos. Marque "Incluir audiências anteriores" para conferir eventos anteriores. As sem data ainda exigem confirmação oficial.</p>}
    {area==='deadlines'&&<p className="inf-note">Prazos e retornos são datas distintas. O encerramento de um processo não é tratado como atraso.</p>}
   </section>
   {selected&&<LexisEventDetails key={selected.id} event={selected} db={db} profile={profile} onClose={()=>setSelected(null)} onSaved={load} onFinish={finish} busy={busy}/>}
