@@ -7,10 +7,13 @@ test('prazos e audiências usam o banco principal e não voltam à tabela legada
  assert.match(console,/\['deadlines','audiencias'\]\.includes\(area\)/);
  assert.match(console,/<LexisOperations area=\{area\}/);
  const operations=src('components/lexis-operations.jsx');
- assert.match(operations,/from\('processos'\)/);
- assert.match(operations,/from\('audiencias_monitoradas'\)/);
- assert.match(operations,/from\('crm_tarefas'\)/);
- assert.match(operations,/from\('office_deadlines'\)/);
+ const sources=src('lib/lexis-company-data.mjs');
+ assert.match(operations,/loadLexisCompanySources/);
+ for(const name of ['processos','audiencias_monitoradas','crm_tarefas','office_deadlines']){
+  assert.ok(sources.includes("'"+name+"'"),'fonte Lexis ausente: '+name);
+ }
+ assert.match(sources,/\.eq\('empresa_id',company\)/);
+ assert.match(sources,/\.range\(from,from\+pageSize-1\)/);
 });
 test('agenda suporta retornos, prazos e audiências no tema Infinitum',()=>{
  const agenda=src('app/agenda/page.jsx');
