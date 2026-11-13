@@ -13,7 +13,9 @@ test('Prazos, Agenda e Audiências abrem janela de detalhes imediatamente, nunca
 });
 test('detalhe usa associação de processo pertencente à empresa e oferece dados reais e ações',()=>{
  const detail=source('components/lexis-event-details.jsx');
- for(const term of ['PortfolioDialog','PROCESS_FIELDS',".eq('empresa_id',empresaId)","process_id","protocolo_ref","telefone","email","cpf","proximo_retorno","proximo_prazo"])assert.ok(detail.includes(term),term);
+ for(const term of ['PortfolioDialog','PROCESS_FIELDS',".eq('empresa_id',empresaId)","process_id","protocolo_ref","process.phone","process.email","process.cpf","process.next_attendance","process.next_deadline"])assert.ok(detail.includes(term),term);
+ const portfolio=source('lib/lexis-shared-portfolio.mjs');
+ for(const field of ['telefone','email','cpf','proximo_retorno','proximo_prazo'])assert.ok(portfolio.includes(field),field);
  for(const action of ['editar-cliente','editar-processo','atendimento','consulta'])assert.ok(detail.includes(action),action);
  assert.match(detail,/Registro sem vínculo processual/);
  assert.match(detail,/office_deadlines/);
