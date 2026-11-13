@@ -41,8 +41,10 @@ export async function POST(request){
    checkOne(number,'djen',token,body?.force===true)
   ]);
   const sources=sourceSummary({datajud,djen}),now=new Date().toISOString();
-  const snapshots=[{process_number:number,source:'datajud',checked_at:datajud.checkedAt||now,payload:{items:datajud.ok?datajud.items:[]}},
-   {process_number:number,source:'djen',checked_at:djen.checkedAt||now,payload:{items:djen.ok?djen.items:[]}}];
+  const buildSnapshot=(kind,response)=>({process_number:number,source:kind,checked_at:response.checkedAt||now,
+   payload:{ok:response.ok===true,demo:response.demo===true,official:response.ok===true&&response.demo!==true,
+    items:response.ok===true&&Array.isArray(response.items)?response.items:[]}});
+  const snapshots=[buildSnapshot('datajud',datajud),buildSnapshot('djen',djen)];
   const review=buildScannerReview(snapshots,{today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
   const mode=body?.mode==='foreground'?'foreground':'manual';
   const save=await db.from('office_scan_runs').insert({actor_id:user.id,process_number:number,trigger_mode:mode,source_status:sources,
