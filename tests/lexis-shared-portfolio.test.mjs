@@ -24,7 +24,7 @@ test('acesso exige cadastro do Supabase Lexis na mesma empresa, mesmo para admin
 });
 
 test('edição somente de campos autorizados, encerramento e exclusão são lógicos',()=>{
- assert.deepEqual(portfolioUpdate({cliente:' Renata ',telefone:'123',status_interno:'excluido',atendido_por:'Falsificado',empresa_id:'outra-empresa',dados:{id:1}}),{cliente:'Renata',telefone:'123',status_interno:'excluido'});
+ assert.deepEqual(portfolioUpdate({cliente:' Renata ',telefone:'123',status_interno:'excluido',atendido_por:'Falsificado',empresa_id:'outra-empresa',dados:{id:1}}),{cliente:'Renata',telefone:'123',status_interno:'EXCLUIDO'});
  assert.throws(()=>portfolioUpdate({status_interno:'sentença_procedente'}));
  assert.throws(()=>portfolioUpdate({proximo_retorno:'2026-99-88'}));
 });
@@ -57,4 +57,10 @@ test('adaptação do relatório literal usa indicadores reais e não inventa edi
  assert.equal(m.edicoes.processos,null);
  assert.equal(m.encerramentos.processos,null);
  assert.equal(m.atividades.recentes[0].detalhe,'Conversa registrada');
+});
+
+test('Lexis original usa situação EM ANDAMENTO e ENCERRADO maiúsculas',()=>{
+ assert.equal(mapLexisProcess({id:3,empresa_id:'a',status_interno:'ENCERRADO'}).status,'encerrado');
+ assert.equal(mapLexisProcess({id:3,empresa_id:'a',status_interno:'EM ANDAMENTO'}).status,'em_andamento');
+ assert.equal(portfolioUpdate({status_interno:'em_andamento'}).status_interno,'EM ANDAMENTO');
 });
