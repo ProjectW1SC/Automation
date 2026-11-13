@@ -14,6 +14,8 @@ import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {makeStandalonePetition} from '../lib/blackhole-petitions.mjs';
 import {blackholeWhatsAppWebUrl} from '../lib/blackhole-whatsapp-web.mjs';
 import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs';
+import {browseOfficialDataJudNumber} from '../lib/blackhole-public-datajud-browser.mjs';
+import {snapshotQueryKey,shrinkOfficialResult} from '../lib/judicial-triage.mjs';
 import {consultHistoricalCase} from '../lib/judicial-history-client.mjs';
 import {OFFICE_AGENTS,OFFICE_DOC_TYPES,normalizeOfficeCNJ,validateOfficeDay,deadlineState,officeMiniReview,makePetitionSkeleton,buildWhatsAppSuggestion,canReplyWhatsApp} from '../lib/office-core.mjs';
 const TABLES={clients:'office_clients',cases:'office_cases',deadlines:'office_deadlines',documents:'office_documents',messages:'office_whatsapp_messages',leads:'crm_leads',runs:'office_agent_runs'};
@@ -143,14 +145,40 @@ function OfficeUI({area,db,session}){
    if(!s?.access_token)throw Error('Sessão expirada. Entre novamente no CRM.');
    const result=await consultHistoricalCase({
     number:row.process_number,source:fonte,start:period?.inicio||undefined,end:period?.fim||undefined,page:period?.pagina||1,
-    fetchServer:async({number,source,start,end,page})=>{
+    fetchServer:async({number,source,start,end,page,cacheOnly})=>{
      const args=new URLSearchParams({numero:number,fonte:source,...(start?{inicio:start}:{}),...(end?{fim:end}:{}),pagina:String(page)});
+     if(cacheOnly)args.set('cache','only');
      const response=await fetch('/api/processos/consulta?'+args,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-     try{return await response.json()}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
+     try{return {...await response.json(),status:response.ok?undefined:response.status}}catch{throw Error('Consulta oficial retornou dados inválidos (HTTP '+response.status+').')}
     },
-    // Somente API pública, sem CAPTCHA, token ou requisição automática em segundo plano.
+    // Cache recente primeiro; sem cache, API pública no navegador; servidor apenas como alternativa de rede/CORS.
+    fetchDataJudBrowser:async({number})=>browseOfficialDataJudNumber({number}),
     fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page}),
-    onProgress:({current,total,start,end})=>setNotice('Consultando fontes oficiais: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias'))
+    saveBrowser:async({number,source,start,end,page,result:official})=>{
+     const params=new URLSearchParams();
+     if(start)params.set('inicio',start);if(end)params.set('fim',end);
+     params.set('pagina',String(page));
+     const queryKey=snapshotQueryKey(source,params);
+     const saved=await db.from('crm_judicial_snapshots').upsert({
+      actor_id:s.user.id,process_number:number,source,query_key:queryKey,
+      checked_at:official.checkedAt,found:!!official.found,payload:shrinkOfficialResult(official)
+     },{onConflict:'actor_id,process_number,source,query_key'});
+     return saved.error?{ok:false,error:saved.error.message}:{ok:true};
+    },
+    recordBrowserBlock:async({number,source,status})=>{
+     if(![403,429].includes(Number(status)))return {ok:false};
+     const failedAt=new Date(),duration=Number(status)===403?20*60*1000:15*60*1000;
+     const retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+     const [local,global]=await Promise.all([
+      db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+       actor_id:s.user.id,process_number,source,status:Number(status),
+       failed_at:failedAt.toISOString(),retry_after:retryAfter
+      })),{onConflict:'actor_id,process_number,source'}),
+      db.rpc('record_office_source_cooldown',{p_source:source,p_status:Number(status)})
+     ]);
+     return {ok:!local.error&&!global.error,error:local.error?.message||global.error?.message||null};
+    },
+    onProgress:({current,total,start,end})=>setNotice('Consultando DataJud e DJEN: '+current+'/'+total+' · DJEN '+(start&&end?start+' a '+end:'janela padrão dos últimos 30 dias')+' · navegador primeiro, servidor como alternativa')
    });
    setCheckResult({...result,number:row.process_number});
    const coverage=result.windowsTotal>1?' · '+result.windowsChecked+'/'+result.windowsTotal+' meses consultados':'';
@@ -270,7 +298,7 @@ function OfficeUI({area,db,session}){
    <PrestigeCases cases={cases} clients={clients} query={query} setQuery={setQuery} edit={startEditCase} court={courtSearch} consulting={consulting} linkClient={linkCaseClient}/>
     {checkResult&&<div className="inf-note"><strong>{checkResult.number} · {checkResult.source||'Fonte oficial'}</strong>
      {checkResult.partial&&<p style={{fontWeight:750,color:'#9a3412'}}>{checkResult.ok===false?'Nenhuma fonte respondeu nesta tentativa. Dados históricos anteriores podem continuar disponíveis.':'Consulta parcial. Consulte a origem e a data de cada movimentação.'}</p>}
-     {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen} · DataJud {checkResult.sourceStatus.datajud}</p>}
+     {checkResult.sourceStatus&&<p>Fontes: DJEN {checkResult.sourceStatus.djen}{checkResult.sourceVia?.djen?' ('+checkResult.sourceVia.djen+')':''} · DataJud {checkResult.sourceStatus.datajud}{checkResult.sourceVia?.datajud?' ('+checkResult.sourceVia.datajud+')':''}</p>}
      {checkResult.windowsTotal>1&&<p>Períodos mensais: {checkResult.windowsChecked}/{checkResult.windowsTotal} consultados{checkResult.windowsPending?' · restantes: '+checkResult.windowsPending:''}. Bloqueios não são tratados como ausência de movimentações.</p>}
      {checkResult.sourceErrors&&(checkResult.sourceErrors.djen||checkResult.sourceErrors.datajud)&&<p>Motivos: {checkResult.sourceErrors.djen?'DJEN: '+checkResult.sourceErrors.djen+'; ':''}{checkResult.sourceErrors.datajud?'DataJud: '+checkResult.sourceErrors.datajud:''}</p>}
      {checkResult.ok===false&&<p><a href="https://comunica.pje.jus.br/" rel="noreferrer" target="_blank">Conferir DJEN oficial</a> · <a href="https://datajud-wiki.cnj.jus.br/api-publica/" rel="noreferrer" target="_blank">Consultar documentação DataJud</a></p>}

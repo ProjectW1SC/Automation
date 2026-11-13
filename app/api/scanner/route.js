@@ -4,6 +4,9 @@ import {checkCrmAccess} from '../../../lib/crm-access.mjs';
 import {formatProcessNumber} from '../../../lib/processos-oficiais.mjs';
 import {GET as consultOfficial} from '../processos/consulta/route.js';
 import {buildScannerReview,sourceSummary} from '../../../lib/blackhole-office-scanner.mjs';
+import {validateBrowserOfficialResult,browserResultNeedsServerFallback} from '../../../lib/blackhole-browser-official-result.mjs';
+import {shrinkOfficialResult} from '../../../lib/judicial-triage.mjs';
+import {officialBackoffDuration} from '../../../lib/judicial-source-recovery.mjs';
 export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
 const json=(body,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private,no-store'}});
 async function checkOne(number,source,token,force=false){
@@ -40,11 +43,45 @@ export async function POST(request){
    return json({ok:false,error:'CNJ não cadastrado na carteira autorizada. Cadastre antes de consultar.'},403);
   // Pesquisa duas fontes separadas, mesmo se a primeira falhar. O cache e backoff
   // são aplicados por cada rota oficial individual, sem fazer scraping ou simular resultado.
-  const [datajud,djen]=await Promise.all([
-   checkOne(number,'datajud',token,body?.force===true),
-   checkOne(number,'djen',token,body?.force===true)
-  ]);
+  const browserCandidates=body?.browserResults&&typeof body.browserResults==='object'?body.browserResults:{};
+  async function chooseSource(source){
+   const candidate=browserCandidates[source];
+   const validated=validateBrowserOfficialResult(candidate,{source,number});
+   if(validated)return validated;
+   // Invalid claimed-success payloads fall back to the authenticated server path.
+   // Explicit 403/429 are not retried from another network.
+   if(candidate?.ok!==true&&candidate&&!browserResultNeedsServerFallback(candidate)){
+    const status=Number(candidate.status)||(/blocked_403/.test(candidate.reason||'')?403:429);
+    const duration=officialBackoffDuration(status);
+    if(duration){
+     const failedAt=new Date(),retryAfter=new Date(failedAt.getTime()+duration).toISOString();
+     await Promise.all([
+      db.from('office_official_backoff').upsert([number,'*'].map(process_number=>({
+       actor_id:user.id,process_number,source,status,failed_at:failedAt.toISOString(),retry_after:retryAfter
+      })),{onConflict:'actor_id,process_number,source'}),
+      db.rpc('record_office_source_cooldown',{p_source:source,p_status:status})
+     ]);
+    }
+    return {ok:false,source:source==='datajud'?'DataJud':'DJEN',status,
+     error:String(candidate.error||'A fonte oficial bloqueou esta consulta pelo navegador.').slice(0,450)};
+   }
+   return checkOne(number,source,token,body?.force===true);
+  }
+  const [datajud,djen]=await Promise.all([chooseSource('datajud'),chooseSource('djen')]);
   const sources=sourceSummary({datajud,djen}),now=new Date().toISOString();
+  const browserSnapshots=[];
+  for(const [source,result] of [['datajud',datajud],['djen',djen]]){
+   if(result?.ok!==true||result?.via!=='navegador')continue;
+   browserSnapshots.push({actor_id:user.id,process_number:number,source,
+    query_key:source==='datajud'?'latest':'default:default',checked_at:result.checkedAt,
+    found:!!result.found,payload:shrinkOfficialResult(result)});
+  }
+  let browserSaveError=null;
+  if(browserSnapshots.length){
+   const saved=await db.from('crm_judicial_snapshots').upsert(browserSnapshots,
+    {onConflict:'actor_id,process_number,source,query_key'});
+   if(saved.error)browserSaveError=String(saved.error.message||'Falha ao salvar snapshot').slice(0,240);
+  }
   const snapshots=[{process_number:number,source:'datajud',checked_at:datajud.checkedAt||now,payload:{items:datajud.ok?datajud.items:[]}},
    {process_number:number,source:'djen',checked_at:djen.checkedAt||now,payload:{items:djen.ok?djen.items:[]}}];
   const review=buildScannerReview(snapshots,{today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
@@ -56,8 +93,9 @@ export async function POST(request){
    sources.djen.status==='confirmed'?'DJEN/Comunica PJe consultado.':'DJEN: '+sources.djen.status+'.'
   ];
   return json({ok:true,number,sourceStatus:sources,review,checkedAt:now,
-   saveId:save.data?.id||null,persisted:!save.error,
-   saveError:save.error?'Consulta realizada, mas histórico não pôde ser gravado: '+save.error.message:null,
+   saveId:save.data?.id||null,persisted:!save.error&&!browserSaveError,
+   saveError:save.error?'Consulta realizada, mas histórico não pôde ser gravado: '+save.error.message:
+    browserSaveError?'Consulta realizada, mas o resultado do navegador não pôde ser armazenado: '+browserSaveError:null,
    notice:notices.join(' ')+' Os dois sistemas são independentes; indicação de audiência/decisão exige conferência dos autos.'});
  }catch(e){
   const status=/JSON|CNJ|Inválido|inválid/.test(e.message||'')?400:502;

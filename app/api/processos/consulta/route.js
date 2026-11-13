@@ -98,7 +98,7 @@ export async function GET(request){
    return json({ok:false,error:'Conta sem permissão para consultar processos neste CRM.'},403);
   const params=new URL(request.url).searchParams;
   const number=formatProcessNumber(params.get('numero'));
-  const source=params.get('fonte');
+  const source=params.get('fonte'),cacheOnly=params.get('cache')==='only';
   if(!['datajud','djen','auto'].includes(source))return json({ok:false,error:'Escolha DataJud, DJEN ou consulta automática.'},400);
   // Official lookups are only allowed for CNJs already saved privately in this user's CRM.
   const [registry,activities,officeCase]=await Promise.all([
@@ -135,6 +135,9 @@ export async function GET(request){
    }
    if(paused)throw Object.assign(new Error(kind.toUpperCase()+' permanece em pausa após resposta HTTP '+paused.status+
      '. Próxima tentativa após '+paused.retry_after+'. Não haverá nova requisição à fonte bloqueada.'),{status:paused.status});
+   // Cache-only respeita também os cooldowns globais e por operador.
+   if(cacheOnly)return {ok:false,cacheMiss:true,code:'cache_miss',source:kind,
+    error:'Não há consulta recente nem bloqueio ativo; navegador pode consultar a fonte pública.'};
    let result;
    try{
     if(kind==='djen'){
