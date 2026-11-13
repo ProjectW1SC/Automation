@@ -16,7 +16,7 @@ function preferredTheme(){try{
 }catch{return 'infinitum';}}
 const displayLabels={ 'Painel jurídico':'Dashboard','WhatsApp':'Comunicação','Peças e petições':'Documentos','Fluxos (POP)':'Procedimentos','Mini Agentes':'Agentes','Scanner judicial':'Scanner judicial' };
 const icons={
- 'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
+ 'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Encerrados':CheckCircle2,'Atividades':ClipboardList,'Análises internas':NotebookPen,'Scanner judicial':ScanSearch,
  'Prazos':Clock3,'Fluxos (POP)':Workflow,'Audiências':CalendarDays,'Agenda':CalendarDays,'Peças e petições':FileText,
  'WhatsApp':MessageSquare,'Leads':Target,'Gerador de processos':Radar,
  'Superagente':Bot,'Mini Agentes':UserRoundCheck,'Relatórios':BarChart3,
@@ -125,7 +125,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     {CRM_AREAS.map(item=>{
      const Icon=icons[item.label];
      return <Link key={item.key} href={item.path} prefetch={false} aria-current={active===item.label?'page':undefined} className={'app-nav-link '+(active===item.label?'active':'')} title={sidebarExpanded?undefined:item.label} aria-label={item.label} onClick={e=>{
-       if(onNavigate&&!['Clientes','Processos','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+       if(onNavigate&&!['Clientes','Processos','Encerrados','Atividades','Análises internas','Scanner judicial','Prazos','Fluxos (POP)','Audiências','Agenda','Peças e petições','WhatsApp','Leads','Superagente','Mini Agentes','Gerador de processos','Relatórios','Integrações','Configurações'].includes(item.label)&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
         e.preventDefault();onNavigate(item.label);setSidebarExpanded(false);
        }
       }} ><Icon size={17} aria-hidden="true"/><span>{displayLabels[item.label]||item.label}</span></Link>;

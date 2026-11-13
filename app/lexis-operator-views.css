@@ -1,0 +1,57 @@
+/* Módulos jurídicos Lexis adaptados ao tema Prestige INFINITUM.
+   Escopo estrito; sem substituir layout, sidebar, vídeo ou tema original. */
+html[data-crm-theme="infinitum"] [data-lexis-operator]{--op-line:#e8e1d7;--op-ink:#29231b;--op-muted:#82796e;max-width:1700px;margin:0 auto;padding:clamp(14px,2.1vw,32px);color:var(--op-ink)}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .reference-header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:18px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .reference-header h1{font:400 clamp(28px,3.2vw,44px)/1.1 Georgia,"Times New Roman",serif;color:#29231b;letter-spacing:-.035em;margin:.3em 0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .reference-header p{font-size:12px;color:#81766a}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-panel{background:#fff;border:1px solid var(--op-line);border-radius:13px;padding:clamp(16px,2vw,27px);box-shadow:0 4px 16px rgba(35,26,14,.045);margin:16px 0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-panel h2{font:400 clamp(19px,2vw,26px) Georgia,serif;color:var(--op-ink)}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-panel p{font-size:12px;line-height:1.65;color:#70685f}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+html[data-crm-theme="infinitum"] [data-lexis-operator="atividades"] .inf-grid,
+html[data-crm-theme="infinitum"] [data-lexis-operator="analises"] .inf-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-stat{background:#fff;border:1px solid var(--op-line);padding:18px;border-radius:11px;display:flex;flex-direction:column;gap:11px;min-height:96px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-stat label{font-size:11px;color:#776d62;font-weight:700}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-stat strong{font:400 29px Georgia,serif;color:#29231b;overflow-wrap:anywhere}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .reference-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 13px;min-height:36px;line-height:1.3;background:#fff;color:#463d32;text-decoration:none;font-size:11px;font-weight:700;border:1px solid #ded6ca;border-radius:7px;cursor:pointer}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-btn.primary{background:#252019;color:#fff;border-color:#252019}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-btn:disabled{opacity:.5;cursor:not-allowed}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:17px 0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-search{display:flex;flex:1;min-width:min(230px,100%);align-items:center;gap:9px;border:1px solid var(--op-line);padding:0 12px;border-radius:8px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] input:not([type=checkbox]),
+html[data-crm-theme="infinitum"] [data-lexis-operator] select,
+html[data-crm-theme="infinitum"] [data-lexis-operator] textarea{background:#fff;color:#2e281f;font-size:12px;border:1px solid #ded6c9;border-radius:7px;min-height:37px;padding:8px 11px;max-width:100%}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-search input{border:0;min-width:0;width:100%;flex:1}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:700;color:#645b4e}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label.full,
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form .full{grid-column:1/-1}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label:has([type=checkbox]){display:flex;flex-direction:row;align-items:center}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-list{display:flex;flex-direction:column;gap:0;margin:12px 0;border:1px solid var(--op-line);border-radius:10px;overflow:hidden}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record{padding:17px 20px;background:#fff;border-bottom:1px solid #eee9e1;overflow-wrap:anywhere}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record:last-child{border-bottom:0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record:hover{background:#fcfaf7}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record h3{font-size:14px;font-weight:750;color:#31291f;line-height:1.4;margin:8px 0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record p{font-size:12px;color:#695f54;white-space:pre-wrap;line-height:1.6}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record small{font-size:10px;color:#7d7063}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record .reference-actions{margin-top:12px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-record-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#706657;font-size:12px;margin-top:18px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-checkbox{display:flex;flex-direction:row;align-items:center;gap:7px;font-size:11px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-checkbox input{margin:0}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-source-status{padding:15px;margin-top:15px;border:1px solid #e7dac3;border-radius:9px;background:#fbf8f2}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-status{display:inline-flex;align-items:center;border-radius:100px;padding:5px 9px;font-size:10px;font-weight:750}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-status--atencao{background:#fff0d6;color:#865c1a}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-status--em_dia{background:#e9f5ec;color:#286443}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-status--encerrado{background:#f0eeea;color:#605950}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-status--em_andamento{background:#eaf0fb;color:#365d8c}
+@media(max-width:880px){html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-grid,
+html[data-crm-theme="infinitum"] [data-lexis-operator="atividades"] .inf-grid,
+html[data-crm-theme="infinitum"] [data-lexis-operator="analises"] .inf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){html[data-crm-theme="infinitum"] [data-lexis-operator]{padding:12px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .inf-panel{padding:13px}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form{grid-template-columns:1fr}
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form label.full,
+html[data-crm-theme="infinitum"] [data-lexis-operator] .lx-operator-form .full{grid-column:1}
+}
