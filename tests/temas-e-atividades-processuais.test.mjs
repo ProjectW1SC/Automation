@@ -30,7 +30,7 @@ test('editar mantem os mesmos campos validos e nao altera autor, origem ou data 
 });
 
 test('todos os temas possuem contraste WCAG AA para texto, legenda, botoes, menus e etiquetas',()=>{
- assert.ok(CRM_THEMES.length>=5);
+ assert.equal(CRM_THEMES.length,1);assert.equal(CRM_THEMES[0].id,'infinitum');assert.equal(resolveTheme('sasuke'),'infinitum');
  assert.ok(new Set(CRM_THEMES.map(x=>x.id)).size===CRM_THEMES.length);
  assert.equal(resolveTheme('tema-inexistente'),'infinitum');
  for(const theme of CRM_THEMES){
@@ -44,10 +44,10 @@ test('tema aparece no shell e nos estilos globais com opcao de movimento reduzid
  const shell=file('components/crm-shell.jsx');
  const css=file('app/crm-themes.css');
  const layout=file('app/layout.jsx');
- assert.match(shell,/localStorage.getItem/);
- assert.match(shell,/localStorage/);
+ assert.match(shell,/preferredTheme/);
+ assert.doesNotMatch(shell,/w1-theme-picker/);
  assert.match(shell,/crmTheme/);
- assert.match(layout,/crm-themes\.css/);
+ assert.match(layout,/crm-themes\.css/);assert.doesNotMatch(layout,/anime-themes\.css/);
  assert.match(css,/\.task-board/);
  assert.match(css,/\.reference-activity-form/);
  assert.match(css,/prefers-reduced-motion/);

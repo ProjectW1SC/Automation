@@ -198,40 +198,9 @@ export default function SettingsPage(){
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
-   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Personalize a aparência, sua identificação e a segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
+   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Visual Infinitum padronizado, identificação e segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
    {(error||message)&&<div role={error?'alert':'status'} className={'settings-feedback '+(error?'bad':'good')}>{error||message}<button type="button" onClick={()=>{setError('');setMessage('')}} aria-label="Fechar aviso">×</button></div>}
-   <section className="reference-panel settings-panel">
-    <div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Aparência do CRM</h2><p>Escolha um tema para todas as abas. As letras e os botões permanecem legíveis.</p></div></div>
-    <div className="settings-theme-grid">{CRM_THEMES.map(t=><button type="button" key={t.id} className={'settings-theme-option settings-theme-'+t.id+' '+(theme===t.id?'selected':'')} aria-pressed={theme===t.id} onClick={()=>setChosenTheme(t.id)}>
-     <span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.accent}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span>
-     <span className="settings-theme-option-label">{t.label}{theme===t.id&&<Check size={16}/>}</span>
-    </button>)}</div>
-    <div className="settings-hint"><ShieldCheck size={16}/> Temas com cores de texto e fundo verificadas para alto contraste.</div>
-   </section>
-   <section className="reference-panel settings-panel settings-customize-panel">
-    <div className="settings-section-heading"><span className="settings-section-icon"><ImageIcon size={21}/></span><div><h2>Personalização avançada</h2><p>Altere a cor do fundo e das letras sem comprometer o contraste. As cores precisam atingir pelo menos 4,5:1 para preservar a leitura.</p></div></div>
-    <form className="settings-custom-form" onSubmit={saveAppearance}>
-     <div className="settings-color-controls">
-      <label>Cor do fundo do CRM<div className="settings-color-field"><input type="color" value={colors.page} onChange={e=>changeColor('page',e.target.value)}/><span>{colors.page.toUpperCase()}</span></div></label>
-      <label>Cor primária do texto<div className="settings-color-field"><input type="color" value={colors.primary} onChange={e=>changeColor('primary',e.target.value)}/><span>{colors.primary.toUpperCase()}</span></div><small>Títulos e informações principais</small></label>
-      <label>Cor secundária do texto<div className="settings-color-field"><input type="color" value={colors.secondary} onChange={e=>changeColor('secondary',e.target.value)}/><span>{colors.secondary.toUpperCase()}</span></div><small>Descrições e textos de apoio</small></label>
-      <label>Cor terciária do texto<div className="settings-color-field"><input type="color" value={colors.tertiary} onChange={e=>changeColor('tertiary',e.target.value)}/><span>{colors.tertiary.toUpperCase()}</span></div><small>Legendas e detalhes discretos</small></label>
-     </div>
-     <div className="settings-appearance-preview" aria-label="Prévia de cores" style={{background:colors.page}}>
-      <div className="settings-preview-card"><strong style={{color:colors.primary}}>Exemplo de título</strong><p style={{color:colors.secondary}}>Uma apresentação clara da sua carteira.</p><small style={{color:colors.tertiary}}>Texto terciário · dados e legendas</small></div>
-     </div>
-     <div className="settings-background-control">
-      <div><h3>Imagem de fundo</h3><p>Opcional. Você pode carregar uma foto JPG, PNG ou WebP de até 3 MB. A interface aplica uma camada de leitura sobre ela e mantém os cartões legíveis.</p></div>
-      <div className="settings-background-picker">
-       <label className="reference-outline settings-upload-button"><UploadCloud size={17}/> Escolher imagem de fundo<input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseBackground}/></label>
-       {(backgroundPreview||backgroundUrl)&&!removeBackground&&<img className="settings-background-preview" src={backgroundPreview||backgroundUrl} alt="Prévia da imagem de fundo"/>}
-       {(backgroundFile||backgroundUrl)&&<button className="reference-outline" type="button" onClick={()=>{setBackgroundFile(null);setRemoveBackground(true)}}><Trash2 size={15}/> Remover fundo</button>}
-      </div>
-     </div>
-     <div className="settings-custom-actions"><button type="button" className="reference-outline" onClick={()=>{const palette=CRM_THEMES.find(t=>t.id===theme)||CRM_THEMES[0];const original=appearanceDefaults(palette);setColors(original);applyAppearanceToDocument(document.documentElement,palette,original,removeBackground?'':backgroundUrl);setError('')}}>Restaurar cores do tema</button>
-      <button className="reference-primary" type="submit" disabled={!!saving}><Save size={16}/>{saving==='appearance'?'Salvando preferências...':'Salvar aparência'}</button></div>
-    </form>
-   </section>
+   <section className="reference-panel settings-panel"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Infinitum Prestige</h2><p>Identidade visual única e permanente: branco, preto e acentos discretos, com alto contraste e interface responsiva.</p></div></div><div className="settings-hint"><ShieldCheck size={16}/> Os temas anteriores foram desativados e não podem ser selecionados.</div></section>
    <div className="settings-grid">
     <section className="reference-panel settings-panel">
      <div className="settings-section-heading"><span className="settings-section-icon"><UserRound size={21}/></span><div><h2>Meu perfil</h2><p>Seu nome e sua foto serão exibidos no menu do CRM.</p></div></div>

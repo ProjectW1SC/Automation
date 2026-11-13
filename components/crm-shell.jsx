@@ -8,17 +8,7 @@ import {getClient} from '../lib/supabase-client';
 
 import {applyAppearanceToDocument} from '../lib/appearance-settings.mjs';
 
-function preferredTheme(){
- try{
-  const key='projectw1sc.crm-theme',migration='projectw1sc.prestige-v1';
-  let stored=window.localStorage.getItem(key);
-  if(window.localStorage.getItem(migration)!=='done'){
-   if(!stored||stored==='blackhole'){window.localStorage.setItem(key,'infinitum');stored='infinitum'}
-   window.localStorage.setItem(migration,'done');
-  }
-  return resolveTheme(stored||'infinitum');
- }catch{return 'infinitum'}
-}
+function preferredTheme(){try{localStorage.removeItem('projectw1sc.crm-theme');}catch{}return 'infinitum';}
 const displayLabels={ 'Painel jurídico':'Dashboard','WhatsApp':'Comunicação','Peças e petições':'Documentos','Fluxos (POP)':'Procedimentos','Mini Agentes':'Agentes','Scanner judicial':'Scanner judicial' };
 const icons={
  'Painel jurídico':BriefcaseBusiness,'Clientes':Users,'Processos':Gavel,'Scanner judicial':ScanSearch,
@@ -52,7 +42,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    const headers=session?.access_token?{Authorization:'Bearer '+session.access_token}:{};
    const [photo,background]=await Promise.all([
     metadata.avatar_path?fetch('/api/profile/media?type=avatar',{headers,cache:'no-store'}):Promise.resolve(null),
-    metadata.crm_background_path?fetch('/api/profile/media?type=background',{headers,cache:'no-store'}):Promise.resolve(null)
+    Promise.resolve(null)
    ]);
    if(!alive||current!==request)return;
    const [photoUrl,backgroundUrl]=await Promise.all([photo?.ok?photo.blob().then(URL.createObjectURL):Promise.resolve(''),background?.ok?background.blob().then(URL.createObjectURL):Promise.resolve('')]);
@@ -76,18 +66,12 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
  // Preferência persistente, sem sobrescrever o tema selecionado em Configurações.
  useEffect(()=>{
   let selected='infinitum';
-  try{selected=resolveTheme(window.localStorage.getItem('projectw1sc.crm-theme')||'infinitum')}catch{}
+  try{window.localStorage.removeItem('projectw1sc.crm-theme')}catch{}
   document.documentElement.dataset.crmTheme=selected;
   const current=CRM_THEMES.find(t=>t.id===selected);
   applyAppearanceToDocument(document.documentElement,current,{},'');
   setTheme(selected);
  },[]);
- function selectTheme(next){
-  const id=resolveTheme(next);
-  setTheme(id);document.documentElement.dataset.crmTheme=id;
-   const t=CRM_THEMES.find(x=>x.id===id);try{applyAppearanceToDocument(document.documentElement,t,appearanceRef.current.colors,appearanceRef.current.backgroundUrl)}catch{applyAppearanceToDocument(document.documentElement,t,{},appearanceRef.current.backgroundUrl)}
-  try{window.localStorage.setItem('projectw1sc.crm-theme',id)}catch{}
- }
  useEffect(()=>{
   function onPointerDown(event){
    if(window.innerWidth<880&&!sidebarRef.current?.contains(event.target))setSidebarExpanded(false);
@@ -157,7 +141,7 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
     <div className="blackhole-shell-search"><Search size={15}/><input ref={navSearchRef} type="search" value={navSearch} onChange={e=>setNavSearch(e.target.value)} aria-label="Pesquisar abas do escritório" placeholder="Buscar uma área..."/><kbd><Command size={12}/> K</kbd>
      {!!navSearch.trim()&&<div className="blackhole-shell-search-results" role="listbox">{matches.length?matches.map(x=><Link key={x.key} href={x.path} prefetch={false} onClick={()=>setNavSearch('')}>{x.label}</Link>):<span>Nenhuma área encontrada.</span>}</div>}
     </div>
-   <label className="w1-theme-picker" title="Alternar tema sem sair da página"><Palette size={15}/><select aria-label="Tema visual do CRM" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
+   <span className="w1-theme-fixed" aria-label="Tema visual permanente">Infinitum Prestige</span>
    <span className="bh-theme-identity" title="BLACKHOLE · horizonte de eventos"><img src="/branding/blackhole-symbol.svg" alt="" width="29" height="19"/> BLACKHOLE</span>
    <button type="button" className="crm-visible-signout" onClick={onSignOut} title="Sair da conta" aria-label="Sair da conta"><LogOut size={18}/><span>Sair</span></button><Link href="/prazos?status=vencidos" prefetch={false} aria-label="Ver retornos vencidos" title="Ver retornos vencidos" className="reference-top-alert"><Bell size={20}/>{overdueCount>0&&<span className="reference-notification-dot"/>}</Link><span className="reference-top-divider"/><Link className="reference-top-avatar" href="/configuracoes" prefetch={false} title={profile.display_name||'Configurações do perfil'} aria-label="Abrir configurações do perfil">{avatarUrl?<img src={avatarUrl} alt="Foto do perfil"/>:(profile.display_name||email||'W').charAt(0).toLocaleUpperCase('pt-BR')}</Link></div></div>{children}{mobileMenuOpen&&<div className="crm-mobile-more" role="dialog" aria-label="Todas as áreas do CRM"><header><strong>Todas as áreas</strong><button type="button" onClick={()=>setMobileMenuOpen(false)} aria-label="Fechar menu"><X size={19}/></button></header><div className="crm-mobile-more-links">{CRM_AREAS.map(item=>{const Icon=icons[item.label];return <Link href={item.path} key={item.key} prefetch={false} onClick={()=>setMobileMenuOpen(false)}><Icon size={17}/>{displayLabels[item.label]||item.label}</Link>})}</div><label>Visual e temas<select aria-label="Selecionar tema no celular" value={theme} onChange={e=>selectTheme(e.target.value)}>{CRM_THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label><button type="button" className="crm-more-signout" onClick={onSignOut}><LogOut size={16}/> Sair da conta</button></div>}
    <nav className="crm-mobile-dock" aria-label="Navegação móvel">{[{href:'/',Icon:LayoutDashboard,name:'Início'},{href:'/clientes',Icon:Users,name:'Clientes'},{href:'/processos',Icon:Scale,name:'Processos'},{href:'/agenda',Icon:CalendarDays,name:'Agenda'},{href:'/whatsapp',Icon:MessageSquare,name:'Mensagens'}].map(({href,Icon,name})=><Link key={href} href={href} prefetch={false} title={name} aria-label={name}><Icon size={18}/><span>{name}</span></Link>)}<button type="button" aria-label="Todas as áreas" aria-expanded={mobileMenuOpen} onClick={()=>setMobileMenuOpen(x=>!x)}>{mobileMenuOpen?<X size={18}/>:<Menu size={18}/>}<span>Mais</span></button></nav></div>
