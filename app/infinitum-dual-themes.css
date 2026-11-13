@@ -1,0 +1,85 @@
+/* INFINITUM · dual theme system. Same CRM structure, two palettes. */
+html[data-crm-theme="infinitum"]{
+ color-scheme:light;--ui-page:#fbf7f8;--ui-surface:#fffdfd;--ui-ink:#392c39;--ui-muted:#756575;--ui-accent:#8d6686;--ui-accent-ink:#fff;--ui-nav:#f4edf3;--ui-nav-ink:#4c3549;--ui-border:#e5d8e3;--ui-tint:#f3eaf1;--ui-tint-ink:#594256;
+ --ui-warning-bg:#fff3e8;--ui-warning-ink:#835322;--ui-success-bg:#eaf4ed;--ui-success-ink:#24613e;--ui-danger-bg:#fae9eb;--ui-danger-ink:#9b3544;--ui-neutral-bg:#f1edf1;--ui-neutral-ink:#5e5360;
+ --inf-paper:#fffdfd;--inf-canvas:#fbf7f8;--inf-ink:#392c39;--inf-muted:#756575;--inf-line:#e5d8e3;--inf-soft:#f3eaf1;--inf-accent:#8d6686;--inf-accent-ink:#fff;--inf-gold:#b48b75;--inf-shadow:0 5px 18px rgba(83,52,77,.065);--inf-shadow-hover:0 10px 25px rgba(83,52,77,.11);
+}
+html[data-crm-theme="infinitum-dark"]{
+ color-scheme:dark;--ui-page:#110d14;--ui-surface:#211a24;--ui-ink:#f5edf2;--ui-muted:#c4b6c3;--ui-accent:#d5a48e;--ui-accent-ink:#271a20;--ui-nav:#140f17;--ui-nav-ink:#f5eaf1;--ui-border:#493849;--ui-tint:#342638;--ui-tint-ink:#f1e3ee;
+ --ui-warning-bg:#49331f;--ui-warning-ink:#f3c58b;--ui-success-bg:#1e3c30;--ui-success-ink:#9bd8b0;--ui-danger-bg:#4a252e;--ui-danger-ink:#ffb2ba;--ui-neutral-bg:#39313d;--ui-neutral-ink:#d5cad7;
+ --inf-paper:#211a24;--inf-canvas:#110d14;--inf-ink:#f5edf2;--inf-muted:#c4b6c3;--inf-line:#493849;--inf-soft:#342638;--inf-accent:#d5a48e;--inf-accent-ink:#271a20;--inf-gold:#e0b59d;--inf-shadow:0 8px 25px rgba(0,0,0,.22);--inf-shadow-hover:0 12px 30px rgba(0,0,0,.3);
+}
+html[data-crm-theme] body{background:radial-gradient(ellipse 46% 25% at 88% 0%,color-mix(in srgb,var(--ui-accent) 12%,transparent),transparent 72%),radial-gradient(ellipse 34% 22% at 2% 100%,color-mix(in srgb,var(--ui-accent) 8%,transparent),transparent 75%),var(--ui-page)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell,html[data-crm-theme] .app-shell.blackhole-studio-shell .app-content,html[data-crm-theme] .app-content,html[data-crm-theme] .app-content :is(.reference-dashboard,.inf-studio,.task-main,.report-dashboard,.settings-dashboard,.office-ai-main,.office-ai-content,.wa-workspace){background:transparent!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar{background:var(--ui-nav)!important;color:var(--ui-nav-ink)!important;border-right:1px solid var(--ui-border)!important;box-shadow:8px 0 28px color-mix(in srgb,var(--ui-ink) 5%,transparent)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-identity{border-bottom:1px solid var(--ui-border)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar-toggle{color:var(--ui-muted)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-sidebar-toggle:hover{background:var(--ui-tint)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-section-name{color:var(--ui-muted)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link{color:var(--ui-nav-ink)!important;background:transparent!important;border:1px solid transparent!important;transition:background-color 180ms ease,color 180ms ease,border-color 180ms ease,transform 180ms ease!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link:hover{background:var(--ui-tint)!important;color:var(--ui-ink)!important;transform:translateX(1px)}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link.active,html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-link[aria-current="page"]{background:color-mix(in srgb,var(--ui-accent) 14%,var(--ui-nav))!important;color:var(--ui-ink)!important;border-color:color-mix(in srgb,var(--ui-accent) 22%,var(--ui-border))!important;box-shadow:inset 3px 0 var(--ui-accent)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .app-nav-footer{border-top:1px solid var(--ui-border)!important;color:var(--ui-muted)!important;background:transparent!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell :is(.app-account-email,.app-account-email span,.app-account-email strong,.app-account-actions a,.app-account-actions button,.app-private,.app-copyright){color:var(--ui-nav-ink)!important}
+html[data-crm-theme] .app-shell.blackhole-studio-shell .reference-top-tools{background:color-mix(in srgb,var(--ui-surface) 90%,transparent)!important;border-bottom:1px solid var(--ui-border)!important;color:var(--ui-ink)!important;backdrop-filter:blur(18px) saturate(1.1)}
+html[data-crm-theme] .blackhole-shell-breadcrumb,html[data-crm-theme] .blackhole-shell-breadcrumb a,html[data-crm-theme] .blackhole-shell-breadcrumb strong,html[data-crm-theme] .reference-top-alert{color:var(--ui-ink)!important}
+html[data-crm-theme] .blackhole-shell-search{background:var(--ui-surface)!important;border:1px solid var(--ui-border)!important;color:var(--ui-muted)!important}
+html[data-crm-theme] .blackhole-shell-search input{background:transparent!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .blackhole-shell-search input::placeholder{color:var(--ui-muted)!important}
+html[data-crm-theme] .blackhole-shell-search-results{background:var(--ui-surface)!important;border:1px solid var(--ui-border)!important;color:var(--ui-ink)!important;box-shadow:var(--inf-shadow-hover)!important}
+html[data-crm-theme] .blackhole-shell-search-results a{color:var(--ui-ink)!important}
+html[data-crm-theme] .blackhole-shell-search-results a:hover{background:var(--ui-tint)!important}
+html[data-crm-theme] .reference-top-avatar{background:var(--ui-tint)!important;border:1px solid var(--ui-border)!important;color:var(--ui-tint-ink)!important}
+html[data-crm-theme] .reference-top-divider{background:var(--ui-border)!important}
+html[data-crm-theme] .crm-visible-signout,html[data-crm-theme] .crm-mobile-dock,html[data-crm-theme] .crm-mobile-more{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .reference-header,html[data-crm-theme] .pr-hero,html[data-crm-theme] .report-executive-hero{background:radial-gradient(ellipse 48% 130% at 100% 0%,color-mix(in srgb,var(--ui-accent) 15%,transparent),transparent 70%),linear-gradient(112deg,var(--ui-surface),color-mix(in srgb,var(--ui-tint) 55%,var(--ui-surface)))!important;border:1px solid var(--ui-border)!important;color:var(--ui-ink)!important;box-shadow:var(--inf-shadow)!important}
+html[data-crm-theme] .reference-header::after,html[data-crm-theme] .pr-hero::after,html[data-crm-theme] .report-executive-hero::after{border-color:color-mix(in srgb,var(--ui-accent) 24%,transparent)!important;opacity:.42!important}
+html[data-crm-theme] :is(.reference-overline,.pr-hero>span,.hero-overline){color:var(--ui-accent)!important}
+html[data-crm-theme] :is(.reference-header h1,.pr-hero h1,.pr-module-intro h2,.inf-heading h1,.task-main h1,.report-dashboard h1,.settings-dashboard h1){color:var(--ui-ink)!important;font-family:Georgia,'Times New Roman',serif!important;font-weight:400!important}
+html[data-crm-theme] :is(.reference-header p,.pr-hero p,.inf-heading p,.inf-heading small,.report-dashboard .report-subtitle){color:var(--ui-muted)!important}
+html[data-crm-theme] :is(.reference-panel,.reference-kpi,.inf-stat,.inf-panel,.pr-metric,.pr-surface,.pr-module,.pr-detail-drawer,.efferd-kpi,.metric,.panel,.office-record,.office-agent-card,.task-board,.task-card,.task-panel,.task-summary,.task-kpi,.task-modal,.reference-modal,.dialog-inner,.report-filters,.settings-panel,.blackhole-native-integration,.office-kanban-card,.office-kanban-column,.wa-workspace,.wa-chat-layout,.wa-conversation-list,.wa-chat-panel,.office-ai-console){background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important;box-shadow:var(--inf-shadow)!important}
+html[data-crm-theme] :is(.reference-panel h2,.reference-panel h3,.inf-panel h2,.inf-panel h3,.task-main h2,.task-main h3,.pr-panel-heading h2,.pr-detail-heading h3,.settings-section-heading h2){color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.reference-panel p,.reference-panel small,.inf-panel p,.inf-stat label,.inf-stat small,.pr-panel-heading small,.pr-detail-drawer dt,.office-record small,.office-record p,.task-main small,.settings-hint,.settings-section-heading p){color:var(--ui-muted)!important}
+html[data-crm-theme] :is(.inf-stat strong,.efferd-kpi-value,.pr-metric>strong,.office-record strong,.task-kpi strong){color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.office-kanban-column,.inf-kanban-col,.pr-kanban-column,.task-board-column){background:var(--ui-tint)!important;border:1px solid var(--ui-border)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.office-kanban-card,.inf-kanban-card,.pr-case-ticket,.task-card,.office-agent-card){background:var(--ui-surface)!important;border-color:var(--ui-border)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] :is(.office-kanban-card p,.office-kanban-card small,.inf-kanban-card p,.pr-case-ticket small,.task-card small){color:var(--ui-muted)!important}
+html[data-crm-theme] :is(.reference-panel,.inf-panel,.pr-surface,.pr-module,.task-card,.office-record,.office-kanban-card){border-radius:10px!important}
+html[data-crm-theme] :is(.reference-table,.inf-table,.pr-list-table table,.pr-processes-table,.office-table) th{background:var(--ui-tint)!important;color:var(--ui-tint-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] :is(.reference-table,.inf-table,.pr-list-table table,.pr-processes-table,.office-table) td{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] :is(.reference-table,.inf-table,.pr-list-table table,.pr-processes-table,.office-table) tbody tr:hover td{background:var(--ui-tint)!important}
+html[data-crm-theme] .app-content :is(input:not([type=checkbox]):not([type=radio]),select,textarea),html[data-crm-theme] .settings-form input:not([type=checkbox]),html[data-crm-theme] .settings-form select,html[data-crm-theme] .settings-form textarea{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border:1px solid var(--ui-border)!important}
+html[data-crm-theme] input::placeholder,html[data-crm-theme] textarea::placeholder{color:var(--ui-muted)!important;opacity:.9}
+html[data-crm-theme] :is(a,button,input,select,textarea):focus-visible{outline:2px solid var(--ui-accent)!important;outline-offset:3px!important}
+html[data-crm-theme] .app-content :is(.reference-primary,.inf-btn.primary,.task-primary,.pr-main-button,.pr-drawer-primary){background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important;border-color:var(--ui-accent)!important}
+html[data-crm-theme] .app-content :is(.reference-outline,.inf-btn:not(.primary),.task-button,.pr-refresh-button,.pr-drawer-actions button,.pr-drawer-actions a){background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .app-content :is(.reference-outline,.inf-btn,.reference-primary,.task-primary,.pr-main-button,.pr-drawer-actions button,.pr-drawer-actions a){border-radius:9px!important;transition:background-color 170ms ease,color 170ms ease,border-color 170ms ease,box-shadow 190ms ease,transform 170ms ease!important}
+html[data-crm-theme] .app-content :is(.reference-outline,.inf-btn:not(.primary),.pr-drawer-actions button):hover{background:var(--ui-tint)!important;border-color:var(--ui-accent)!important}
+html[data-crm-theme] .app-content :is(.reference-primary,.inf-btn.primary,.task-primary,.pr-main-button):hover{filter:brightness(1.06);transform:translateY(-1px)}
+html[data-crm-theme] .settings-theme-option{width:100%;font:inherit;cursor:pointer;text-align:left;background:var(--ui-surface)!important;color:var(--ui-ink)!important;border:1px solid var(--ui-border)!important}
+html[data-crm-theme] .settings-theme-option.selected,html[data-crm-theme] .settings-theme-option[aria-pressed="true"]{border:2px solid var(--ui-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--ui-accent) 16%,transparent)!important}
+html[data-crm-theme] .settings-theme-option-label{color:var(--ui-ink)!important}
+html[data-crm-theme] .settings-theme-option-label svg{color:var(--ui-accent)!important}
+html[data-crm-theme] .settings-theme-preview{border:1px solid var(--ui-border)!important}
+html[data-crm-theme] .settings-section-icon{background:var(--ui-tint)!important;color:var(--ui-accent)!important}
+html[data-crm-theme] .office-ai-rail{background:var(--ui-nav)!important;color:var(--ui-nav-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-ai-header{background:var(--ui-surface)!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme] .office-ai-message-body{color:var(--ui-ink)!important}
+html[data-crm-theme] .wa-contact.selected{background:var(--ui-tint)!important;border-color:var(--ui-accent)!important}
+html[data-crm-theme] .wa-message.incoming{background:var(--ui-tint)!important;color:var(--ui-ink)!important}
+html[data-crm-theme] .wa-message.outgoing{background:color-mix(in srgb,var(--ui-accent) 18%,var(--ui-surface))!important;color:var(--ui-ink)!important}
+html[data-crm-theme="infinitum"] .app-shell.blackhole-studio-shell .app-sidebar{background:linear-gradient(180deg,#fbf6fa 0%,#f5edf4 58%,#f8f1f6 100%)!important}
+html[data-crm-theme="infinitum"] .reference-top-tools{background:radial-gradient(ellipse 36% 160% at 90% 0%,rgba(190,150,184,.19),transparent 72%),linear-gradient(90deg,rgba(255,253,253,.96),rgba(250,245,249,.91))!important}
+html[data-crm-theme="infinitum"] .app-content{background:radial-gradient(ellipse 42% 18% at 89% 0%,rgba(193,153,188,.13),transparent 75%),radial-gradient(ellipse 32% 18% at 0% 100%,rgba(211,166,151,.11),transparent 78%)!important}
+html[data-crm-theme="infinitum-dark"] .app-shell.blackhole-studio-shell .app-sidebar{background:linear-gradient(180deg,#19121c 0%,#130e17 58%,#1a111d 100%)!important}
+html[data-crm-theme="infinitum-dark"] .reference-top-tools{background:radial-gradient(ellipse 36% 160% at 90% 0%,rgba(194,132,155,.18),transparent 72%),linear-gradient(90deg,rgba(20,15,23,.96),rgba(28,18,29,.92))!important}
+html[data-crm-theme="infinitum-dark"] .app-content{background:radial-gradient(ellipse 42% 18% at 89% 0%,rgba(191,128,157,.13),transparent 75%),radial-gradient(ellipse 32% 18% at 0% 100%,rgba(218,156,130,.1),transparent 78%)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen[data-office-login="infinitum-reference"] .w1-auth-panel{background:#17111b!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen .w1-auth-heading h1,html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-login-form label{color:var(--ui-ink)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen .w1-auth-heading p,html[data-crm-theme="infinitum-dark"] .w1-auth-screen .w1-auth-panel-footer{color:var(--ui-muted)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-login-form input,html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-password-field input{background:#241b29!important;color:var(--ui-ink)!important;border-color:var(--ui-border)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-login-primary{background:var(--ui-accent)!important;color:var(--ui-accent-ink)!important;border-color:var(--ui-accent)!important}
+html[data-crm-theme="infinitum-dark"] .w1-auth-screen .office-google-btn{background:#fff!important;color:#29232c!important;border-color:#e5d8e3!important}
+html[data-crm-theme="infinitum-dark"] ::selection{background:#754e70;color:#fff}
+html[data-crm-theme="infinitum"] ::selection{background:#dfc9dc;color:#392c39}
+@media(prefers-reduced-motion:reduce){html[data-crm-theme] .app-sidebar,html[data-crm-theme] .app-content,html[data-crm-theme] .app-nav-link,html[data-crm-theme] .settings-theme-option{transition:none!important;animation:none!important}}

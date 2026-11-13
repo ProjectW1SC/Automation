@@ -54,7 +54,8 @@ export default function CrmShell({active='Painel jurídico',email='',onNavigate,
    if(!alive||current!==request){if(photoUrl)URL.revokeObjectURL(photoUrl);if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);return}
    if(previousPhotoUrl)URL.revokeObjectURL(previousPhotoUrl);if(previousBackgroundUrl)URL.revokeObjectURL(previousBackgroundUrl);
    previousPhotoUrl=photoUrl;previousBackgroundUrl=backgroundUrl;setAvatarUrl(photoUrl);
-   const savedTheme=preferredTheme();
+   const savedTheme=resolveTheme(metadata.crm_theme||preferredTheme());
+   try{localStorage.setItem('projectw1sc.crm-theme',savedTheme)}catch{}
    appearanceRef.current={colors:{},backgroundUrl:''};
    document.documentElement.dataset.crmTheme=savedTheme;
    applyAppearanceToDocument(document.documentElement,CRM_THEMES.find(t=>t.id===savedTheme),{},'');

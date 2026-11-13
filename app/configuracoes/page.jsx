@@ -17,14 +17,15 @@ export default function SettingsPage(){
  const [displayName,setDisplayName]=useState(''),[photo,setPhoto]=useState(null),[photoPreview,setPhotoPreview]=useState(''),[avatarUrl,setAvatarUrl]=useState('');
  const [newMemberEmail,setNewMemberEmail]=useState(''),[newMemberPassword,setNewMemberPassword]=useState(''),[memberSaving,setMemberSaving]=useState(false);
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[showPassword,setShowPassword]=useState(false);
- const theme='infinitum';
+ const [selectedTheme,setSelectedTheme]=useState('infinitum');
+ const theme=selectedTheme;
  const [saving,setSaving]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('');
  const [colors,setColors]=useState(()=>appearanceDefaults(CRM_THEMES[0]));
  const [backgroundFile,setBackgroundFile]=useState(null),[backgroundPreview,setBackgroundPreview]=useState(''),[backgroundUrl,setBackgroundUrl]=useState(''),[removeBackground,setRemoveBackground]=useState(false);
  const user=session?.user;
  useEffect(()=>{
   let saved='infinitum';try{saved=localStorage.getItem('projectw1sc.crm-theme')||'infinitum'}catch{}
-  const selected=resolveTheme(saved);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)));
+  const selected=resolveTheme(saved);setSelectedTheme(selected);setColors(appearanceDefaults(CRM_THEMES.find(t=>t.id===selected)||CRM_THEMES[0]));
   if(!db){setLoading(false);return}
   let active=true;
   const {data:{subscription}}=db.auth.onAuthStateChange((_,s)=>{if(active){setSession(s);setLoading(false)}});
@@ -63,6 +64,21 @@ export default function SettingsPage(){
   const url=URL.createObjectURL(backgroundFile);setBackgroundPreview(url);
   return()=>URL.revokeObjectURL(url);
  },[backgroundFile]);
+  function selectTheme(value){
+  const next=CRM_THEMES.find(t=>t.id===resolveTheme(value))||CRM_THEMES[0];
+  if(next.id===selectedTheme)return;
+  let valid;try{valid=validateAppearance(user?.user_metadata?.crm_colors||colors,next)}catch{valid=appearanceDefaults(next)}
+  setSelectedTheme(next.id);setColors(valid);
+  try{localStorage.setItem('projectw1sc.crm-theme',next.id)}catch{}
+  document.documentElement.dataset.crmTheme=next.id;
+  applyAppearanceToDocument(document.documentElement,next,valid,removeBackground?'':backgroundUrl);
+  window.dispatchEvent(new Event('projectw1sc:theme-change'));
+  setError('');setMessage(next.id==='infinitum'?'Infinitum Light aplicado.':'Infinitum Dark aplicado.');
+  if(db&&user)db.auth.updateUser({data:{crm_theme:next.id}}).then(({error})=>{
+   if(error)setError('Tema aplicado neste dispositivo, mas não foi sincronizado com a conta.');
+   else setMessage(next.id==='infinitum'?'Infinitum Light salvo na conta.':'Infinitum Dark salvo na conta.');
+  }).catch(()=>setError('Tema aplicado neste dispositivo. A sincronização com a conta falhou.'));
+ }
  function changeColor(field,value){
   const changed={...colors,[field]:value};
   setColors(changed);
@@ -92,7 +108,7 @@ export default function SettingsPage(){
     if(upload.error)throw Error('Não foi possível salvar o fundo: '+upload.error.message);
    }
    const target=removeBackground?null:newPath||oldPath||null;
-   const updated=await db.auth.updateUser({data:{crm_colors:valid,crm_background_path:target}});
+   const updated=await db.auth.updateUser({data:{crm_theme:selectedTheme,crm_colors:valid,crm_background_path:target}});
    if(updated.error)throw Error('Não foi possível salvar a aparência: '+updated.error.message);
    if(oldPath&&(removeBackground||newPath)&&oldPath.startsWith(user.id+'/'))await db.storage.from(APPEARANCE_BUCKET).remove([oldPath]);
    let nextUrl=removeBackground?'':backgroundUrl;
@@ -188,9 +204,9 @@ export default function SettingsPage(){
  const preferred=displayName||user.email?.split('@')[0]||'Usuário';
  return <CrmShell active="Configurações" email={user.email} onSignOut={()=>db.auth.signOut()}>
   <main className="reference-dashboard settings-dashboard">
-   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>O visual principal Prestige é o único tema do CRM. Ajuste seu perfil, suas cores e a segurança do acesso.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
+   <header className="reference-header"><div><div className="reference-overline">PROJECTW1SC · PREFERÊNCIAS DA CONTA</div><h1>Configurações</h1><p>Escolha entre os temas Light e Dark. As páginas, rotas e funcionalidades permanecem as mesmas.</p></div><div className="reference-actions"><a className="reference-outline" href="/"><ChevronLeft size={17}/> Voltar ao início</a></div></header>
    {(error||message)&&<div role={error?'alert':'status'} className={'settings-feedback '+(error?'bad':'good')}>{error||message}<button type="button" onClick={()=>{setError('');setMessage('')}} aria-label="Fechar aviso">×</button></div>}
-   <section className="reference-panel settings-panel" aria-label="Seleção de tema"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Visual do CRM</h2><p>Prestige mantido em todas as páginas, com detalhes visuais e animações leves inspirados no vídeo, sem reorganizar as funcionalidades.</p></div></div><div className="settings-theme-grid">{CRM_THEMES.map(t=><div key={t.id} className="settings-theme-option selected" role="note" aria-label="Tema principal ativo"><span className="settings-theme-preview" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.tint,borderColor:t.border}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span><span className="settings-theme-option-label">{t.label}<Check size={15}/></span></div>)}</div><div className="settings-hint"><ShieldCheck size={16}/> Tema principal único. Cores personalizadas e fundo continuam disponíveis; animações suaves sem alterar a estrutura.</div></section>
+   <section className="reference-panel settings-panel" aria-label="Seleção de tema"><div className="settings-section-heading"><span className="settings-section-icon"><Palette size={21}/></span><div><h2>Visual do CRM</h2><p>Prestige mantido em todas as páginas, com detalhes visuais e animações leves inspirados no vídeo, sem reorganizar as funcionalidades.</p></div></div><div className="settings-theme-grid">{CRM_THEMES.map(t=><button key={t.id} type="button" data-theme={t.id} className={'settings-theme-option '+(selectedTheme===t.id?'selected':'')} aria-pressed={selectedTheme===t.id} aria-label={'Usar '+t.label} onClick={()=>selectTheme(t.id)}><span className="settings-theme-preview" aria-hidden="true" style={{background:t.page,borderColor:t.border}}><span className="settings-theme-nav" style={{background:t.nav}}/><span className="settings-theme-preview-content"><i style={{background:t.surface,borderColor:t.border}}/><i style={{background:t.tint,borderColor:t.border}}/><i style={{background:t.surface,borderColor:t.border}}/></span></span><span className="settings-theme-option-label">{t.label}{selectedTheme===t.id&&<Check size={15}/>}</span></button>)}</div><div className="settings-hint"><ShieldCheck size={16}/> Infinitum Light é o padrão. Sua escolha fica salva na conta e neste dispositivo; ambas as versões mantêm as mesmas abas e animações.</div></section>
    <div className="settings-grid">
     <section className="reference-panel settings-panel">
      <div className="settings-section-heading"><span className="settings-section-icon"><UserRound size={21}/></span><div><h2>Meu perfil</h2><p>Seu nome e sua foto serão exibidos no menu do CRM.</p></div></div>
