@@ -137,6 +137,22 @@ test('portfolio actions open immediately, save the correct record and retain fai
   assert.match(dialog().textContent,/Atendimento salvo 3/);
   await click(button('Fechar',dialog()));
   assert.equal(dialog(),null);
+  // One slow source cannot hide a publication from the other; cancellation aborts the pending fetch.
+  let datajudSignal;
+  global.fetch=async(url,{signal})=>{
+   if(new URL(url,'http://localhost').searchParams.get('fonte')==='datajud'){
+    datajudSignal=signal;return new Promise(()=>{});
+   }
+   return new Response(JSON.stringify({ok:true,source:'DJEN',items:[{id:'djen-live',source:'DJEN',date:'2026-10-02',title:'Publicação já recebida'}]}));
+  };
+  await click(button('Consultar',document.querySelector('.lx-process-record')));
+  assert.match(dialog().textContent,/Publicação já recebida/);
+  assert.match(dialog().textContent,/Consultando\.\.\./);
+  await click(button('Cancelar consulta',dialog()));
+  assert.equal(datajudSignal.aborted,true);
+  assert.equal(button('Consultar período',dialog()).disabled,false);
+  await click(button('Fechar',dialog()));
+  assert.equal(dialog(),null);
  }finally{
   await act(async()=>root.unmount());dom.window.close();Object.assign(global,old);delete global.IS_REACT_ACT_ENVIRONMENT;
  }

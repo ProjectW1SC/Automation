@@ -1,17 +1,20 @@
 'use client';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {CalendarDays,ExternalLink,FileSearch,Gavel,History,RefreshCw,Search,ShieldCheck,BookOpen} from 'lucide-react';
 import {normalizeCaseNumber,normalizeLexisJudicialTimeline} from '../lib/lexis-operator-data.mjs';
 import {consultHistoricalCase} from '../lib/judicial-history-client.mjs';
 import {browseOfficialDjenNumber} from '../lib/blackhole-public-djen-browser.mjs';
 const fmt=x=>x?String(x).slice(0,10).split('-').reverse().join('/'):'Sem data confirmada';
-const states={ok:'Confirmada nesta consulta',ok_browser:'Confirmada pelo navegador',cached_previous:'Histórico anterior',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite de consultas (429)',timeout:'Tempo esgotado',unavailable:'Indisponível',not_checked:'Não consultada'};
+const states={checking:'Consultando...',ok:'Confirmada nesta consulta',ok_browser:'Confirmada pelo navegador',cached_previous:'Histórico anterior',blocked_403:'Bloqueada (403)',rate_limited_429:'Limite de consultas (429)',timeout:'Tempo esgotado',unavailable:'Indisponível',not_checked:'Não consultada'};
 const src=x=>x==='DataJud'?'DataJud':'DJEN';
 export default function LexisJudicialDossier({db,session}){
  const [number,setNumber]=useState(''),[draft,setDraft]=useState(''),[profile,setProfile]=useState(null),[record,setRecord]=useState(null);
  const [snapshots,setSnapshots]=useState([]),[live,setLive]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [loading,setLoading]=useState(false),[consulting,setConsulting]=useState(false),[range,setRange]=useState({start:'',end:''});
+ const controllerRef=useRef(null);
+ useEffect(()=>()=>controllerRef.current?.abort(),[number]);
  const [source,setSource]=useState('auto'),[force,setForce]=useState(false),[progress,setProgress]=useState('');
  useEffect(()=>{let active=true;(async()=>{
   const res=await db.from('usuarios').select('auth_user_id,empresa_id,nome').eq('auth_user_id',session.user.id).limit(2);
@@ -48,27 +51,29 @@ export default function LexisJudicialDossier({db,session}){
   if(range.start&&range.end&&(range.end<range.start||Date.parse(range.end+'T12:00:00Z')-Date.parse(range.start+'T12:00:00Z')>366*86400000)){
    setError('Escolha um intervalo válido de até 12 meses para evitar consultas excessivas.');return
   }
+  const controller=new AbortController();controllerRef.current=controller;
   setConsulting(true);setProgress('Iniciando consulta oficial...');setError('');setNotice('');
   try{
-   const {data:{session:current}}=await db.auth.getSession();
+   const {data:{session:current}}=await withAuthDeadline(db.auth.getSession());
    if(!current?.access_token)throw Error('Sessão expirada. Entre novamente.');
    const result=await consultHistoricalCase({
-    number,source,start:range.start||undefined,end:range.end||undefined,
-    fetchServer:async({number:n,source:s,start,end,page})=>{
+    signal:controller.signal,independentSources:true,onResult:result=>{if(!controller.signal.aborted)setLive(result)},number,source,start:range.start||undefined,end:range.end||undefined,
+    fetchServer:async({number:n,source:s,start,end,page,signal})=>{
      const qs=new URLSearchParams({numero:n,fonte:s,pagina:String(page),...(start?{inicio:start}:{}),...(end?{fim:end}:{}),...(force?{forcar:'1'}:{})});
-     const response=await fetch('/api/processos/consulta?'+qs.toString(),{headers:{Authorization:'Bearer '+current.access_token},cache:'no-store'});
+     const response=await fetch('/api/processos/consulta?'+qs.toString(),{headers:{Authorization:'Bearer '+current.access_token},cache:'no-store',signal});
      const value=await response.json().catch(()=>({ok:false,error:'Resposta não verificável do servidor.'}));
      if(!response.ok)return {...value,ok:false,sourceErrors:value.sourceErrors||{[s]:value.error||'HTTP '+response.status}};
      return value;
     },
-    fetchBrowser:async({number:n,start,end,page})=>browseOfficialDjenNumber({number:n,start,end,page}),
+    fetchBrowser:async({number:n,start,end,page,signal})=>browseOfficialDjenNumber({number:n,start,end,page,signal}),
     onProgress:({current,total})=>setProgress('Consultando fontes oficiais: período '+current+' de '+total)
    });
+   if(controller.signal.aborted)return;
    setLive(result);
    setNotice(result.notice||'As fontes foram consultadas com o resultado indicado.');setProgress('');
    // Atualizar histórico sem disparar nova consulta às fontes.
-   const saved=await db.from('crm_judicial_snapshots').select('id,source,checked_at,payload,empresa_id')
-    .eq('empresa_id',profile.empresa_id).eq('process_number',number).order('checked_at',{ascending:false}).limit(40);
+   const saved=await withAuthDeadline(db.from('crm_judicial_snapshots').select('id,source,checked_at,payload,empresa_id')
+    .eq('empresa_id',profile.empresa_id).eq('process_number',number).order('checked_at',{ascending:false}).limit(40),12000);
    if(!saved.error)setSnapshots(saved.data||[]);
   }catch(e){setError('Consulta oficial não confirmada: '+String(e.message||e));setProgress('')}
   finally{setConsulting(false)}
@@ -96,6 +101,8 @@ export default function LexisJudicialDossier({db,session}){
    </div>
    <div className="reference-actions"><button className="inf-btn primary" type="button" disabled={consulting} onClick={consult}><RefreshCw size={15}/>{consulting?'Consultando...':'Consultar fontes oficiais agora'}</button>
     <button className="inf-btn" type="button" onClick={load} disabled={loading}>Recarregar histórico salvo</button></div>
+   {consulting&&<button type="button" className="inf-btn" onClick={()=>controllerRef.current?.abort()}>Cancelar consulta</button>}
+   {live?.nextWindow&&<p className="inf-note">Há períodos pendentes. Continue a partir de {fmt(live.nextWindow.start)} no filtro acima.</p>}
    {progress&&<p className="inf-note" role="status">{progress}</p>}
    {live&&<div className="lx-source-status"><strong>Resultado da consulta</strong><p>{live.notice||'Sem observações adicionais'}</p>
     <div className="reference-actions">{['djen','datajud'].map(s=><span className="lx-status lx-status--atencao" key={s}>{s.toUpperCase()}: {states[live.sourceStatus?.[s]]||live.sourceStatus?.[s]||'Não confirmado'}</span>)}</div>

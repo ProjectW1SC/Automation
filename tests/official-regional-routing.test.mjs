@@ -6,8 +6,8 @@ test('Infinitum prioritizes verified regional DJEN exit instead of 403 Vercel eg
  assert.match(s,/result\?\.region!=='sa-east-1'/);
  assert.match(s,/result\?\.authenticated!==true/);
 });
-test('DataJud never repeats rate-limited 429 and always validates timed_out/shards',()=>{
- assert.match(s,/Number\(e\?\.status\)===429/);
+test('DataJud uses bounded transport for rate-limited 429 and always validates timed_out/shards',()=>{
+ assert.match(s,/requestOfficialJson/);
  assert.match(s,/validatePublicDataJudResponse\(payload\)/);
  assert.match(s,/body:JSON\.stringify\(\{size:1,query:\{match:\{numeroProcesso:digits\}\}\}\)/);
 });

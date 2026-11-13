@@ -19,7 +19,8 @@ test('current manual scan uses Hermes default window and avoids browser retry on
    items:[{id:'pub1',source:'DJEN',date:'2026-11-12',title:'Publicação anterior'}]};},
   fetchBrowser:async()=>{browserCalls++;throw Error('não deveria executar')}});
  assert.equal(requests.length,1);
- assert.deepEqual(requests[0],{number:num,source:'auto',start:'',end:'',page:1});
+ assert.ok(requests[0].signal instanceof AbortSignal);const {signal,...params}=requests[0];
+ assert.deepEqual(params,{number:num,source:'auto',start:'',end:'',page:1});
  assert.equal(browserCalls,0);
  assert.equal(result.sourceStatus.djen,'cached_previous');
  assert.equal(result.partial,true);

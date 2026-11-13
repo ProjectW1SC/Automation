@@ -1,4 +1,5 @@
 'use client';
+import {withAuthDeadline} from '../lib/auth-deadline.mjs';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import {Activity,Archive,BarChart3,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,ClipboardList,Download,Edit3,FileText,Gavel,History,Plus,Printer,RefreshCw,Search,ShieldCheck,Users} from 'lucide-react';
@@ -118,12 +119,12 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  },[area]);
  const [selected,setSelected]=useState(null),[history,setHistory]=useState([]),[attendNote,setAttendNote]=useState(''),[nextDate,setNextDate]=useState('');
  const [confirmed,setConfirmed]=useState(false),[consulted,setConsulted]=useState(null);
- const historyRequest=useRef(0);
+ const historyRequest=useRef(0),consultController=useRef(null);
  const [historyLoading,setHistoryLoading]=useState(false);
  const [officialHistory,setOfficialHistory]=useState([]),[historyErrors,setHistoryErrors]=useState([]);
  const [consultBusy,setConsultBusy]=useState(false),[consultRange,setConsultRange]=useState(recentPeriod);
- useEffect(()=>()=>{historyRequest.current++},[]);
- const closeAction=()=>{if(busy)return;historyRequest.current++;setSelected(null);setEditing(null);setConsulted(null);setHistory([]);setOfficialHistory([]);setHistoryErrors([]);setHistoryLoading(false);setConsultBusy(false)};
+ useEffect(()=>()=>{historyRequest.current++;consultController.current?.abort()},[]);
+ const closeAction=()=>{if(busy)return;historyRequest.current++;consultController.current?.abort();setSelected(null);setEditing(null);setConsulted(null);setHistory([]);setOfficialHistory([]);setHistoryErrors([]);setHistoryLoading(false);setConsultBusy(false)};
  const [period,setPeriod]=useState('mes'),[scope,setScope]=useState('empresa'),[attendance,setAttendance]=useState([]),[reportTotal,setReportTotal]=useState(0);
  const [reportBusy,setReportBusy]=useState(false),[teamStats,setTeamStats]=useState([]),[selectedMode,setSelectedMode]=useState('atendimento');
  useEffect(()=>{
@@ -196,7 +197,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
   }catch(e){setNotice('Atendimento não registrado: '+e.message)}
   finally{setBusy(false)}
  };
- const startEdit=(p,what)=>{historyRequest.current++;setSelected(null);setEditing(p);setMode(what);setForm(initialForm(p));setNotice('')};
+ const startEdit=(p,what)=>{historyRequest.current++;consultController.current?.abort();setSelected(null);setEditing(p);setMode(what);setForm(initialForm(p));setNotice('')};
  const saveEdit=async e=>{
   e.preventDefault();if(!editing||busy||!profile?.empresa_id)return;
   const fields=mode==='cliente'?FIELDS_CLIENT:FIELDS_PROCESS.filter(f=>f!=='protocolo_ref' && !(f==='status_interno'&&form.status_interno==='preservar'));
@@ -223,25 +224,28 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  };
  const consult=async(p,options={})=>{
   if(!p.process_number||!normalizedCnj(p.process_number)){setNotice('Número CNJ incompleto. Consulta oficial não iniciada.');return}
+  consultController.current?.abort();const controller=new AbortController();consultController.current=controller;
   const request=++historyRequest.current;
   setEditing(null);setConsultRange(options.start||options.end?options:recentPeriod());
   setSelected(p);setSelectedMode('consulta');setConsulted(null);setConsultBusy(true);setNotice('Consultando as fontes oficiais...');
   void loadHistory(p,request);
   try{
-   const {data:{session:s}}=await db.auth.getSession();
+   const {data:{session:s}}=await withAuthDeadline(db.auth.getSession());
    if(!s?.access_token)throw Error('Sessão expirada.');
    const result=await consultHistoricalCase({
+    signal:controller.signal,independentSources:true,
+    onResult:result=>{if(request===historyRequest.current)setConsulted(result)},
     number:normalizedCnj(p.process_number),source:options.source||'auto',start:options.start,end:options.end,page:options.page||1,
     onProgress:progress=>{if(request===historyRequest.current)setNotice('Consultando período '+progress.current+' de '+progress.total+'...')},
-    fetchServer:async({number,source,start,end,page})=>{
+    fetchServer:async({number,source,start,end,page,signal})=>{
      const qs=new URLSearchParams({numero:number,fonte:source,pagina:String(page),...(start?{inicio:start}:{}),...(end?{fim:end}:{})});
-     const resp=await fetch('/api/processos/consulta?'+qs,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
+     const resp=await fetch('/api/processos/consulta?'+qs,{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store',signal});
      const raw=await resp.text();
      let body;try{body=JSON.parse(raw)}catch{throw Error('O servidor de consulta não respondeu com dados válidos (HTTP '+resp.status+').')}
      if(!resp.ok&&body.ok!==false)throw Error(body.error||'Consulta indisponível (HTTP '+resp.status+').');
      return body;
     },
-    fetchBrowser:async({number,start,end,page})=>browseOfficialDjenNumber({number,start,end,page})
+    fetchBrowser:async({number,start,end,page,signal})=>browseOfficialDjenNumber({number,start,end,page,signal})
    });
    if(request!==historyRequest.current)return;
    setConsulted(result);
@@ -448,7 +452,9 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
       <label>DJEN até<input type="date" required value={consultRange.end} min={consultRange.start} onChange={e=>setConsultRange({...consultRange,end:e.target.value})}/></label>
       <label>Fonte<select value={consultRange.source} onChange={e=>setConsultRange({...consultRange,source:e.target.value})}><option value="auto">DJEN + DataJud</option><option value="djen">DJEN</option><option value="datajud">DataJud</option></select></label>
       <label>Página DJEN<input type="number" min="1" max="100" required value={consultRange.page} onChange={e=>setConsultRange({...consultRange,page:Number(e.target.value)})}/></label>
-     </div></fieldset><button type="submit" className="inf-btn primary" disabled={consultBusy}>{consultBusy?'Consultando...':'Consultar período'}</button>
+     </div></fieldset><button type="submit" className="inf-btn primary" disabled={consultBusy}>{consultBusy?'Consultando...':'Consultar período'}</button><button type="button" className="inf-btn" disabled={consultBusy} onClick={()=>{const end=todayBrazil(),d=new Date(end+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-90);consult(selected,{start:d.toISOString().slice(0,10),end,source:'djen',page:1})}}>Buscar DJEN nos últimos 90 dias</button>
+     {consultBusy&&<button type="button" className="inf-btn" onClick={()=>consultController.current?.abort()}>Cancelar consulta</button>}
+     {consulted?.nextWindow&&<button type="button" className="inf-btn" disabled={consultBusy} onClick={()=>consult(selected,{...consultRange,start:consulted.nextWindow.start,source:'djen'})}>Continuar períodos pendentes</button>}
     </form>
     {consulted&&<JudicialConsultationResult result={consulted}/>}
    </>}

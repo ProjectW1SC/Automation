@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-const labels={ok:'Consultado agora',ok_browser:'Consultado no navegador',cached_previous:'Consulta anterior salva',not_checked:'Não consultado',unavailable:'Indisponível',timeout:'Tempo esgotado',blocked_403:'Acesso recusado pela fonte',rate_limited_429:'Limite de consultas atingido'};
+const labels={checking:'Consultando...',ok:'Consultado agora',ok_browser:'Consultado no navegador',cached_previous:'Consulta anterior salva',not_checked:'Não consultado',unavailable:'Indisponível',timeout:'Tempo esgotado',blocked_403:'Acesso recusado pela fonte',rate_limited_429:'Limite de consultas atingido'};
 const date=value=>{const day=String(value||'').slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(day)?day.split('-').reverse().join('/'):'Data não informada'};
 function officialLink(value){try{const u=new URL(value);return u.protocol==='https:'&&/(^|\.)jus\.br$/.test(u.hostname)?u.href:null}catch{return null}}
 export function JudicialEvents({items=[],title='Movimentações e publicações'}){
@@ -26,6 +26,7 @@ export default function JudicialConsultationResult({result}){
    {result.sourceErrors?.[source]&&<p role="status" className="lx-source-error">{result.sourceErrors[source]}</p>}
   </section>)}</div>
   {result.persistenceErrors?.length>0&&<p role="status">{result.persistenceErrors.join(' ')}</p>}
+  {result.windowsPending>0&&<p role="status">{result.windowsChecked} de {result.windowsTotal} períodos consultados; {result.windowsPending} pendente(s). Continue pelo formulário acima.</p>}
   {result.limited&&<p>Há mais resultados na fonte. Consulte a próxima página para continuar.</p>}
   {items.length>0&&<JudicialEvents key={result.checkedAt} items={items}/>}
  </section>;

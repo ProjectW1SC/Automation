@@ -1,3 +1,4 @@
+import {requestOfficialJson,djenPageInfo} from '../_shared/official-http.mjs';
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 import {formatCnj,resolveCourtAlias,normalizeDataJudSnapshot,normalizeDjenSnapshot} from "./core.mjs";
@@ -22,19 +23,6 @@ function djenUrl(number:string,body:any){
  const qs=new URLSearchParams({numeroProcesso:number.replace(/\D/g,""),dataDisponibilizacaoInicio:start,
   dataDisponibilizacaoFim:end,pagina:String(page),itensPorPagina:"50"});
  return "https://comunicaapi.pje.jus.br/api/v1/comunicacao?"+qs.toString();
-}
-async function requestOfficial(url:string,opts:RequestInit,source:string){
- const signal=AbortSignal.timeout(source==="datajud"?29000:18000);
- let response:Response;
- try{response=await fetch(url,{...opts,cache:"no-store",redirect:"error",signal})}
- catch(e){throw fail(String((e as Error)?.name||"")?.includes("Timeout")?"O serviço oficial esgotou o tempo.":"Falha de rede com a fonte oficial.",
-  503,"upstream_network")}
- if(response.status===429)throw fail("CNJ limitou requisições (HTTP 429).",429,"rate_limited");
- if(response.status===403)throw fail("Fonte oficial recusou a rede (HTTP 403).",403,"blocked");
- if(!response.ok)throw fail("Fonte oficial respondeu HTTP "+response.status,502,"upstream_http");
- const raw=await response.text();
- if(!raw.trim()||raw.length>2400000||raw.trimStart().startsWith("<"))throw fail("Resposta oficial inválida ou HTML de bloqueio.",502,"invalid_response");
- try{return JSON.parse(raw)}catch{throw fail("Fonte oficial não retornou JSON válido.",502,"invalid_json")}
 }
 Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return json({ok:false,error:"Método não permitido."},405);
@@ -61,23 +49,23 @@ Deno.serve(async(req:Request)=>{
   let result:any;
   if(kind==="djen"){
    const url=djenUrl(number,payload);
-   const data=await requestOfficial(url,{method:"GET",headers:{Accept:"application/json"}},"djen");
+   const data=await requestOfficialJson(url,{method:"GET",headers:{Accept:"application/json"}},{source:"djen",page:Number(payload.page||1)});
    result=normalizeDjenSnapshot(data,number,checkedAt);
-   const rows=Array.isArray(data)?data:Array.isArray(data?.items)?data.items:Array.isArray(data?.content)?data.content:[];
-   result={...result,hasMore:rows.length>=50,limited:rows.length>=50,page:Number(payload.page||1)};
+   const info=djenPageInfo(data,Number(payload.page||1));
+   result={...result,hasMore:info.hasMore,limited:info.hasMore,total:info.total,page:Number(payload.page||1)};
   }else{
    const alias=resolveCourtAlias(number),digits=number.replace(/\D/g,"");
    const url="https://api-publica.datajud.cnj.jus.br/api_publica_"+alias+"/_search";
    const credential=currentPublicKey(Deno.env.get("DATAJUD_API_KEY"),PUBLIC_DATAJUD_KEY);
-   const data=validatePublicDataJudResponse(await requestOfficial(url,{method:"POST",
+   const data=validatePublicDataJudResponse(await requestOfficialJson(url,{method:"POST",
     headers:{Authorization:"APIKey "+credential,"Content-Type":"application/json",Accept:"application/json"},
-    body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})},"datajud"));
+    body:JSON.stringify({size:1,query:{match:{numeroProcesso:digits}}})},{source:"datajud"}));
    result={...normalizeDataJudSnapshot(data,number,checkedAt),court:alias.toUpperCase()};
   }
-  return json({...result,via:"supabase-edge-sa-east-1",region,latencyMs:Date.now()-started,authenticated:true});
+  return json({...result,parserVersion:2,via:"supabase-edge-sa-east-1",region,latencyMs:Date.now()-started,authenticated:true});
  }catch(e){
   const status=Number((e as any)?.status)||503;
-  return json({ok:false,source:"CNJ",status,code:String((e as any)?.code||"source_error"),
+  return json({ok:false,source:"CNJ",status,retryAfterMs:(e as any)?.retryAfterMs||null,code:String((e as any)?.code||"source_error"),
    error:String((e as any)?.message||"Fonte indisponível").slice(0,220),region:Deno.env.get("SB_REGION")||"unknown"},status);
  }
 });
