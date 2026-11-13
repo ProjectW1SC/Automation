@@ -53,10 +53,12 @@ export async function POST(request){
    sources.datajud.status==='confirmed'?'DataJud consultado.':'DataJud: '+sources.datajud.status+'.',
    sources.djen.status==='confirmed'?'DJEN/Comunica PJe consultado.':'DJEN: '+sources.djen.status+'.'
   ];
-  return json({ok:true,number,sourceStatus:sources,review,checkedAt:now,
+  const observed=sources.availableSources>0||sources.simulatedSources>0;
+  return json({ok:observed,partial:!sources.complete,demo:sources.simulatedSources>0,
+   number,sourceStatus:sources,review,checkedAt:now,
    saveId:save.data?.id||null,persisted:!save.error,
    saveError:save.error?'Consulta realizada, mas histórico não pôde ser gravado: '+save.error.message:null,
-   notice:notices.join(' ')+' Os dois sistemas são independentes; indicação de audiência/decisão exige conferência dos autos.'});
+   notice:notices.join(' ')+' Os dois sistemas são independentes; indicação de audiência/decisão exige conferência dos autos.'},observed?200:502);
  }catch(e){
   const status=/JSON|CNJ|Inválido|inválid/.test(e.message||'')?400:502;
   return json({ok:false,error:String(e?.message||'Falha do scanner').slice(0,400)},status);

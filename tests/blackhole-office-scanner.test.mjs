@@ -45,3 +45,16 @@ test('demonstração nunca conta 8 atos fictícios como publicações oficiais c
  assert.equal(summary.djen.status,'simulated');assert.equal(summary.djen.count,null);
  assert.equal(summary.djen.simulatedCount,2);assert.equal(summary.complete,false);
 });
+
+test('scanner com duas fontes falhas não declara consulta bem-sucedida',()=>{
+ const status=sourceSummary({djen:{ok:false,error:'DJEN 403'},datajud:{ok:false,error:'DataJud 429'}});
+ assert.equal(status.complete,false);assert.equal(status.partial,true);
+ assert.equal(status.confirmedSources,0);assert.equal(status.availableSources,0);
+ const api=read('app/api/scanner/route.js');
+ assert.match(api,/ok:observed/);assert.match(api,/observed\?200:502/);
+});
+test('scanner demonstrativo apresenta estado simulado sem oficializar dados',()=>{
+ const status=sourceSummary({djen:{ok:true,demo:true,items:[]},datajud:{ok:true,demo:true,items:[]}});
+ assert.equal(status.complete,false);assert.equal(status.simulatedSources,2);
+ assert.equal(status.partial,true);
+});
