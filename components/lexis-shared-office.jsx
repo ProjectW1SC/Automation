@@ -235,15 +235,11 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
  };
  // Atalho vindo de Prazos, Agenda ou Audiências: abre a ação REAL do processo autorizado.
  // Nunca resolve o vínculo por nome do cliente nem executa ações sem conferir empresa_id.
- const detailsShortcut=useRef('');
  useEffect(()=>{
   if(typeof window==='undefined'||!profile?.empresa_id||!['cases','clients'].includes(area))return;
   const params=new URLSearchParams(window.location.search);
   const id=String(params.get('processo')||'').trim(),action=params.get('acao');
   if(!/^[0-9a-z-]{1,64}$/i.test(id)||!['editar-cliente','editar-processo','atendimento','consulta'].includes(action))return;
-  const key=profile.empresa_id+':'+id+':'+action;
-  if(detailsShortcut.current===key)return;
-  detailsShortcut.current=key;
   let alive=true;
   (async()=>{
    try{
