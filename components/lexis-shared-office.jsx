@@ -373,7 +373,7 @@ export default function LexisSharedOffice({area='dashboard',db,session}){
      <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'cliente')}><Edit3 size={14}/> Editar cliente</button>
      <button type="button" className="inf-btn" aria-haspopup="dialog" onClick={()=>startEdit(p,'processo')}><FileText size={14}/> Editar processo</button>
      <button type="button" className="inf-btn primary" aria-haspopup="dialog" onClick={()=>attend(p)}><ClipboardList size={14}/> Registrar atendimento</button>
-     <button className="inf-btn" onClick={()=>consult(p)} disabled={busy||!normalizedCnj(p.process_number)}><Gavel size={14}/> Consultar</button>
+     {normalizedCnj(p.process_number)?<Link className="inf-btn" href={"/consulta-judicial?numero="+encodeURIComponent(normalizedCnj(p.process_number))}><Gavel size={14}/> Consultar</Link>:<button className="inf-btn" type="button" disabled title="CNJ incompleto; consulta indisponível"><Gavel size={14}/> Consultar</button>}
      {p.status!=='encerrado'&&<button className="inf-btn" onClick={()=>changeStatus(p,'encerrado')} disabled={busy}><CheckCircle2 size={14}/> Encerrar</button>}
      {p.status!=='em_andamento'&&<button className="inf-btn" onClick={()=>changeStatus(p,'em_andamento')} disabled={busy}><Activity size={14}/> Em andamento</button>}
      {p.status!=='excluido'&&<button className="inf-btn" onClick={()=>changeStatus(p,'excluido')} disabled={busy}><Archive size={14}/> Excluir da vista</button>}
