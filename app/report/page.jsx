@@ -2,6 +2,8 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Activity,AlertTriangle,BarChart3,BriefcaseBusiness,CalendarDays,CheckCircle2,ChevronRight,Clock3,Download,FileCheck2,FileText,Filter,Loader2,LockKeyhole,Printer,Eye,RefreshCw,ShieldCheck,Users,Wallet} from 'lucide-react';
 import CrmShell from '../../components/crm-shell';
+import SecuredWorkspace from '../../components/secured-workspace';
+import LexisSharedOffice from '../../components/lexis-shared-office';
 import ProfessionalAuth from '../../components/professional-auth';
 import {getClient} from '../../lib/supabase-client';
 import {useCrmAccess} from '../../lib/use-crm-access';
@@ -78,7 +80,7 @@ function ReportLogin({db,onLogged}){
   <a href="/" className="w1-auth-back">Voltar ao CRM ou recuperar senha</a>
  </ProfessionalAuth>;
 }
-export default function ReportPage(){
+function LegacyReportPage(){
  const db=useMemo(()=>getClient(),[]);
  const [session,setSession]=useState(null),[authLoading,setAuthLoading]=useState(true),[loading,setLoading]=useState(false);
  const access=useCrmAccess(db,session?.user);
@@ -224,4 +226,11 @@ export default function ReportPage(){
    </div>
   </main>
  </CrmShell>;
+}
+
+// /report conserva a identidade e a rota do Infinitum. O modo Lexis lê o banco principal.
+export default function ReportPage(){
+ if(process.env.NEXT_PUBLIC_LEXIS_SHARED_DB==='1')
+  return <SecuredWorkspace active="Relatórios">{({db,session})=><LexisSharedOffice area="reports" db={db} session={session}/>}</SecuredWorkspace>;
+ return <LegacyReportPage/>;
 }
