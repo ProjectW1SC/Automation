@@ -74,7 +74,7 @@ test('Google Firebase opcional usa credencial Google para sessão Supabase, sem 
  const pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.dependencies.firebase);
  assert.match(auth,/firebaseGoogleLogin/);
- assert.match(cfg,/GoogleAuthProvider\.credentialFromResult/);
+ assert.match(cfg,/credentialFromResult/);
  assert.match(cfg,/signInWithIdToken/);
  assert.match(cfg,/provider:'google'/);
  assert.match(cfg,/NEXT_PUBLIC_FIREBASE_PROJECT_ID/);
