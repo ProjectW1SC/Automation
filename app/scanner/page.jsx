@@ -106,6 +106,12 @@ function Scanner({db,session}){
    await read();
   }catch(e){setError(e.message)}finally{active.current=false;setBusy(false);aborter.current=null}
  },[db,read]);
+ async function assertBrowserSourceReady(source){
+  const {data,error}=await db.from('office_source_cooldowns').select('status,retry_after').eq('source',source).maybeSingle();
+  if(error)throw Error('Não foi possível conferir a pausa da fonte '+source.toUpperCase()+'.');
+  if(data&&Date.parse(data.retry_after)>Date.now())
+   throw Error(source.toUpperCase()+' está em pausa até '+new Date(data.retry_after).toLocaleString('pt-BR')+' após HTTP '+data.status+'.');
+ }
  async function recordBrowserBlock(number,source,status){
   if(![403,429].includes(Number(status)))return;
   const failedAt=new Date(),duration=Number(status)===403?20*60*1000:15*60*1000;
@@ -124,6 +130,7 @@ function Scanner({db,session}){
   if(!cases.some(x=>x.process_number===number)){setError('CNJ não consta na carteira autorizada.');return}
   active.current=true;setBusy(true);setError('');setNotice('');
   try{
+   await assertBrowserSourceReady('djen');
    const result=await browseOfficialDjenNumber({number});
    const review=buildScannerReview([{process_number:number,source:'djen',checked_at:result.checkedAt,payload:{items:result.items}}],{
     today:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())});
@@ -151,6 +158,7 @@ function Scanner({db,session}){
   if(!cases.some(x=>x.process_number===number)){setError('CNJ não consta na carteira autorizada.');return}
   active.current=true;setBusy(true);setError('');setNotice('');
   try{
+   await assertBrowserSourceReady('datajud');
    const result=await browseOfficialDataJudNumber({number});
    if(!result.ok){
     if([403,429].includes(Number(result.status)))await recordBrowserBlock(number,'datajud',Number(result.status));
